@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Racs Auto Deal | Homepage</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="preview.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="#" class="nav-link"><i class="fa-solid fa-square-full" style="font-size: 0.7em;"></i> Home</a>
+                <a href="#" class="nav-link"><i class="fa-solid fa-circle-info"></i> About</a>
+                <a href="#" class="nav-link"><i class="fa-solid fa-address-book"></i> Contact us</a>
+            </div>
+            <div class="logo-container">
+                <img src="assets/logo.png" alt="Racs Auto Deal Logo" class="logo-img">
+            </div>
+            <div class="nav-right">
+                <a href="#" class="nav-link"><i class="fa-solid fa-user"></i> Log in</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-overlay"></div>
+
+        <div class="hero-container">
+            <div class="hero-content">
+                <h2 class="subtitle">Racs Auto Deal</h2>
+                <h1 class="title">Your Next Journey<br>Starts Here.</h1>
+                <p class="description">
+                    Welcome to <strong>Racs Auto Deal</strong>, your premier destination for quality
+                    vehicles where we offer a curated selection of cars designed to
+                    fit every lifestyle. Explore our inventory and discover the
+                    exceptional service and unbeatable value that make us stand
+                    out from the rest!
+                </p>
+            </div>
+        </div>
+
+        <div class="scroll-indicator" id="scrollBtn">
+            <span class="scroll-text">Scroll down below to browse</span>
+            <div class="arrow-container">
+                <i class="fa-solid fa-arrow-down arrow-down"></i>
+            </div>
+        </div>
+    </main>
+
+    <section class="inventory-section">
+        <div class="inventory-top">
+            <div class="search-container">
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" placeholder="Search">
+                    <i class="fa-solid fa-xmark clear-icon"></i>
+                </div>
+                <button class="filter-btn"><i class="fa-solid fa-filter"></i></button>
+            </div>
+        </div>
+
+        <div class="inventory-content">
+            <h2 class="category-title">SUV</h2>
+            <div class="car-grid">
+                <div class="car-card">
+                    <div class="car-image-wrapper">
+                        <span class="car-badge badge-best-deal"><i class="fa-regular fa-star"></i> Best Deal</span>
+                        <img src="assets/suv_silver.png" alt="Ford Escape XLs 2012" class="car-image">
+                    </div>
+                    <h3 class="car-title">Ford Escape XLs 2012</h3>
+                    <button class="preview-btn" onclick="openPreview('escape2012')"><i class="fa-regular fa-eye"></i> Preview</button>
+                </div>
+                <div class="car-card">
+                    <div class="car-image-wrapper">
+                        <span class="car-badge badge-most-clicked"><i class="fa-solid fa-hand-pointer"></i> Most Clicked</span>
+                        <img src="assets/suv_gray.png" alt="Ford Escape Titanium 2012" class="car-image">
+                    </div>
+                    <h3 class="car-title">Ford Escape Titanium 2012</h3>
+                    <button class="preview-btn" onclick="openPreview('escape2012_titanium')"><i class="fa-regular fa-eye"></i> Preview</button>
+                </div>
+                <div class="car-card">
+                    <div class="car-image-wrapper">
+                        <span class="car-badge badge-new"><i class="fa-solid fa-arrow-trend-up"></i> New</span>
+                        <img src="assets/suv_white.png" alt="Nissan Livina VL 2023" class="car-image">
+                    </div>
+                    <h3 class="car-title">Nissan Livina VL 2023</h3>
+                    <button class="preview-btn" onclick="openPreview('livina2023')"><i class="fa-regular fa-eye"></i> Preview</button>
+                </div>
+            </div>
+
+            <!-- Expanding grid for Show All -->
+            <div class="car-grid hidden-vehicles" id="hiddenVehicles" style="display: none; margin-top: 2.5rem;">
+                <div class="car-card">
+                    <div class="car-image-wrapper">
+                        <img src="assets/sedan_black.png" alt="Honda Civic RS 2024" class="car-image">
+                    </div>
+                    <h3 class="car-title">Honda Civic RS 2024</h3>
+                    <button class="preview-btn" onclick="openPreview('civic_rs')"><i class="fa-regular fa-eye"></i> Preview</button>
+                </div>
+                <div class="car-card">
+                    <div class="car-image-wrapper">
+                        <img src="assets/hatchback_red.png" alt="Mazda 3 Sport 2023" class="car-image">
+                    </div>
+                    <h3 class="car-title">Mazda 3 Sport 2023</h3>
+                    <button class="preview-btn" onclick="openPreview('mazda3_sport')"><i class="fa-regular fa-eye"></i> Preview</button>
+                </div>
+                <div class="car-card">
+                    <div class="car-image-wrapper">
+                        <img src="assets/suv_gray.png" alt="Toyota Innova V 2022" class="car-image">
+                    </div>
+                    <h3 class="car-title">Toyota Innova V 2022</h3>
+                    <button class="preview-btn" onclick="openPreview('innova_v')"><i class="fa-regular fa-eye"></i> Preview</button>
+                </div>
+            </div>
+
+            <div class="show-all-container">
+                <button class="show-all-btn" id="showAllBtn"><i class="fa-regular fa-images"></i> <span>Show all vehicles</span></button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <!-- Left: Logo -->
+            <div class="footer-logo">
+                <img src="assets/logo.png" alt="Racs Auto Deal Logo" class="logo-img">
+            </div>
+
+            <!-- Middle: About Us -->
+            <div class="footer-about">
+                <h3 class="footer-heading">About Us</h3>
+                <p class="footer-text">
+                    At <strong>RACS AUTO DEAL</strong>, we are committed to helping customers find the perfect vehicle
+                    that fits their lifestyle, needs, and budget. Our dealership offers a carefully selected range of
+                    quality vehicles, ensuring reliability, performance, and value in every purchase.
+                </p>
+            </div>
+
+            <!-- Right: Contact Us -->
+            <div class="footer-contact">
+                <h3 class="footer-heading">Contact Us</h3>
+                <p class="footer-text">
+                    Questions, comments, or suggestions? You can reach out us with our contact below and we'll be in
+                    touch shortly.
+                </p>
+                <ul class="contact-list">
+                    <li>
+                        <i class="fa-solid fa-location-dot contact-icon red-icon"></i>
+                        <span>No. 7 N.I.A. Road, Carsadang Bago 2, Imus, Cavite</span>
+                    </li>
+                    <li>
+                        <i class="fa-solid fa-phone contact-icon red-icon"></i>
+                        <span>0917 110 6548</span>
+                    </li>
+                    <li>
+                        <i class="fa-brands fa-facebook-messenger contact-icon blue-icon"></i>
+                        <span>RACS AUTO DEAL</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="social-icons">
+                <a href="#"><i class="fa-brands fa-facebook-messenger"></i></a>
+                <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61560596447465" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-facebook-f"></i></a>
+            </div>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms & Conditions</a>
+                <span class="copyright">All Rights Reserved &copy; 2026</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Preview Modal -->
+    <div class="preview-overlay" id="previewOverlay"></div>
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-modal-content">
+            <span class="close-preview-btn" id="closePreviewBtn"><i class="fa-solid fa-xmark"></i></span>
+            
+            <div class="preview-container">
+                <div class="preview-left">
+                    <div class="preview-image-wrapper">
+                        <img id="carImg" src="" alt="Car Image">
+                        <div class="star-badge" id="favoriteBtn" title="Add to Favorites">
+                            <i class="fa-regular fa-star" id="favoriteIcon"></i>
+                        </div>
+                    </div>
+                    <div class="preview-car-info">
+                        <h1 id="carTitle">Title</h1>
+                        <span>Posted 1 hr ago</span>
+                    </div>
+                </div>
+                
+                <div class="preview-right">
+                    <h2 class="section-title">Car Description</h2>
+                    
+                    <ul class="car-specs-list">
+                        <li id="carName"></li>
+                        <li id="carModel"></li>
+                        <li id="carFuel"></li>
+                        <li id="carPrice"></li>
+                        <li id="carBrand"></li>
+                        <li id="carTransmission"></li>
+                        <li id="carDrivetrain"></li>
+                        <li id="carFeatures"></li>
+                        <li id="carComfort"></li>
+                    </ul>
+                    
+                    <div class="dealer-action">
+                        <button class="message-dealer-btn">Send an email</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="filter-overlay" id="filterOverlay"></div>
+    <aside class="filter-sidebar" id="filterSidebar">
+        <div class="filter-header">
+            <div class="filter-title">
+                <h2>Filters</h2>
+                <span class="filter-count">2</span>
+            </div>
+            <i class="fa-solid fa-xmark close-filter-btn" id="closeFilterBtn"></i>
+        </div>
+
+        <div class="filter-content">
+            <!-- Category -->
+            <div class="filter-group">
+                <div class="filter-group-header">
+                    <div class="filter-group-title">
+                        <i class="fa-solid fa-layer-group"></i> CATEGORY
+                    </div>
+                    <i class="fa-solid fa-minus"></i>
+                </div>
+                <ul class="filter-list">
+                    <li><i class="fa-solid fa-arrow-trend-up"></i> New</li>
+                    <li><i class="fa-regular fa-star"></i> Best Deal</li>
+                    <li><i class="fa-solid fa-hand-pointer"></i> Most Clicked</li>
+                </ul>
+            </div>
+
+            <!-- Vehicle Type -->
+            <div class="filter-group">
+                <div class="filter-group-header">
+                    <div class="filter-group-title">
+                        <i class="fa-solid fa-car"></i> VEHICLE TYPE
+                    </div>
+                    <i class="fa-solid fa-minus"></i>
+                </div>
+                <ul class="filter-list text-only">
+                    <li>Sports Car</li>
+                    <li>Van</li>
+                    <li>Hatchback</li>
+                    <li>Sedan</li>
+                    <li>Coupe</li>
+                    <li class="active">SUV</li>
+                </ul>
+            </div>
+
+            <!-- Search Brand -->
+            <div class="filter-group">
+                <div class="filter-group-header">
+                    <div class="filter-group-title">
+                        <i class="fa-solid fa-car"></i> SEARCH BRAND
+                    </div>
+                    <i class="fa-solid fa-minus"></i>
+                </div>
+                <div class="filter-search-input">
+                    <input type="text" placeholder="Search Here...">
+                </div>
+            </div>
+
+            <!-- Price -->
+            <div class="filter-group standalone">
+                <div class="filter-label"><i class="fa-solid fa-tag"></i> PRICE</div>
+                <div class="filter-label faded"><i class="fa-solid fa-wallet"></i> MIN - MAX</div>
+            </div>
+        </div>
+
+        <div class="filter-footer">
+            <div class="filter-actions-pill">
+                <button class="filter-reset-btn">Reset</button>
+                <button class="filter-done-btn" id="applyFilterBtn">Done</button>
+            </div>
+        </div>
+    </aside>
+
+    <script src="main.js"></script>
+</body>
+
+</html>

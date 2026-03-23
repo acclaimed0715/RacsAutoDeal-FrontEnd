@@ -15,18 +15,9 @@
 
 <body>
     <header class="navbar">
-        <div class="nav-container">
-            <div class="nav-left">
-                <a href="#" class="nav-link"><i class="fa-solid fa-square-full" style="font-size: 0.7em;"></i> Home</a>
-                <a href="#" class="nav-link"><i class="fa-solid fa-circle-info"></i> About</a>
-                <a href="#" class="nav-link"><i class="fa-solid fa-address-book"></i> Contact us</a>
-            </div>
-            <div class="logo-container">
-                <img src="assets/logo.png" alt="Racs Auto Deal Logo" class="logo-img">
-            </div>
-            <div class="nav-right">
-                <a href="#" class="nav-link"><i class="fa-solid fa-user"></i> Log in</a>
-            </div>
+        <div class="logo-container">
+            <img src="assets/logo.png" alt="Racs Auto Deal Logo" class="logo-img">
+        </div>
         </div>
     </header>
 
@@ -77,15 +68,18 @@
                         <img src="assets/suv_silver.png" alt="Ford Escape XLs 2012" class="car-image">
                     </div>
                     <h3 class="car-title">Ford Escape XLs 2012</h3>
-                    <button class="preview-btn" onclick="openPreview('escape2012')"><i class="fa-regular fa-eye"></i> Preview</button>
+                    <button class="preview-btn" onclick="openPreview('escape2012')"><i class="fa-regular fa-eye"></i>
+                        Preview</button>
                 </div>
                 <div class="car-card">
                     <div class="car-image-wrapper">
-                        <span class="car-badge badge-most-clicked"><i class="fa-solid fa-hand-pointer"></i> Most Clicked</span>
+                        <span class="car-badge badge-most-clicked"><i class="fa-solid fa-hand-pointer"></i> Most
+                            Clicked</span>
                         <img src="assets/suv_gray.png" alt="Ford Escape Titanium 2012" class="car-image">
                     </div>
                     <h3 class="car-title">Ford Escape Titanium 2012</h3>
-                    <button class="preview-btn" onclick="openPreview('escape2012_titanium')"><i class="fa-regular fa-eye"></i> Preview</button>
+                    <button class="preview-btn" onclick="openPreview('escape2012_titanium')"><i
+                            class="fa-regular fa-eye"></i> Preview</button>
                 </div>
                 <div class="car-card">
                     <div class="car-image-wrapper">
@@ -93,7 +87,8 @@
                         <img src="assets/suv_white.png" alt="Nissan Livina VL 2023" class="car-image">
                     </div>
                     <h3 class="car-title">Nissan Livina VL 2023</h3>
-                    <button class="preview-btn" onclick="openPreview('livina2023')"><i class="fa-regular fa-eye"></i> Preview</button>
+                    <button class="preview-btn" onclick="openPreview('livina2023')"><i class="fa-regular fa-eye"></i>
+                        Preview</button>
                 </div>
             </div>
 
@@ -104,26 +99,30 @@
                         <img src="assets/sedan_black.png" alt="Honda Civic RS 2024" class="car-image">
                     </div>
                     <h3 class="car-title">Honda Civic RS 2024</h3>
-                    <button class="preview-btn" onclick="openPreview('civic_rs')"><i class="fa-regular fa-eye"></i> Preview</button>
+                    <button class="preview-btn" onclick="openPreview('civic_rs')"><i class="fa-regular fa-eye"></i>
+                        Preview</button>
                 </div>
                 <div class="car-card">
                     <div class="car-image-wrapper">
                         <img src="assets/hatchback_red.png" alt="Mazda 3 Sport 2023" class="car-image">
                     </div>
                     <h3 class="car-title">Mazda 3 Sport 2023</h3>
-                    <button class="preview-btn" onclick="openPreview('mazda3_sport')"><i class="fa-regular fa-eye"></i> Preview</button>
+                    <button class="preview-btn" onclick="openPreview('mazda3_sport')"><i class="fa-regular fa-eye"></i>
+                        Preview</button>
                 </div>
                 <div class="car-card">
                     <div class="car-image-wrapper">
                         <img src="assets/suv_gray.png" alt="Toyota Innova V 2022" class="car-image">
                     </div>
                     <h3 class="car-title">Toyota Innova V 2022</h3>
-                    <button class="preview-btn" onclick="openPreview('innova_v')"><i class="fa-regular fa-eye"></i> Preview</button>
+                    <button class="preview-btn" onclick="openPreview('innova_v')"><i class="fa-regular fa-eye"></i>
+                        Preview</button>
                 </div>
             </div>
 
             <div class="show-all-container">
-                <button class="show-all-btn" id="showAllBtn"><i class="fa-regular fa-images"></i> <span>Show all vehicles</span></button>
+                <button class="show-all-btn" id="showAllBtn"><i class="fa-regular fa-images"></i> <span>Show all
+                        vehicles</span></button>
             </div>
         </div>
     </section>
@@ -173,7 +172,8 @@
             <div class="social-icons">
                 <a href="#"><i class="fa-brands fa-facebook-messenger"></i></a>
                 <a href="#"><i class="fa-brands fa-twitter"></i></a>
-                <a href="https://www.facebook.com/profile.php?id=61560596447465" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61560596447465" target="_blank"
+                    rel="noopener noreferrer"><i class="fa-brands fa-facebook-f"></i></a>
             </div>
             <div class="footer-links">
                 <a href="#">Privacy Policy</a>
@@ -188,7 +188,7 @@
     <div class="preview-modal" id="previewModal">
         <div class="preview-modal-content">
             <span class="close-preview-btn" id="closePreviewBtn"><i class="fa-solid fa-xmark"></i></span>
-            
+
             <div class="preview-container">
                 <div class="preview-left">
                     <div class="preview-image-wrapper">
@@ -202,10 +202,10 @@
                         <span>Posted 1 hr ago</span>
                     </div>
                 </div>
-                
+
                 <div class="preview-right">
                     <h2 class="section-title">Car Description</h2>
-                    
+
                     <ul class="car-specs-list">
                         <li id="carName"></li>
                         <li id="carModel"></li>
@@ -217,7 +217,7 @@
                         <li id="carFeatures"></li>
                         <li id="carComfort"></li>
                     </ul>
-                    
+
                     <div class="dealer-action">
                         <button class="message-dealer-btn">Send an email</button>
                     </div>

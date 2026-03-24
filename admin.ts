@@ -10,6 +10,20 @@ type AdminView = 'dashboard' | 'users';
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ── Session Protection ──────────────────────────────────────────────────────
+    if (localStorage.getItem('adminLoggedIn') !== 'true') {
+        window.location.href = 'login.html';
+    }
+
+    // ── Logout Functionality ──────────────────────────────────────────────────
+    const logoutLink = document.querySelector('.logout-link a');
+    logoutLink?.addEventListener('click', (e) => {
+        // Clear session first
+        localStorage.removeItem('adminLoggedIn');
+        // Let the default link behavior (navigating to index.html) proceed
+    });
+
+
     // ── Add Vehicle Modal ──────────────────────────────────────────────────────
     const addVehicleBtn = document.getElementById('addVehicleBtn');
     const modal         = document.getElementById('addModal');

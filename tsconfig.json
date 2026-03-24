@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "ignoreDeprecations": "5.0",
+    "lib": ["ES2017", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "outDir": "./",
+    "rootDir": "./",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["*.ts"],
+  "exclude": ["node_modules"]
+}

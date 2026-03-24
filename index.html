@@ -14,10 +14,24 @@
 </head>
 
 <body>
-    <header class="navbar">
-        <div class="logo-container">
-            <img src="assets/logo.png" alt="Racs Auto Deal Logo" class="logo-img">
-        </div>
+    <header class="navbar smart-nav">
+        <div class="nav-container">
+            <div class="logo-container">
+                <img src="assets/logo.png" alt="Racs Auto Deal Logo" class="logo-img">
+            </div>
+            <div class="nav-search-group">
+                <div class="search-bar nav-search">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" placeholder="Search vehicles...">
+                    <i class="fa-solid fa-xmark clear-icon"></i>
+                </div>
+                <span class="nav-search-divider"></span>
+                <button class="filter-btn nav-filter" title="Open Filters">
+                    <i class="fa-solid fa-filter"></i>
+                    <span>Filters</span>
+                </button>
+            </div>
+            <div></div><!-- right spacer for 3-col grid -->
         </div>
     </header>
 
@@ -48,19 +62,18 @@
     </main>
 
     <section class="inventory-section">
-        <div class="inventory-top">
-            <div class="search-container">
-                <div class="search-bar">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" placeholder="Search">
-                    <i class="fa-solid fa-xmark clear-icon"></i>
-                </div>
-                <button class="filter-btn"><i class="fa-solid fa-filter"></i></button>
+        <!-- Search and Filter moved to Navbar -->
+
+        <!-- Favorites Section -->
+        <div class="inventory-content" id="favoritesSection" style="display: none; border-bottom: 2px solid #222; padding-bottom: 2rem; margin-bottom: 2rem;">
+            <h2 class="category-title"><i class="fa-solid fa-star" style="color: #f39c12;"></i> YOUR FAVORITES</h2>
+            <div class="car-grid" id="favoritesGrid">
+                <!-- Dynamically populated -->
             </div>
         </div>
 
         <div class="inventory-content">
-            <h2 class="category-title">SUV</h2>
+            <h2 class="category-title" id="dynamicCategoryTitle">All Vehicles</h2>
             <div class="car-grid">
                 <div class="car-card">
                     <div class="car-image-wrapper">
@@ -117,6 +130,14 @@
                     <h3 class="car-title">Toyota Innova V 2022</h3>
                     <button class="preview-btn" onclick="openPreview('innova_v')"><i class="fa-regular fa-eye"></i>
                         Preview</button>
+                </div>
+
+                <div class="car-card" data-category="Coupe">
+                    <div class="car-image-wrapper">
+                        <img src="assets/sedan_black.png" alt="Ford Mustang GT 2024" class="car-image">
+                    </div>
+                    <h3 class="car-title">Ford Mustang GT 2024</h3>
+                    <button class="preview-btn" onclick="openPreview('mustang_gt')"><i class="fa-regular fa-eye"></i> Preview</button>
                 </div>
             </div>
 
@@ -297,7 +318,7 @@
         </div>
     </aside>
 
-    <script src="main.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 
 </html>

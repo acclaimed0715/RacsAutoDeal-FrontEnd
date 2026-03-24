@@ -157,7 +157,7 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="staffTableBody">
                             <tr>
                                 <td>
                                     <div class="table-vehicle">
@@ -231,6 +231,73 @@
                 </div>
             </div>
             <button class="save-btn" style="width: 100%; margin-top: 1rem;">Save Vehicle</button>
+        </div>
+    </div>
+
+    <!-- Add User Modal (Manage Users section) -->
+    <div class="user-modal-overlay" id="userModalOverlay"></div>
+    <div class="user-modal" id="userModal">
+        <div class="user-modal-header">
+            <h3>Add User</h3>
+            <i class="fa-solid fa-circle-xmark close-user-modal" id="closeUserModal"></i>
+        </div>
+        <div class="user-modal-body">
+            <div class="user-form-group">
+                <label>Avatar</label>
+                <div class="avatar-upload">
+                    <button class="add-avatar-btn" id="avatarPreviewBtn">ADD</button>
+                    <input type="file" id="userAvatarInput" accept="image/*" style="display: none;">
+                </div>
+            </div>
+
+            <div class="user-form-group">
+                <label>Username</label>
+                <input type="text" class="user-input" id="userUsername" placeholder="">
+            </div>
+
+            <div class="user-form-row">
+                <div class="user-form-group">
+                    <label>First Name</label>
+                    <input type="text" class="user-input" id="userFirstName" placeholder="">
+                </div>
+                <div class="user-form-group">
+                    <label>Last Name</label>
+                    <input type="text" class="user-input" id="userLastName" placeholder="">
+                </div>
+            </div>
+
+            <div class="user-form-row">
+                <div class="user-form-group">
+                    <label>Email</label>
+                    <input type="email" class="user-input" id="userEmail" placeholder="">
+                </div>
+                <div class="user-form-group">
+                    <label>Phone</label>
+                    <input type="text" class="user-input" id="userPhone" placeholder="">
+                </div>
+            </div>
+
+            <div class="user-form-group">
+                <label>Address</label>
+                <input type="text" class="user-input" placeholder="Complete Address">
+            </div>
+
+            <div class="user-form-group">
+                <div class="role-select-wrapper">
+                    <i class="fa-solid fa-grip-vertical"></i>
+                    <select class="user-input select-role" id="userRole">
+                        <option value="" disabled selected>Select Role</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Sales Staff">Sales Staff</option>
+                        <option value="Inventory Manager">Inventory Manager</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="user-modal-footer">
+                <button class="user-cancel-btn" id="cancelUserBtn">Cancel</button>
+                <button class="user-add-btn" id="confirmAddUserBtn">Add User</button>
+            </div>
         </div>
     </div>
 

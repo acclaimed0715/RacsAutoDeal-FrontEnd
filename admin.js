@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addImgBtn = document.querySelector('.add-img-btn');
     const confirmAddVehicle = document.getElementById('confirmAddVehicle');
     const inventoryTableBody = document.getElementById('inventoryTableBody');
-    let uploadedDealImageData = null;
+    const dealPreviewContainer = document.getElementById('dealImagesPreview');
+    let uploadedDealImagesData = [];
     let editingDealRow = null;
     const dealModalTitle = document.querySelector('#addModal h3');
     const openModal = () => { modal === null || modal === void 0 ? void 0 : modal.classList.add('active'); overlay === null || overlay === void 0 ? void 0 : overlay.classList.add('active'); };
@@ -43,7 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
             addImgBtn.style.backgroundImage = 'none';
             addImgBtn.textContent = 'ADD';
         }
-        uploadedDealImageData = null;
+        uploadedDealImagesData = [];
+        if (dealPreviewContainer)
+            dealPreviewContainer.innerHTML = '';
         editingDealRow = null;
         if (dealModalTitle)
             dealModalTitle.textContent = 'Add Deal';
@@ -54,25 +57,52 @@ document.addEventListener('DOMContentLoaded', () => {
     addCarBtnTop === null || addCarBtnTop === void 0 ? void 0 : addCarBtnTop.addEventListener('click', () => { resetDealForm(); openModal(); });
     closeModalBtn === null || closeModalBtn === void 0 ? void 0 : closeModalBtn.addEventListener('click', closeModal);
     overlay === null || overlay === void 0 ? void 0 : overlay.addEventListener('click', closeModal);
-    // Image Upload for Deal
+    // Image Upload for Deal (Multiple)
     addImgBtn === null || addImgBtn === void 0 ? void 0 : addImgBtn.addEventListener('click', () => carImageInput === null || carImageInput === void 0 ? void 0 : carImageInput.click());
     carImageInput === null || carImageInput === void 0 ? void 0 : carImageInput.addEventListener('change', (e) => {
-        var _a;
-        const file = (_a = e.target.files) === null || _a === void 0 ? void 0 : _a[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                var _a;
-                const dataUrl = (_a = event.target) === null || _a === void 0 ? void 0 : _a.result;
-                uploadedDealImageData = dataUrl;
-                if (addImgBtn) {
-                    addImgBtn.style.backgroundImage = `url(${dataUrl})`;
-                    addImgBtn.style.backgroundSize = 'cover';
-                    addImgBtn.style.backgroundPosition = 'center';
-                    addImgBtn.textContent = '';
-                }
-            };
-            reader.readAsDataURL(file);
+        const files = e.target.files;
+        if (files) {
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    var _a, _b;
+                    const dataUrl = (_a = event.target) === null || _a === void 0 ? void 0 : _a.result;
+                    uploadedDealImagesData.push(dataUrl);
+                    // Update main preview if first image
+                    if (uploadedDealImagesData.length === 1 && addImgBtn) {
+                        addImgBtn.style.backgroundImage = `url(${dataUrl})`;
+                        addImgBtn.style.backgroundSize = 'cover';
+                        addImgBtn.style.backgroundPosition = 'center';
+                        addImgBtn.textContent = '';
+                    }
+                    // Add thumbnail
+                    const thumb = document.createElement('div');
+                    thumb.className = 'deal-preview-thumb';
+                    thumb.innerHTML = `
+                        <img src="${dataUrl}">
+                        <button class="remove-thumb">&times;</button>
+                    `;
+                    (_b = thumb.querySelector('.remove-thumb')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', () => {
+                        const idx = uploadedDealImagesData.indexOf(dataUrl);
+                        if (idx > -1)
+                            uploadedDealImagesData.splice(idx, 1);
+                        thumb.remove();
+                        // Update background if main was removed
+                        if (uploadedDealImagesData.length > 0) {
+                            if (addImgBtn)
+                                addImgBtn.style.backgroundImage = `url(${uploadedDealImagesData[0]})`;
+                        }
+                        else {
+                            if (addImgBtn) {
+                                addImgBtn.style.backgroundImage = 'none';
+                                addImgBtn.textContent = 'ADD';
+                            }
+                        }
+                    });
+                    dealPreviewContainer === null || dealPreviewContainer === void 0 ? void 0 : dealPreviewContainer.appendChild(thumb);
+                };
+                reader.readAsDataURL(file);
+            });
         }
     });
     confirmAddVehicle === null || confirmAddVehicle === void 0 ? void 0 : confirmAddVehicle.addEventListener('click', () => {
@@ -108,7 +138,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${date}</td>
                     <td>${price}</td>
                     <td>${statusBadge}</td>
-                    <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                    <td>
+                        <button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button>
+                        <button class="icon-btn delete-deal-btn"><i class="fa-solid fa-trash"></i></button>
+                    </td>
                 </tr>
             `;
             if (inventoryTableBody) {
@@ -120,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // Handle clicks on the Inventory Table (Edit/Delete)
     inventoryTableBody === null || inventoryTableBody === void 0 ? void 0 : inventoryTableBody.addEventListener('click', (e) => {
-        var _a;
+        var _a, _b;
         const target = e.target;
         const editBtn = target.closest('.edit-deal-btn');
         if (editBtn) {
@@ -143,6 +176,12 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (statusText.includes('closed'))
                 statusSelect.value = 'closed';
             openModal();
+        }
+        const deleteBtn = target.closest('.delete-deal-btn');
+        if (deleteBtn) {
+            if (confirm('Are you sure you want to remove this vehicle from inventory?')) {
+                (_b = deleteBtn.closest('tr')) === null || _b === void 0 ? void 0 : _b.remove();
+            }
         }
     });
     // Handle Edit buttons on the Dashboard View

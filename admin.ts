@@ -37,8 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const addImgBtn     = document.querySelector('.add-img-btn') as HTMLElement;
     const confirmAddVehicle = document.getElementById('confirmAddVehicle');
     const inventoryTableBody = document.getElementById('inventoryTableBody');
+    const dealPreviewContainer = document.getElementById('dealImagesPreview');
 
-    let uploadedDealImageData: string | null = null;
+    let uploadedDealImagesData: string[] = [];
     let editingDealRow: HTMLTableRowElement | null = null;
     const dealModalTitle = document.querySelector('#addModal h3');
 
@@ -61,7 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
             addImgBtn.style.backgroundImage = 'none';
             addImgBtn.textContent = 'ADD';
         }
-        uploadedDealImageData = null;
+        uploadedDealImagesData = [];
+        if (dealPreviewContainer) dealPreviewContainer.innerHTML = '';
         editingDealRow = null;
         if (dealModalTitle) dealModalTitle.textContent = 'Add Deal';
         if (confirmAddVehicle) confirmAddVehicle.textContent = 'Add Deal';
@@ -72,23 +74,51 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModalBtn?.addEventListener('click', closeModal);
     overlay?.addEventListener('click', closeModal);
 
-    // Image Upload for Deal
+    // Image Upload for Deal (Multiple)
     addImgBtn?.addEventListener('click', () => carImageInput?.click());
     carImageInput?.addEventListener('change', (e: Event) => {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const dataUrl = event.target?.result as string;
-                uploadedDealImageData = dataUrl;
-                if (addImgBtn) {
-                    addImgBtn.style.backgroundImage = `url(${dataUrl})`;
-                    addImgBtn.style.backgroundSize = 'cover';
-                    addImgBtn.style.backgroundPosition = 'center';
-                    addImgBtn.textContent = '';
-                }
-            };
-            reader.readAsDataURL(file);
+        const files = (e.target as HTMLInputElement).files;
+        if (files) {
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const dataUrl = event.target?.result as string;
+                    uploadedDealImagesData.push(dataUrl);
+                    
+                    // Update main preview if first image
+                    if (uploadedDealImagesData.length === 1 && addImgBtn) {
+                        addImgBtn.style.backgroundImage = `url(${dataUrl})`;
+                        addImgBtn.style.backgroundSize = 'cover';
+                        addImgBtn.style.backgroundPosition = 'center';
+                        addImgBtn.textContent = '';
+                    }
+
+                    // Add thumbnail
+                    const thumb = document.createElement('div');
+                    thumb.className = 'deal-preview-thumb';
+                    thumb.innerHTML = `
+                        <img src="${dataUrl}">
+                        <button class="remove-thumb">&times;</button>
+                    `;
+                    thumb.querySelector('.remove-thumb')?.addEventListener('click', () => {
+                        const idx = uploadedDealImagesData.indexOf(dataUrl);
+                        if (idx > -1) uploadedDealImagesData.splice(idx, 1);
+                        thumb.remove();
+                        
+                        // Update background if main was removed
+                        if (uploadedDealImagesData.length > 0) {
+                            if (addImgBtn) addImgBtn.style.backgroundImage = `url(${uploadedDealImagesData[0]})`;
+                        } else {
+                            if (addImgBtn) {
+                                addImgBtn.style.backgroundImage = 'none';
+                                addImgBtn.textContent = 'ADD';
+                            }
+                        }
+                    });
+                    dealPreviewContainer?.appendChild(thumb);
+                };
+                reader.readAsDataURL(file);
+            });
         }
     });
 
@@ -128,7 +158,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${date}</td>
                     <td>${price}</td>
                     <td>${statusBadge}</td>
-                    <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                    <td>
+                        <button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button>
+                        <button class="icon-btn delete-deal-btn"><i class="fa-solid fa-trash"></i></button>
+                    </td>
                 </tr>
             `;
 
@@ -164,6 +197,13 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (statusText.includes('closed')) statusSelect.value = 'closed';
             
             openModal();
+        }
+
+        const deleteBtn = target.closest('.delete-deal-btn');
+        if (deleteBtn) {
+            if (confirm('Are you sure you want to remove this vehicle from inventory?')) {
+                deleteBtn.closest('tr')?.remove();
+            }
         }
     });
 

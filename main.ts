@@ -15,7 +15,7 @@ declare global {
 
 interface CarEntry {
     title: string;
-    image: string;
+    images: string[];
     name: string;
     model: string;
     fuel: string;
@@ -33,7 +33,7 @@ type CarDataDictionary = Record<CarId, CarEntry>;
 const carData: CarDataDictionary = {
     escape2012: {
         title: 'Ford Escape XLs 2012',
-        image: 'assets/suv_silver.png',
+        images: ['assets/suv_silver.png', 'assets/suv_gray.png', 'assets/suv_white.png'],
         name: 'Ford Escape',
         model: '2012',
         fuel: 'Gasoline',
@@ -45,7 +45,7 @@ const carData: CarDataDictionary = {
     },
     escape2012_titanium: {
         title: 'Ford Escape Titanium 2012',
-        image: 'assets/suv_gray.png',
+        images: ['assets/suv_gray.png', 'assets/suv_silver.png', 'assets/suv_white.png'],
         name: 'Ford Escape Titanium',
         model: '2012',
         fuel: 'Gasoline',
@@ -57,7 +57,7 @@ const carData: CarDataDictionary = {
     },
     livina2023: {
         title: 'Nissan Livina VL 2023',
-        image: 'assets/suv_white.png',
+        images: ['assets/suv_white.png', 'assets/suv_silver.png', 'assets/suv_gray.png'],
         name: 'Nissan Livina',
         model: '2023',
         fuel: 'Gasoline',
@@ -69,7 +69,7 @@ const carData: CarDataDictionary = {
     },
     civic_rs: {
         title: 'Honda Civic RS 2024',
-        image: 'assets/sedan_black.png',
+        images: ['assets/sedan_black.png', 'assets/hatchback_red.png'],
         name: 'Honda Civic RS',
         model: '2024',
         fuel: 'Gasoline',
@@ -81,7 +81,7 @@ const carData: CarDataDictionary = {
     },
     mazda3_sport: {
         title: 'Mazda 3 Sport 2023',
-        image: 'assets/hatchback_red.png',
+        images: ['assets/hatchback_red.png', 'assets/sedan_black.png'],
         name: 'Mazda 3',
         model: '2023',
         fuel: 'Mild Hybrid',
@@ -93,7 +93,7 @@ const carData: CarDataDictionary = {
     },
     innova_v: {
         title: 'Toyota Innova V 2022',
-        image: 'assets/suv_gray.png',
+        images: ['assets/suv_gray.png', 'assets/suv_silver.png'],
         name: 'Toyota Innova',
         model: '2022',
         fuel: 'Diesel',
@@ -105,7 +105,7 @@ const carData: CarDataDictionary = {
     },
     mustang_gt: {
         title: 'Ford Mustang GT 2024',
-        image: 'assets/sedan_black.png',
+        images: ['assets/sedan_black.png', 'assets/hatchback_red.png'],
         name: 'Ford Mustang',
         model: '2024',
         fuel: 'Gasoline (V8)',
@@ -140,7 +140,61 @@ window.openPreview = (carId: CarId): void => {
 
     const previewModal    = document.getElementById('previewModal');
     const previewOverlay  = document.getElementById('previewOverlay');
+    const carouselDots    = document.getElementById('carouselDots');
+    const prevBtn         = document.getElementById('prevImgBtn') as HTMLButtonElement | null;
+    const nextBtn         = document.getElementById('nextImgBtn') as HTMLButtonElement | null;
+
     if (!previewModal || !previewOverlay) return;
+
+    let currentImgIdx = 0;
+    const images = entry.images;
+
+    const updateCarousel = () => {
+        if (eleImg) {
+            eleImg.style.opacity = '0.5';
+            setTimeout(() => {
+                eleImg.src = images[currentImgIdx];
+                eleImg.style.opacity = '1';
+            }, 150);
+        }
+        
+        // Update dots
+        if (carouselDots) {
+            carouselDots.innerHTML = '';
+            images.forEach((_, idx) => {
+                const dot = document.createElement('div');
+                dot.className = `dot ${idx === currentImgIdx ? 'active' : ''}`;
+                dot.addEventListener('click', () => {
+                    currentImgIdx = idx;
+                    updateCarousel();
+                });
+                carouselDots.appendChild(dot);
+            });
+        }
+
+        if (prevBtn) prevBtn.disabled = currentImgIdx === 0;
+        if (nextBtn) nextBtn.disabled = currentImgIdx === images.length - 1;
+    };
+
+    if (prevBtn) {
+        prevBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (currentImgIdx > 0) {
+                currentImgIdx--;
+                updateCarousel();
+            }
+        };
+    }
+
+    if (nextBtn) {
+        nextBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (currentImgIdx < images.length - 1) {
+                currentImgIdx++;
+                updateCarousel();
+            }
+        };
+    }
 
     const eleImg   = document.getElementById('carImg') as HTMLImageElement | null;
     const eleTitle = document.getElementById('carTitle');
@@ -152,7 +206,7 @@ window.openPreview = (carId: CarId): void => {
     const eleTrans = document.getElementById('carTransmission');
     const eleDesc = document.getElementById('carDescription');
 
-    if (eleImg)   eleImg.src           = entry.image;
+    updateCarousel();
     if (eleTitle) eleTitle.textContent = entry.title;
     if (eleName)  eleName.innerHTML    = `<strong>Car Name:</strong> ${entry.name}`;
     if (eleModel) eleModel.innerHTML   = `<strong>Car Model:</strong> ${entry.model}`;
@@ -170,8 +224,6 @@ window.openPreview = (carId: CarId): void => {
     const favoriteIcon    = document.getElementById('favoriteIcon');
     if (favoriteBtn && favoriteIcon) {
         favoriteBtn.classList.toggle('favorited', entry.isFavorited);
-        favoriteIcon.classList.toggle('fa-solid',   entry.isFavorited);
-        favoriteIcon.classList.toggle('fa-regular', !entry.isFavorited);
     }
 
     previewModal.classList.add('active');
@@ -246,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             item.innerHTML = `
                 <div class="fav-item-img">
-                    <img src="${entry.image}" alt="${entry.title}">
+                    <img src="${entry.images[0]}" alt="${entry.title}">
                 </div>
                 <div class="fav-item-info">
                     <span class="fav-item-title">${entry.title}</span>
@@ -287,7 +339,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         const favoriteIcon = document.getElementById('favoriteIcon');
                         if (favoriteBtn && favoriteIcon) {
                             favoriteBtn.classList.remove('favorited');
-                            favoriteIcon.classList.replace('fa-solid', 'fa-regular');
                         }
                     }
                 }
@@ -339,9 +390,6 @@ document.addEventListener('DOMContentLoaded', () => {
             entry.isFavorited = !entry.isFavorited;
 
             favoriteBtn.classList.toggle('favorited', entry.isFavorited);
-            favoriteIcon.classList.toggle('fa-solid',   entry.isFavorited);
-            favoriteIcon.classList.toggle('fa-regular', !entry.isFavorited);
-
             updateFavoritesUI();
         });
     }

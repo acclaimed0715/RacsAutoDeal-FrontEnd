@@ -81,11 +81,79 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
-.preview-image-wrapper img {
+
+.carousel-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+}
+
+.carousel-container img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
+    transition: opacity 0.3s ease;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.8);
+    color: #333;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 5;
+    transition: all 0.2s;
+    opacity: 0.8;
+}
+
+.carousel-btn:hover {
+    background: #fff;
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-btn:disabled {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.prev-btn { left: 15px; }
+.next-btn { right: 15px; }
+
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 0;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transition: all 0.2s;
+}
+
+.dot.active {
+    background: #fff;
+    transform: scale(1.2);
 }
 
 .star-badge {
@@ -108,6 +176,10 @@
 
 .star-badge:hover {
     transform: scale(1.15);
+}
+
+.star-badge.favorited {
+    color: #ffd700;
 }
 
 .star-badge.favorited {

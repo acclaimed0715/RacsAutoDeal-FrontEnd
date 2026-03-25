@@ -31,7 +31,7 @@
                     <span>Filters</span>
                 </button>
                 <button class="nav-fav-btn" id="navFavBtn" title="View Favorites">
-                    <i class="fa-regular fa-star"></i>
+                    <i class="fa-solid fa-key"></i>
                     <span class="fav-count" id="favCount">0</span>
                 </button>
             </div>
@@ -209,9 +209,14 @@
             <div class="preview-container">
                 <div class="preview-left">
                     <div class="preview-image-wrapper">
-                        <img id="carImg" src="" alt="Car Image">
-                        <div class="star-badge" id="favoriteBtn" title="Add to Favorites">
-                            <i class="fa-regular fa-star" id="favoriteIcon"></i>
+                        <div class="carousel-container">
+                            <button class="carousel-btn prev-btn" id="prevImgBtn"><i class="fa-solid fa-chevron-left"></i></button>
+                            <img id="carImg" src="" alt="Car Image">
+                            <button class="carousel-btn next-btn" id="nextImgBtn"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        <div class="carousel-dots" id="carouselDots"></div>
+                        <div class="star-badge" id="favoriteBtn" title="Favorite">
+                            <i class="fa-solid fa-key" id="favoriteIcon"></i>
                         </div>
                     </div>
                     <div class="preview-car-info">
@@ -234,7 +239,7 @@
                     </ul>
 
                     <div class="dealer-action">
-                        <button class="message-dealer-btn">Send an email</button>
+                        <button class="message-dealer-btn">Inquire</button>
                     </div>
                 </div>
             </div>
@@ -315,7 +320,7 @@
     <!-- Favorites Modal -->
     <div class="fav-modal" id="favModal">
         <div class="fav-modal-header">
-            <h3><i class="fa-solid fa-star"></i> Your Favorite Cars</h3>
+            <h3><i class="fa-solid fa-key"></i> Your Favorite Cars</h3>
             <span class="close-fav-modal" id="closeFavBtn"><i class="fa-solid fa-xmark"></i></span>
         </div>
         <div class="fav-modal-body" id="favModalBody">

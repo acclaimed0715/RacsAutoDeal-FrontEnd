@@ -182,7 +182,7 @@
                                 <th>Appointment Date</th>
                                 <th>Price</th>
                                 <th>Status</th>
-                                <th>Edit</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="inventoryTableBody">
@@ -192,7 +192,10 @@
                                 <td>Mar 15, 2026 10:30 AM</td>
                                 <td>P750,000</td>
                                 <td><span class="badge in-progress">OPEN</span></td>
-                                <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                                <td>
+                                    <button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="icon-btn delete-deal-btn"><i class="fa-solid fa-trash"></i></button>
+                                </td>
                             </tr>
                             <tr>
                                 <td>Ford Escape Titanium 2012</td>
@@ -200,7 +203,10 @@
                                 <td>Mar 16, 2026 09:15 AM</td>
                                 <td>P800,000</td>
                                 <td><span class="badge in-progress">IN PROGRESS</span></td>
-                                <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                                <td>
+                                    <button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="icon-btn delete-deal-btn"><i class="fa-solid fa-trash"></i></button>
+                                </td>
                             </tr>
                             <tr>
                                 <td>Nissan Livina VL 2023</td>
@@ -208,7 +214,10 @@
                                 <td>Mar 18, 2026 02:00 PM</td>
                                 <td>P1,100,000</td>
                                 <td><span class="badge closed">CLOSED</span></td>
-                                <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                                <td>
+                                    <button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="icon-btn delete-deal-btn"><i class="fa-solid fa-trash"></i></button>
+                                </td>
                             </tr>
                             <tr>
                                 <td>Honda Civic RS 2024</td>
@@ -216,7 +225,10 @@
                                 <td>Mar 20, 2026 11:45 AM</td>
                                 <td>P1,775,000</td>
                                 <td><span class="badge in-progress">OPEN</span></td>
-                                <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                                <td>
+                                    <button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="icon-btn delete-deal-btn"><i class="fa-solid fa-trash"></i></button>
+                                </td>
                             </tr>
                             <tr>
                                 <td>Mazda 3 Sport 2023</td>
@@ -224,7 +236,10 @@
                                 <td>Mar 21, 2026 01:30 PM</td>
                                 <td>P1,500,000</td>
                                 <td><span class="badge in-progress">IN PROGRESS</span></td>
-                                <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                                <td>
+                                    <button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="icon-btn delete-deal-btn"><i class="fa-solid fa-trash"></i></button>
+                                </td>
                             </tr>
                             <tr>
                                 <td>Toyota Innova V 2022</td>
@@ -232,7 +247,10 @@
                                 <td>Mar 22, 2026 04:00 PM</td>
                                 <td>P1,750,000</td>
                                 <td><span class="badge closed">CLOSED</span></td>
-                                <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                                <td>
+                                    <button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="icon-btn delete-deal-btn"><i class="fa-solid fa-trash"></i></button>
+                                </td>
                             </tr>
                             <tr>
                                 <td>Ford Mustang GT 2024</td>
@@ -240,7 +258,10 @@
                                 <td>Mar 24, 2026 03:00 PM</td>
                                 <td>P3,500,000</td>
                                 <td><span class="badge in-progress">OPEN</span></td>
-                                <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                                <td>
+                                    <button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="icon-btn delete-deal-btn"><i class="fa-solid fa-trash"></i></button>
+                                </td>
                             </tr>
                             <!-- More rows will be added dynamically -->
                         </tbody>
@@ -323,9 +344,12 @@
         <div class="user-modal-body">
             <div class="deal-section">
                 <label class="section-label">Add Image</label>
-                <div class="deal-image-upload" id="carImageUpload">
-                    <button class="add-img-btn">ADD</button>
-                    <input type="file" id="carImageInput" hidden accept="image/*">
+                <div class="deal-image-upload-wrapper">
+                    <div class="deal-image-upload" id="carImageUpload">
+                        <button class="add-img-btn">ADD</button>
+                        <input type="file" id="carImageInput" hidden accept="image/*" multiple>
+                    </div>
+                    <div class="deal-images-preview" id="dealImagesPreview"></div>
                 </div>
             </div>
 

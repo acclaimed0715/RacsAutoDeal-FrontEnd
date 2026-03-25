@@ -38,6 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('carBrand').value = '';
         document.getElementById('carTransmission').value = '';
         document.getElementById('carFuelType').value = '';
+        document.getElementById('carEngine').value = '';
+        document.getElementById('carHP').value = '';
+        document.getElementById('carTorque').value = '';
+        document.getElementById('carSafety').value = '';
+        document.getElementById('carSeating').value = '';
         document.getElementById('carDescription').value = '';
         document.getElementById('carStatus').value = 'open';
         if (addImgBtn) {
@@ -129,10 +134,32 @@ document.addEventListener('DOMContentLoaded', () => {
             editingDealRow.cells[1].textContent = brand || 'N/A';
             editingDealRow.cells[3].textContent = price;
             editingDealRow.cells[4].innerHTML = statusBadge;
+            // Update attributes
+            editingDealRow.setAttribute('data-mileage', document.getElementById('carMileage').value);
+            editingDealRow.setAttribute('data-fuel', document.getElementById('carFuelType').value);
+            editingDealRow.setAttribute('data-engine', document.getElementById('carEngine').value);
+            editingDealRow.setAttribute('data-hp', document.getElementById('carHP').value);
+            editingDealRow.setAttribute('data-torque', document.getElementById('carTorque').value);
+            editingDealRow.setAttribute('data-safety', document.getElementById('carSafety').value);
+            editingDealRow.setAttribute('data-seating', document.getElementById('carSeating').value);
+            editingDealRow.setAttribute('data-promo-price', document.getElementById('carPricePromo').value);
+            editingDealRow.setAttribute('data-model', document.getElementById('carModelYear').value);
+            editingDealRow.setAttribute('data-trans', document.getElementById('carTransmission').value);
+            editingDealRow.setAttribute('data-desc', document.getElementById('carDescription').value);
         }
         else {
             const rowHTML = `
-                <tr>
+                <tr data-mileage="${document.getElementById('carMileage').value}" 
+                    data-fuel="${document.getElementById('carFuelType').value}"
+                    data-engine="${document.getElementById('carEngine').value}"
+                    data-hp="${document.getElementById('carHP').value}"
+                    data-torque="${document.getElementById('carTorque').value}"
+                    data-safety="${document.getElementById('carSafety').value}"
+                    data-seating="${document.getElementById('carSeating').value}"
+                    data-promo-price="${document.getElementById('carPricePromo').value}"
+                    data-model="${document.getElementById('carModelYear').value}"
+                    data-trans="${document.getElementById('carTransmission').value}"
+                    data-desc="${document.getElementById('carDescription').value}">
                     <td>${name}</td>
                     <td>${brand || 'N/A'}</td>
                     <td>${date}</td>
@@ -175,6 +202,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 statusSelect.value = 'in-progress';
             else if (statusText.includes('closed'))
                 statusSelect.value = 'closed';
+            // Fill new fields (using data attributes since they aren't in the table)
+            document.getElementById('carMileage').value = row.getAttribute('data-mileage') || '';
+            document.getElementById('carFuelType').value = row.getAttribute('data-fuel') || '';
+            document.getElementById('carEngine').value = row.getAttribute('data-engine') || '';
+            document.getElementById('carHP').value = row.getAttribute('data-hp') || '';
+            document.getElementById('carTorque').value = row.getAttribute('data-torque') || '';
+            document.getElementById('carSafety').value = row.getAttribute('data-safety') || '';
+            document.getElementById('carSeating').value = row.getAttribute('data-seating') || '';
+            document.getElementById('carPricePromo').value = row.getAttribute('data-promo-price') || '';
+            document.getElementById('carModelYear').value = row.getAttribute('data-model') || '';
+            document.getElementById('carTransmission').value = row.getAttribute('data-trans') || '';
+            document.getElementById('carDescription').value = row.getAttribute('data-desc') || '';
             openModal();
         }
         const deleteBtn = target.closest('.delete-deal-btn');

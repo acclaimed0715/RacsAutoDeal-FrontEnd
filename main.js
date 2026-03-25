@@ -11,6 +11,12 @@ const carData = {
         transmission: '5-Speed Manual / 6-Speed Automatic (varies by unit)',
         description: 'Front-Wheel Drive (FWD). AM/FM Radio, CD Player, AUX Input. Air Conditioning, Power Windows, Power Door Locks.',
         isFavorited: false,
+        mileage: '45,000 KM',
+        engine: '2.5L I4',
+        hp: '171 hp @ 6000 rpm',
+        torque: '171 lb-ft @ 4500 rpm',
+        safety: 'Front Airbags, ABS, ESC',
+        seating: '5 Seater',
     },
     escape2012_titanium: {
         title: 'Ford Escape Titanium 2012',
@@ -23,6 +29,12 @@ const carData = {
         transmission: '6-Speed Automatic',
         description: 'Front-Wheel Drive (FWD) / Optional AWD. Bluetooth, Premium Audio, Keyless Entry. Dual-zone Climate Control, Leather Seats, Power Liftgate.',
         isFavorited: false,
+        mileage: '38,000 KM',
+        engine: '2.0L I4',
+        hp: '240 hp @ 5500 rpm',
+        torque: '270 lb-ft @ 3000 rpm',
+        safety: 'Front/Side Airbags, ABS, Blind Spot Monitor',
+        seating: '5 Seater',
     },
     livina2023: {
         title: 'Nissan Livina VL 2023',
@@ -35,6 +47,12 @@ const carData = {
         transmission: '4-Speed Automatic',
         description: 'Front-Wheel Drive (FWD). 7-inch Touchscreen Display, Apple CarPlay, Android Auto. Rear AC Vents, Leather Upholstery, Push Button Start.',
         isFavorited: false,
+        mileage: '15,000 KM',
+        engine: '1.5L I4',
+        hp: '103 hp @ 6000 rpm',
+        torque: '141 Nm @ 4000 rpm',
+        safety: 'Dual Airbags, ABS with EBD',
+        seating: '7 Seater',
     },
     civic_rs: {
         title: 'Honda Civic RS 2024',
@@ -47,6 +65,12 @@ const carData = {
         transmission: 'CVT',
         description: 'Front-Wheel Drive. Honda SENSING, 9-inch Display Audio, Bose Sound. Dual Zone AC, Leather Seats, Smart Key.',
         isFavorited: false,
+        mileage: '5,000 KM',
+        engine: '1.5L VTEC Turbo',
+        hp: '178 hp @ 6000 rpm',
+        torque: '240 Nm @ 1700-4500 rpm',
+        safety: 'Honda SENSING, 6 Airbags, ABS',
+        seating: '5 Seater',
     },
     mazda3_sport: {
         title: 'Mazda 3 Sport 2023',
@@ -59,6 +83,12 @@ const carData = {
         transmission: '6-Speed Automatic',
         description: 'Front-Wheel Drive. 360° View Monitor, Signature KODO Design, HUD. Burgundy Leather, Premium Bose Audio.',
         isFavorited: false,
+        mileage: '12,000 KM',
+        engine: '2.0L e-SKYACTIV-G (Mild Hybrid)',
+        hp: '153 hp @ 6000 rpm',
+        torque: '200 Nm @ 4000 rpm',
+        safety: 'i-ACTIVSENSE, 7 Airbags, ABS',
+        seating: '5 Seater',
     },
     innova_v: {
         title: 'Toyota Innova V 2022',
@@ -71,6 +101,12 @@ const carData = {
         transmission: '6-Speed Automatic',
         description: 'Rear-Wheel Drive. Captain Seats, Ambient Lighting, Touchscreen. Spacious Cabin, Rear AC, Push Start.',
         isFavorited: false,
+        mileage: '28,000 KM',
+        engine: '2.8L 1GD-FTV Turbo Diesel',
+        hp: '174 hp @ 3400 rpm',
+        torque: '360 Nm @ 1200-3400 rpm',
+        safety: 'Dual Airbags, ABS, VSC',
+        seating: '7 Seater',
     },
     mustang_gt: {
         title: 'Ford Mustang GT 2024',
@@ -83,6 +119,12 @@ const carData = {
         transmission: '10-Speed Automatic',
         description: 'Rear-Wheel Drive (RWD). Track Apps, MagneRide Damping, SYNC 4. Recaro Leather Seats, Dual-Zone AC.',
         isFavorited: false,
+        mileage: '2,000 KM',
+        engine: '5.0L Ti-VCT V8',
+        hp: '480 hp @ 7150 rpm',
+        torque: '560 Nm @ 4900 rpm',
+        safety: 'Ford Co-Pilot360, 8 Airbags, ABS',
+        seating: '4 Seater',
     },
 };
 // ─── Badge helper ─────────────────────────────────────────────────────────────
@@ -98,6 +140,7 @@ function getBadgeHtml(carId) {
 // ─── Global State & Functions ──────────────────────────────────────────────────
 window.currentCarId = null;
 window.openPreview = (carId) => {
+    var _a, _b, _c, _d, _e;
     window.currentCarId = carId;
     const entry = carData[carId];
     if (!entry)
@@ -164,24 +207,80 @@ window.openPreview = (carId) => {
     const eleBrand = document.getElementById('carBrand');
     const eleTrans = document.getElementById('carTransmission');
     const eleDesc = document.getElementById('carDescription');
+    // Feature Blocks
+    const featModel = document.getElementById('featModel');
+    const featMileage = document.getElementById('featMileage');
+    const featTrans = document.getElementById('featTrans');
+    const featFuel = document.getElementById('featFuel');
+    // Other Features Tab
+    const featEngine = (_a = document.getElementById('featEngine')) === null || _a === void 0 ? void 0 : _a.querySelector('span');
+    const featHP = (_b = document.getElementById('featHP')) === null || _b === void 0 ? void 0 : _b.querySelector('span');
+    const featTorque = (_c = document.getElementById('featTorque')) === null || _c === void 0 ? void 0 : _c.querySelector('span');
+    const featSafety = (_d = document.getElementById('featSafety')) === null || _d === void 0 ? void 0 : _d.querySelector('span');
+    const featSeating = (_e = document.getElementById('featSeating')) === null || _e === void 0 ? void 0 : _e.querySelector('span');
     updateCarousel();
     if (eleTitle)
         eleTitle.textContent = entry.title;
+    // Description Tab Populating
     if (eleName)
-        eleName.innerHTML = `<strong>Car Name:</strong> ${entry.name}`;
+        eleName.innerHTML = `<strong>Car Name:</strong> <span>${entry.name}</span>`;
     if (eleModel)
-        eleModel.innerHTML = `<strong>Car Model:</strong> ${entry.model}`;
+        eleModel.innerHTML = `<strong>Car Model:</strong> <span>${entry.model}</span>`;
     if (eleFuel)
-        eleFuel.innerHTML = `<strong>Fuel Type:</strong> ${entry.fuel}`;
+        eleFuel.innerHTML = `<strong>Fuel Type:</strong> <span>${entry.fuel}</span>`;
     if (elePrice)
-        elePrice.innerHTML = `<strong>Price:</strong> ${entry.price}`;
+        elePrice.innerHTML = `<strong>Price:</strong> <span>${entry.price}</span>`;
     if (eleBrand)
-        eleBrand.innerHTML = `<strong>Brand:</strong> ${entry.brand}`;
+        eleBrand.innerHTML = `<strong>Brand:</strong> <span>${entry.brand}</span>`;
     if (eleTrans)
-        eleTrans.innerHTML = `<strong>Transmission:</strong> ${entry.transmission}`;
-    if (eleDesc) {
-        eleDesc.innerHTML = `<strong>Description:</strong> ${entry.description}`;
+        eleTrans.innerHTML = `<strong>Transmission:</strong> <span>${entry.transmission}</span>`;
+    if (eleDesc)
+        eleDesc.innerHTML = `<strong>Description:</strong> <span>${entry.description}</span>`;
+    // Feature Blocks Populating
+    if (featModel)
+        featModel.textContent = `${entry.model} Model`;
+    if (featMileage)
+        featMileage.textContent = entry.mileage || 'N/A';
+    if (featTrans) {
+        const t = entry.transmission.toLowerCase();
+        featTrans.textContent = t.includes('automatic') || t.includes('cvt') ? 'Automatic' : 'Manual';
     }
+    if (featFuel)
+        featFuel.textContent = entry.fuel;
+    // Other Features Tab Populating
+    if (featEngine)
+        featEngine.textContent = entry.engine || 'Standard';
+    if (featHP)
+        featHP.textContent = entry.hp || 'Standard';
+    if (featTorque)
+        featTorque.textContent = entry.torque || 'Standard';
+    if (featSafety)
+        featSafety.textContent = entry.safety || 'Standard';
+    if (featSeating)
+        featSeating.textContent = entry.seating || 'Standard';
+    // Tab Switching Logic
+    const tabs = document.querySelectorAll('.tab-item');
+    const tabContents = document.querySelectorAll('.tab-content');
+    // Reset to Description tab whenever opened
+    tabs.forEach(t => t.classList.remove('active'));
+    tabContents.forEach(c => c.classList.remove('active'));
+    tabs[0].classList.add('active');
+    tabContents[0].classList.add('active');
+    tabs.forEach(tab => {
+        tab.onclick = () => {
+            var _a, _b;
+            const target = tab.getAttribute('data-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            tab.classList.add('active');
+            if (target === 'description') {
+                (_a = document.getElementById('description-tab')) === null || _a === void 0 ? void 0 : _a.classList.add('active');
+            }
+            else {
+                (_b = document.getElementById('other-features-tab')) === null || _b === void 0 ? void 0 : _b.classList.add('active');
+            }
+        };
+    });
     // Sync favorite button state
     const favoriteBtn = document.getElementById('favoriteBtn');
     const favoriteIcon = document.getElementById('favoriteIcon');

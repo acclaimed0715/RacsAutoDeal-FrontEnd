@@ -55,6 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
         (document.getElementById('carBrand') as HTMLInputElement).value = '';
         (document.getElementById('carTransmission') as HTMLInputElement).value = '';
         (document.getElementById('carFuelType') as HTMLInputElement).value = '';
+        (document.getElementById('carEngine') as HTMLInputElement).value = '';
+        (document.getElementById('carHP') as HTMLInputElement).value = '';
+        (document.getElementById('carTorque') as HTMLInputElement).value = '';
+        (document.getElementById('carSafety') as HTMLInputElement).value = '';
+        (document.getElementById('carSeating') as HTMLInputElement).value = '';
         (document.getElementById('carDescription') as HTMLTextAreaElement).value = '';
         (document.getElementById('carStatus') as HTMLSelectElement).value = 'open';
         
@@ -150,9 +155,32 @@ document.addEventListener('DOMContentLoaded', () => {
             editingDealRow.cells[1].textContent = brand || 'N/A';
             editingDealRow.cells[3].textContent = price;
             editingDealRow.cells[4].innerHTML = statusBadge;
+
+            // Update attributes
+            editingDealRow.setAttribute('data-mileage', (document.getElementById('carMileage') as HTMLInputElement).value);
+            editingDealRow.setAttribute('data-fuel', (document.getElementById('carFuelType') as HTMLInputElement).value);
+            editingDealRow.setAttribute('data-engine', (document.getElementById('carEngine') as HTMLInputElement).value);
+            editingDealRow.setAttribute('data-hp', (document.getElementById('carHP') as HTMLInputElement).value);
+            editingDealRow.setAttribute('data-torque', (document.getElementById('carTorque') as HTMLInputElement).value);
+            editingDealRow.setAttribute('data-safety', (document.getElementById('carSafety') as HTMLInputElement).value);
+            editingDealRow.setAttribute('data-seating', (document.getElementById('carSeating') as HTMLInputElement).value);
+            editingDealRow.setAttribute('data-promo-price', (document.getElementById('carPricePromo') as HTMLInputElement).value);
+            editingDealRow.setAttribute('data-model', (document.getElementById('carModelYear') as HTMLInputElement).value);
+            editingDealRow.setAttribute('data-trans', (document.getElementById('carTransmission') as HTMLInputElement).value);
+            editingDealRow.setAttribute('data-desc', (document.getElementById('carDescription') as HTMLTextAreaElement).value);
         } else {
             const rowHTML = `
-                <tr>
+                <tr data-mileage="${(document.getElementById('carMileage') as HTMLInputElement).value}" 
+                    data-fuel="${(document.getElementById('carFuelType') as HTMLInputElement).value}"
+                    data-engine="${(document.getElementById('carEngine') as HTMLInputElement).value}"
+                    data-hp="${(document.getElementById('carHP') as HTMLInputElement).value}"
+                    data-torque="${(document.getElementById('carTorque') as HTMLInputElement).value}"
+                    data-safety="${(document.getElementById('carSafety') as HTMLInputElement).value}"
+                    data-seating="${(document.getElementById('carSeating') as HTMLInputElement).value}"
+                    data-promo-price="${(document.getElementById('carPricePromo') as HTMLInputElement).value}"
+                    data-model="${(document.getElementById('carModelYear') as HTMLInputElement).value}"
+                    data-trans="${(document.getElementById('carTransmission') as HTMLInputElement).value}"
+                    data-desc="${(document.getElementById('carDescription') as HTMLTextAreaElement).value}">
                     <td>${name}</td>
                     <td>${brand || 'N/A'}</td>
                     <td>${date}</td>
@@ -195,6 +223,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (statusText.includes('open')) statusSelect.value = 'open';
             else if (statusText.includes('progress')) statusSelect.value = 'in-progress';
             else if (statusText.includes('closed')) statusSelect.value = 'closed';
+
+            // Fill new fields (using data attributes since they aren't in the table)
+            (document.getElementById('carMileage') as HTMLInputElement).value = row.getAttribute('data-mileage') || '';
+            (document.getElementById('carFuelType') as HTMLInputElement).value = row.getAttribute('data-fuel') || '';
+            (document.getElementById('carEngine') as HTMLInputElement).value = row.getAttribute('data-engine') || '';
+            (document.getElementById('carHP') as HTMLInputElement).value = row.getAttribute('data-hp') || '';
+            (document.getElementById('carTorque') as HTMLInputElement).value = row.getAttribute('data-torque') || '';
+            (document.getElementById('carSafety') as HTMLInputElement).value = row.getAttribute('data-safety') || '';
+            (document.getElementById('carSeating') as HTMLInputElement).value = row.getAttribute('data-seating') || '';
+            (document.getElementById('carPricePromo') as HTMLInputElement).value = row.getAttribute('data-promo-price') || '';
+            (document.getElementById('carModelYear') as HTMLInputElement).value = row.getAttribute('data-model') || '';
+            (document.getElementById('carTransmission') as HTMLInputElement).value = row.getAttribute('data-trans') || '';
+            (document.getElementById('carDescription') as HTMLTextAreaElement).value = row.getAttribute('data-desc') || '';
             
             openModal();
         }

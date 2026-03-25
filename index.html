@@ -219,24 +219,58 @@
                             <i class="fa-solid fa-key" id="favoriteIcon"></i>
                         </div>
                     </div>
+                </div>
+
+                <div class="preview-right">
                     <div class="preview-car-info">
                         <h1 id="carTitle">Title</h1>
                         <span>Posted 1 hr ago</span>
                     </div>
-                </div>
+                    <div class="main-features-grid">
+                        <div class="feature-block">
+                            <i class="fa-solid fa-car"></i>
+                            <span id="featModel">2012 Model</span>
+                        </div>
+                        <div class="feature-block">
+                            <i class="fa-solid fa-gauge"></i>
+                            <span id="featMileage">25,000 KM</span>
+                        </div>
+                        <div class="feature-block">
+                            <i class="fa-solid fa-gears"></i>
+                            <span id="featTrans">Automatic</span>
+                        </div>
+                        <div class="feature-block">
+                            <i class="fa-solid fa-gas-pump"></i>
+                            <span id="featFuel">Diesel</span>
+                        </div>
+                    </div>
 
-                <div class="preview-right">
-                    <h2 class="section-title">Car Description</h2>
+                    <div class="tabs-header">
+                        <div class="tab-item active" data-tab="description">Description <div class="tab-underline"></div></div>
+                        <div class="tab-item" data-tab="otherFeatures">Other Features <div class="tab-underline"></div></div>
+                    </div>
 
-                    <ul class="car-specs-list">
-                        <li id="carName"></li>
-                        <li id="carModel"></li>
-                        <li id="carFuel"></li>
-                        <li id="carPrice"></li>
-                        <li id="carBrand"></li>
-                        <li id="carTransmission"></li>
-                        <li id="carDescription"></li>
-                    </ul>
+                    <div class="tab-content active" id="description-tab">
+                        <ul class="car-specs-list">
+                            <li id="carName"></li>
+                            <li id="carModel"></li>
+                            <li id="carFuel"></li>
+                            <li id="carPrice"></li>
+                            <li id="carBrand"></li>
+                            <li id="carTransmission"></li>
+                            <li id="carDescription"></li>
+                        </ul>
+                    </div>
+
+                    <div class="tab-content" id="other-features-tab">
+                        <ul class="car-specs-list other-features-list">
+                            <li id="featEngine"><strong>Engine:</strong> <span></span></li>
+                            <li id="featHP"><strong>HP:</strong> <span></span></li>
+                            <li id="featTorque"><strong>Torque:</strong> <span></span></li>
+                            <li id="featSafety"><strong>Safety:</strong> <span></span></li>
+                            <li id="featSeating"><strong>Seating:</strong> <span></span></li>
+                        </ul>
+                    </div>
 
                     <div class="dealer-action">
                         <button class="message-dealer-btn">Inquire</button>

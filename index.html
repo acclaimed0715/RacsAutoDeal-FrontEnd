@@ -30,6 +30,10 @@
                     <i class="fa-solid fa-filter"></i>
                     <span>Filters</span>
                 </button>
+                <button class="nav-fav-btn" id="navFavBtn" title="View Favorites">
+                    <i class="fa-regular fa-star"></i>
+                    <span class="fav-count" id="favCount">0</span>
+                </button>
             </div>
             <div></div><!-- right spacer for 3-col grid -->
         </div>
@@ -63,14 +67,6 @@
 
     <section class="inventory-section">
         <!-- Search and Filter moved to Navbar -->
-
-        <!-- Favorites Section -->
-        <div class="inventory-content" id="favoritesSection" style="display: none; border-bottom: 2px solid #222; padding-bottom: 2rem; margin-bottom: 2rem;">
-            <h2 class="category-title"><i class="fa-solid fa-star" style="color: #f39c12;"></i> YOUR FAVORITES</h2>
-            <div class="car-grid" id="favoritesGrid">
-                <!-- Dynamically populated -->
-            </div>
-        </div>
 
         <div class="inventory-content">
             <h2 class="category-title" id="dynamicCategoryTitle">All Vehicles</h2>
@@ -234,9 +230,7 @@
                         <li id="carPrice"></li>
                         <li id="carBrand"></li>
                         <li id="carTransmission"></li>
-                        <li id="carDrivetrain"></li>
-                        <li id="carFeatures"></li>
-                        <li id="carComfort"></li>
+                        <li id="carDescription"></li>
                     </ul>
 
                     <div class="dealer-action">
@@ -317,6 +311,19 @@
             </div>
         </div>
     </aside>
+
+    <!-- Favorites Modal -->
+    <div class="fav-modal" id="favModal">
+        <div class="fav-modal-header">
+            <h3><i class="fa-solid fa-star"></i> Your Favorite Cars</h3>
+            <span class="close-fav-modal" id="closeFavBtn"><i class="fa-solid fa-xmark"></i></span>
+        </div>
+        <div class="fav-modal-body" id="favModalBody">
+            <!-- Dynamically populated Favorites content -->
+            <div class="empty-fav-message">You haven't favorited any cars yet.</div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="favOverlay"></div>
 
     <script type="module" src="main.js"></script>
 </body>

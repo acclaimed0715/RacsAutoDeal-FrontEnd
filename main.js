@@ -9,9 +9,7 @@ const carData = {
         price: 'Starts at P750,000',
         brand: 'Ford',
         transmission: '5-Speed Manual / 6-Speed Automatic (varies by unit)',
-        drivetrain: 'Front-Wheel Drive (FWD)',
-        features: 'AM/FM Radio, CD Player, AUX Input',
-        comfort: 'Air Conditioning, Power Windows, Power Door Locks',
+        description: 'Front-Wheel Drive (FWD). AM/FM Radio, CD Player, AUX Input. Air Conditioning, Power Windows, Power Door Locks.',
         isFavorited: false,
     },
     escape2012_titanium: {
@@ -23,9 +21,7 @@ const carData = {
         price: 'Starts at P800,000',
         brand: 'Ford',
         transmission: '6-Speed Automatic',
-        drivetrain: 'Front-Wheel Drive (FWD) / Optional AWD',
-        features: 'Bluetooth, Premium Audio, Keyless Entry',
-        comfort: 'Dual-zone Climate Control, Leather Seats, Power Liftgate',
+        description: 'Front-Wheel Drive (FWD) / Optional AWD. Bluetooth, Premium Audio, Keyless Entry. Dual-zone Climate Control, Leather Seats, Power Liftgate.',
         isFavorited: false,
     },
     livina2023: {
@@ -37,9 +33,7 @@ const carData = {
         price: 'Starts at P1,100,000',
         brand: 'Nissan',
         transmission: '4-Speed Automatic',
-        drivetrain: 'Front-Wheel Drive (FWD)',
-        features: '7-inch Touchscreen Display, Apple CarPlay, Android Auto',
-        comfort: 'Rear AC Vents, Leather Upholstery, Push Button Start',
+        description: 'Front-Wheel Drive (FWD). 7-inch Touchscreen Display, Apple CarPlay, Android Auto. Rear AC Vents, Leather Upholstery, Push Button Start.',
         isFavorited: false,
     },
     civic_rs: {
@@ -51,9 +45,7 @@ const carData = {
         price: 'Starts at P1,775,000',
         brand: 'Honda',
         transmission: 'CVT',
-        drivetrain: 'Front-Wheel Drive',
-        features: 'Honda SENSING, 9-inch Display Audio, Bose Sound',
-        comfort: 'Dual Zone AC, Leather Seats, Smart Key',
+        description: 'Front-Wheel Drive. Honda SENSING, 9-inch Display Audio, Bose Sound. Dual Zone AC, Leather Seats, Smart Key.',
         isFavorited: false,
     },
     mazda3_sport: {
@@ -65,9 +57,7 @@ const carData = {
         price: 'Starts at P1,500,000',
         brand: 'Mazda',
         transmission: '6-Speed Automatic',
-        drivetrain: 'Front-Wheel Drive',
-        features: '360° View Monitor, Signature KODO Design, HUD',
-        comfort: 'Burgundy Leather, Premium Bose Audio',
+        description: 'Front-Wheel Drive. 360° View Monitor, Signature KODO Design, HUD. Burgundy Leather, Premium Bose Audio.',
         isFavorited: false,
     },
     innova_v: {
@@ -79,9 +69,7 @@ const carData = {
         price: 'Starts at P1,750,000',
         brand: 'Toyota',
         transmission: '6-Speed Automatic',
-        drivetrain: 'Rear-Wheel Drive',
-        features: 'Captain Seats, Ambient Lighting, Touchscreen',
-        comfort: 'Spacious Cabin, Rear AC, Push Start',
+        description: 'Rear-Wheel Drive. Captain Seats, Ambient Lighting, Touchscreen. Spacious Cabin, Rear AC, Push Start.',
         isFavorited: false,
     },
     mustang_gt: {
@@ -93,9 +81,7 @@ const carData = {
         price: 'Starts at P3,500,000',
         brand: 'Ford',
         transmission: '10-Speed Automatic',
-        drivetrain: 'Rear-Wheel Drive (RWD)',
-        features: 'Track Apps, MagneRide Damping, SYNC 4',
-        comfort: 'Recaro Leather Seats, Dual-Zone AC',
+        description: 'Rear-Wheel Drive (RWD). Track Apps, MagneRide Damping, SYNC 4. Recaro Leather Seats, Dual-Zone AC.',
         isFavorited: false,
     },
 };
@@ -109,6 +95,57 @@ function getBadgeHtml(carId) {
         return `<span class="car-badge badge-new"><i class="fa-solid fa-arrow-trend-up"></i> New</span>`;
     return '';
 }
+// ─── Global State & Functions ──────────────────────────────────────────────────
+window.currentCarId = null;
+window.openPreview = (carId) => {
+    window.currentCarId = carId;
+    const entry = carData[carId];
+    if (!entry)
+        return;
+    const previewModal = document.getElementById('previewModal');
+    const previewOverlay = document.getElementById('previewOverlay');
+    if (!previewModal || !previewOverlay)
+        return;
+    const eleImg = document.getElementById('carImg');
+    const eleTitle = document.getElementById('carTitle');
+    const eleName = document.getElementById('carName');
+    const eleModel = document.getElementById('carModel');
+    const eleFuel = document.getElementById('carFuel');
+    const elePrice = document.getElementById('carPrice');
+    const eleBrand = document.getElementById('carBrand');
+    const eleTrans = document.getElementById('carTransmission');
+    const eleDesc = document.getElementById('carDescription');
+    if (eleImg)
+        eleImg.src = entry.image;
+    if (eleTitle)
+        eleTitle.textContent = entry.title;
+    if (eleName)
+        eleName.innerHTML = `<strong>Car Name:</strong> ${entry.name}`;
+    if (eleModel)
+        eleModel.innerHTML = `<strong>Car Model:</strong> ${entry.model}`;
+    if (eleFuel)
+        eleFuel.innerHTML = `<strong>Fuel Type:</strong> ${entry.fuel}`;
+    if (elePrice)
+        elePrice.innerHTML = `<strong>Price:</strong> ${entry.price}`;
+    if (eleBrand)
+        eleBrand.innerHTML = `<strong>Brand:</strong> ${entry.brand}`;
+    if (eleTrans)
+        eleTrans.innerHTML = `<strong>Transmission:</strong> ${entry.transmission}`;
+    if (eleDesc) {
+        eleDesc.innerHTML = `<strong>Description:</strong> ${entry.description}`;
+    }
+    // Sync favorite button state
+    const favoriteBtn = document.getElementById('favoriteBtn');
+    const favoriteIcon = document.getElementById('favoriteIcon');
+    if (favoriteBtn && favoriteIcon) {
+        favoriteBtn.classList.toggle('favorited', entry.isFavorited);
+        favoriteIcon.classList.toggle('fa-solid', entry.isFavorited);
+        favoriteIcon.classList.toggle('fa-regular', !entry.isFavorited);
+    }
+    previewModal.classList.add('active');
+    previewOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+};
 // ─── DOM Ready ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     var _a;
@@ -141,109 +178,92 @@ document.addEventListener('DOMContentLoaded', () => {
                 : '<i class="fa-regular fa-images"></i> <span>Show all vehicles</span>';
         });
     }
-    // ── Favorites UI ──────────────────────────────────────────────────────────
-    const favoritesSection = document.getElementById('favoritesSection');
-    const favoritesGrid = document.getElementById('favoritesGrid');
+    // ── Favorites Logic ───────────────────────────────────────────
+    const navFavBtn = document.getElementById('navFavBtn');
+    const favCount = document.getElementById('favCount');
+    const favModal = document.getElementById('favModal');
+    const favOverlay = document.getElementById('favOverlay');
+    const closeFavBtn = document.getElementById('closeFavBtn');
+    const favModalBody = document.getElementById('favModalBody');
     function updateFavoritesUI() {
-        if (!favoritesGrid || !favoritesSection)
+        if (!favModalBody || !favCount)
             return;
-        favoritesGrid.innerHTML = '';
-        let hasFavorites = false;
+        favModalBody.innerHTML = '';
+        let count = 0;
         for (const carId in carData) {
             const entry = carData[carId];
-            if (!entry.isFavorited)
+            if (!entry || !entry.isFavorited)
                 continue;
-            hasFavorites = true;
-            const card = document.createElement('div');
-            card.className = 'car-card';
-            card.innerHTML = `
-                <div class="car-image-wrapper">
-                    ${getBadgeHtml(carId)}
-                    <img src="${entry.image}" alt="${entry.title}" class="car-image">
+            count++;
+            const item = document.createElement('div');
+            item.className = 'fav-item';
+            // Safe price extraction
+            const priceParts = entry.price.split(' ');
+            const displayPrice = priceParts.length > 2 ? priceParts[2] : entry.price;
+            item.innerHTML = `
+                <div class="fav-item-img">
+                    <img src="${entry.image}" alt="${entry.title}">
                 </div>
-                <h3 class="car-title">${entry.title}</h3>
-                <button class="preview-btn" onclick="openPreview('${carId}')">
-                    <i class="fa-regular fa-eye"></i> Preview
-                </button>
+                <div class="fav-item-info">
+                    <span class="fav-item-title">${entry.title}</span>
+                    <span class="fav-item-price">${displayPrice}</span>
+                </div>
+                <i class="fa-solid fa-trash remove-fav-btn" data-id="${carId}" title="Remove from Favorites"></i>
             `;
-            favoritesGrid.appendChild(card);
+            item.addEventListener('click', (e) => {
+                const target = e.target;
+                if (!target.classList.contains('remove-fav-btn')) {
+                    closeFavorites();
+                    window.openPreview(carId);
+                }
+            });
+            favModalBody.appendChild(item);
         }
-        favoritesSection.style.display = hasFavorites ? 'block' : 'none';
+        favCount.textContent = count.toString();
+        favCount.classList.toggle('active', count > 0);
+        if (count === 0) {
+            favModalBody.innerHTML = '<div class="empty-fav-message">You haven\'t favorited any cars yet.</div>';
+        }
+        const removeBtns = favModalBody.querySelectorAll('.remove-fav-btn');
+        removeBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const carId = btn.getAttribute('data-id');
+                if (carData[carId]) {
+                    carData[carId].isFavorited = false;
+                    updateFavoritesUI();
+                    if (window.currentCarId === carId) {
+                        const favoriteBtn = document.getElementById('favoriteBtn');
+                        const favoriteIcon = document.getElementById('favoriteIcon');
+                        if (favoriteBtn && favoriteIcon) {
+                            favoriteBtn.classList.remove('favorited');
+                            favoriteIcon.classList.replace('fa-solid', 'fa-regular');
+                        }
+                    }
+                }
+            });
+        });
     }
+    const openFavorites = () => {
+        favModal === null || favModal === void 0 ? void 0 : favModal.classList.add('active');
+        favOverlay === null || favOverlay === void 0 ? void 0 : favOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+    const closeFavorites = () => {
+        favModal === null || favModal === void 0 ? void 0 : favModal.classList.remove('active');
+        favOverlay === null || favOverlay === void 0 ? void 0 : favOverlay.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    };
+    navFavBtn === null || navFavBtn === void 0 ? void 0 : navFavBtn.addEventListener('click', openFavorites);
+    closeFavBtn === null || closeFavBtn === void 0 ? void 0 : closeFavBtn.addEventListener('click', closeFavorites);
+    favOverlay === null || favOverlay === void 0 ? void 0 : favOverlay.addEventListener('click', closeFavorites);
     updateFavoritesUI();
-    // ── Preview Modal ─────────────────────────────────────────────────────────
+    // ── Preview Modal Actions ─────────────────────────────────────────
     const previewModal = document.getElementById('previewModal');
     const previewOverlay = document.getElementById('previewOverlay');
     const closePreviewBtn = document.getElementById('closePreviewBtn');
     const favoriteBtn = document.getElementById('favoriteBtn');
     const favoriteIcon = document.getElementById('favoriteIcon');
-    let currentCarId = null;
-    window.openPreview = (carId) => {
-        currentCarId = carId;
-        const entry = carData[carId];
-        if (!entry || !previewModal || !previewOverlay)
-            return;
-        const eleImg = document.getElementById('carImg');
-        const eleTitle = document.getElementById('carTitle');
-        const eleName = document.getElementById('carName');
-        const eleModel = document.getElementById('carModel');
-        const eleFuel = document.getElementById('carFuel');
-        const elePrice = document.getElementById('carPrice');
-        const eleBrand = document.getElementById('carBrand');
-        const eleTrans = document.getElementById('carTransmission');
-        const eleDrive = document.getElementById('carDrivetrain');
-        const eleFeat = document.getElementById('carFeatures');
-        const eleComf = document.getElementById('carComfort');
-        if (eleImg)
-            eleImg.src = entry.image;
-        if (eleTitle)
-            eleTitle.textContent = entry.title;
-        if (eleName)
-            eleName.innerHTML = `<strong>Car Name:</strong> ${entry.name}`;
-        if (eleModel)
-            eleModel.innerHTML = `<strong>Car Model:</strong> ${entry.model}`;
-        if (eleFuel)
-            eleFuel.innerHTML = `<strong>Fuel Type:</strong> ${entry.fuel}`;
-        if (elePrice)
-            elePrice.innerHTML = `<strong>Price:</strong> ${entry.price}`;
-        if (eleBrand)
-            eleBrand.innerHTML = `<strong>Brand:</strong> ${entry.brand}`;
-        if (eleTrans)
-            eleTrans.innerHTML = `<strong>Transmission:</strong> ${entry.transmission}`;
-        if (eleDrive) {
-            if (entry.drivetrain) {
-                eleDrive.innerHTML = `<strong>Drivetrain:</strong> ${entry.drivetrain}`;
-                eleDrive.style.display = 'list-item';
-            }
-            else
-                eleDrive.style.display = 'none';
-        }
-        if (eleFeat) {
-            if (entry.features) {
-                eleFeat.innerHTML = `<strong>Features:</strong> ${entry.features}`;
-                eleFeat.style.display = 'list-item';
-            }
-            else
-                eleFeat.style.display = 'none';
-        }
-        if (eleComf) {
-            if (entry.comfort) {
-                eleComf.innerHTML = `<strong>Comfort:</strong> ${entry.comfort}`;
-                eleComf.style.display = 'list-item';
-            }
-            else
-                eleComf.style.display = 'none';
-        }
-        // Sync favorite button state
-        if (favoriteBtn && favoriteIcon) {
-            favoriteBtn.classList.toggle('favorited', entry.isFavorited);
-            favoriteIcon.classList.toggle('fa-solid', entry.isFavorited);
-            favoriteIcon.classList.toggle('fa-regular', !entry.isFavorited);
-        }
-        previewModal.classList.add('active');
-        previewOverlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    };
     function closePreviewModal() {
         previewModal === null || previewModal === void 0 ? void 0 : previewModal.classList.remove('active');
         previewOverlay === null || previewOverlay === void 0 ? void 0 : previewOverlay.classList.remove('active');
@@ -254,9 +274,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Favorite button toggle ────────────────────────────────────────────────
     if (favoriteBtn && favoriteIcon) {
         favoriteBtn.addEventListener('click', () => {
-            if (!currentCarId)
+            const carId = window.currentCarId;
+            if (!carId)
                 return;
-            const entry = carData[currentCarId];
+            const entry = carData[carId];
             entry.isFavorited = !entry.isFavorited;
             favoriteBtn.classList.toggle('favorited', entry.isFavorited);
             favoriteIcon.classList.toggle('fa-solid', entry.isFavorited);

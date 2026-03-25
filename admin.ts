@@ -1,19 +1,19 @@
 // admin.ts — Admin page logic
 export {};
 
+// ── Session Protection ──────────────────────────────────────────────────────
+if (localStorage.getItem('adminLoggedIn') !== 'true') {
+    window.location.href = 'login.html';
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type AdminView = 'dashboard' | 'users';
+type AdminView = 'dashboard' | 'users' | 'inventory';
 
 // ─── DOM Ready ────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ── Session Protection ──────────────────────────────────────────────────────
-    if (localStorage.getItem('adminLoggedIn') !== 'true') {
-        window.location.href = 'login.html';
-    }
 
     // ── Logout Functionality ──────────────────────────────────────────────────
     const logoutLink = document.querySelector('.logout-link a');
@@ -24,18 +24,158 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    // ── Add Vehicle Modal ──────────────────────────────────────────────────────
+    // ── Add Deal Modal Logic ──────────────────────────────────────────────────
     const addVehicleBtn = document.getElementById('addVehicleBtn');
     const modal         = document.getElementById('addModal');
     const overlay       = document.getElementById('addModalOverlay');
     const closeModalBtn = document.getElementById('closeModalBtn');
+    const addCarBtnTop  = document.getElementById('addCarBtnTop');
+    
+    // New fields
+    const carImageInput = document.getElementById('carImageInput') as HTMLInputElement;
+    const carImageUpload = document.getElementById('carImageUpload');
+    const addImgBtn     = document.querySelector('.add-img-btn') as HTMLElement;
+    const confirmAddVehicle = document.getElementById('confirmAddVehicle');
+    const inventoryTableBody = document.getElementById('inventoryTableBody');
+
+    let uploadedDealImageData: string | null = null;
+    let editingDealRow: HTMLTableRowElement | null = null;
+    const dealModalTitle = document.querySelector('#addModal h3');
 
     const openModal  = (): void => { modal?.classList.add('active');    overlay?.classList.add('active');    };
     const closeModal = (): void => { modal?.classList.remove('active'); overlay?.classList.remove('active'); };
 
-    addVehicleBtn?.addEventListener('click', openModal);
+    const resetDealForm = (): void => {
+        (document.getElementById('carName') as HTMLInputElement).value = '';
+        (document.getElementById('carPrice') as HTMLInputElement).value = '';
+        (document.getElementById('carPricePromo') as HTMLInputElement).value = '';
+        (document.getElementById('carModelYear') as HTMLInputElement).value = '';
+        (document.getElementById('carMileage') as HTMLInputElement).value = '';
+        (document.getElementById('carBrand') as HTMLInputElement).value = '';
+        (document.getElementById('carTransmission') as HTMLInputElement).value = '';
+        (document.getElementById('carFuelType') as HTMLInputElement).value = '';
+        (document.getElementById('carDescription') as HTMLTextAreaElement).value = '';
+        (document.getElementById('carStatus') as HTMLSelectElement).value = 'open';
+        
+        if (addImgBtn) {
+            addImgBtn.style.backgroundImage = 'none';
+            addImgBtn.textContent = 'ADD';
+        }
+        uploadedDealImageData = null;
+        editingDealRow = null;
+        if (dealModalTitle) dealModalTitle.textContent = 'Add Deal';
+        if (confirmAddVehicle) confirmAddVehicle.textContent = 'Add Deal';
+    };
+
+    addVehicleBtn?.addEventListener('click', () => { resetDealForm(); openModal(); });
+    addCarBtnTop?.addEventListener('click',  () => { resetDealForm(); openModal(); });
     closeModalBtn?.addEventListener('click', closeModal);
     overlay?.addEventListener('click', closeModal);
+
+    // Image Upload for Deal
+    addImgBtn?.addEventListener('click', () => carImageInput?.click());
+    carImageInput?.addEventListener('change', (e: Event) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const dataUrl = event.target?.result as string;
+                uploadedDealImageData = dataUrl;
+                if (addImgBtn) {
+                    addImgBtn.style.backgroundImage = `url(${dataUrl})`;
+                    addImgBtn.style.backgroundSize = 'cover';
+                    addImgBtn.style.backgroundPosition = 'center';
+                    addImgBtn.textContent = '';
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    confirmAddVehicle?.addEventListener('click', () => {
+        const nameInput = document.getElementById('carName') as HTMLInputElement;
+        const priceInput = document.getElementById('carPrice') as HTMLInputElement;
+        const brandInput = document.getElementById('carBrand') as HTMLInputElement;
+        const statusSelect = document.getElementById('carStatus') as HTMLSelectElement;
+        
+        const name = nameInput.value;
+        const price = priceInput.value;
+        const brand = brandInput.value;
+        const status = statusSelect.value;
+        const date = editingDealRow 
+            ? editingDealRow.cells[2].textContent 
+            : new Date().toLocaleString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+
+        if (!name || !price) {
+            alert('Please fill at least the car name and price.');
+            return;
+        }
+
+        const statusBadge = status === 'open' ? '<span class="badge in-progress">OPEN</span>' : 
+                            status === 'in-progress' ? '<span class="badge in-progress">IN PROGRESS</span>' : 
+                            '<span class="badge closed">CLOSED</span>';
+
+        if (editingDealRow) {
+            editingDealRow.cells[0].textContent = name;
+            editingDealRow.cells[1].textContent = brand || 'N/A';
+            editingDealRow.cells[3].textContent = price;
+            editingDealRow.cells[4].innerHTML = statusBadge;
+        } else {
+            const rowHTML = `
+                <tr>
+                    <td>${name}</td>
+                    <td>${brand || 'N/A'}</td>
+                    <td>${date}</td>
+                    <td>${price}</td>
+                    <td>${statusBadge}</td>
+                    <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                </tr>
+            `;
+
+            if (inventoryTableBody) {
+                inventoryTableBody.insertAdjacentHTML('afterbegin', rowHTML);
+            }
+        }
+
+        closeModal();
+        resetDealForm();
+    });
+
+    // Handle clicks on the Inventory Table (Edit/Delete)
+    inventoryTableBody?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const editBtn = target.closest('.edit-deal-btn');
+        if (editBtn) {
+            const row = editBtn.closest('tr') as HTMLTableRowElement;
+            editingDealRow = row;
+            
+            if (dealModalTitle) dealModalTitle.textContent = 'Edit Deal';
+            if (confirmAddVehicle) confirmAddVehicle.textContent = 'Update Deal';
+            
+            // Fill form
+            (document.getElementById('carName') as HTMLInputElement).value = row.cells[0].textContent || '';
+            (document.getElementById('carBrand') as HTMLInputElement).value = row.cells[1].textContent === 'N/A' ? '' : (row.cells[1].textContent || '');
+            (document.getElementById('carPrice') as HTMLInputElement).value = row.cells[3].textContent || '';
+            
+            const statusText = row.cells[4].textContent?.toLowerCase() || '';
+            const statusSelect = document.getElementById('carStatus') as HTMLSelectElement;
+            if (statusText.includes('open')) statusSelect.value = 'open';
+            else if (statusText.includes('progress')) statusSelect.value = 'in-progress';
+            else if (statusText.includes('closed')) statusSelect.value = 'closed';
+            
+            openModal();
+        }
+    });
+
+    // Handle Edit buttons on the Dashboard View
+    document.querySelectorAll('.dashboard-content#dashboardView .action-btn.edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+             alert('This takes you to the Manage Inventory section to edit.');
+             // Simple redirect/view switch
+             const menuInventory = document.getElementById('menuInventory');
+             if (menuInventory) menuInventory.click();
+        });
+    });
 
     // ── Add User Modal ─────────────────────────────────────────────────────────
     const addStaffBtn      = document.getElementById('addStaffBtn');
@@ -140,10 +280,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <td>${role}</td>
             <td>${dateStr}</td>
-            <td><span class="status available">Active</span></td>
             <td>
                 <button class="action-btn edit" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                <button class="action-btn delete" title="Suspend"><i class="fa-solid fa-user-slash"></i></button>
+                <button class="action-btn delete" title="Remove"><i class="fa-solid fa-trash"></i></button>
             </td>
         `;
 
@@ -187,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (deleteBtn) {
-            if (confirm('Are you sure you want to suspend/delete this user?')) {
+            if (confirm('Are you sure you want to remove this user?')) {
                 deleteBtn.closest('tr')?.remove();
             }
         }
@@ -199,8 +338,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── View Switching (Dashboard / Users) ────────────────────────────────────
     const menuDashboard  = document.getElementById('menuDashboard');
     const menuUsers      = document.getElementById('menuUsers');
+    const menuInventory  = document.getElementById('menuInventory');
     const dashboardView  = document.getElementById('dashboardView') as HTMLElement | null;
     const usersView      = document.getElementById('usersView')     as HTMLElement | null;
+    const inventoryView  = document.getElementById('inventoryView') as HTMLElement | null;
 
     function switchView(target: AdminView): void {
         // Clear active state from all sidebar items
@@ -209,6 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide all views
         if (dashboardView) dashboardView.style.display = 'none';
         if (usersView)     usersView.style.display     = 'none';
+        if (inventoryView) inventoryView.style.display = 'none';
 
         if (target === 'dashboard') {
             menuDashboard?.classList.add('active');
@@ -216,9 +358,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (target === 'users') {
             menuUsers?.classList.add('active');
             if (usersView) usersView.style.display = 'block';
+        } else if (target === 'inventory') {
+            menuInventory?.classList.add('active');
+            if (inventoryView) inventoryView.style.display = 'block';
         }
     }
 
     menuDashboard?.addEventListener('click', (e: Event) => { e.preventDefault(); switchView('dashboard'); });
     menuUsers?.addEventListener('click',     (e: Event) => { e.preventDefault(); switchView('users');     });
+    menuInventory?.addEventListener('click', (e: Event) => { e.preventDefault(); switchView('inventory'); });
 });

@@ -1,9 +1,9 @@
+// ── Session Protection ──────────────────────────────────────────────────────
+if (localStorage.getItem('adminLoggedIn') !== 'true') {
+    window.location.href = 'login.html';
+}
 // ─── DOM Ready ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    // ── Session Protection ──────────────────────────────────────────────────────
-    if (localStorage.getItem('adminLoggedIn') !== 'true') {
-        window.location.href = 'login.html';
-    }
     // ── Logout Functionality ──────────────────────────────────────────────────
     const logoutLink = document.querySelector('.logout-link a');
     logoutLink === null || logoutLink === void 0 ? void 0 : logoutLink.addEventListener('click', (e) => {
@@ -11,16 +11,150 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('adminLoggedIn');
         // Let the default link behavior (navigating to index.html) proceed
     });
-    // ── Add Vehicle Modal ──────────────────────────────────────────────────────
+    // ── Add Deal Modal Logic ──────────────────────────────────────────────────
     const addVehicleBtn = document.getElementById('addVehicleBtn');
     const modal = document.getElementById('addModal');
     const overlay = document.getElementById('addModalOverlay');
     const closeModalBtn = document.getElementById('closeModalBtn');
+    const addCarBtnTop = document.getElementById('addCarBtnTop');
+    // New fields
+    const carImageInput = document.getElementById('carImageInput');
+    const carImageUpload = document.getElementById('carImageUpload');
+    const addImgBtn = document.querySelector('.add-img-btn');
+    const confirmAddVehicle = document.getElementById('confirmAddVehicle');
+    const inventoryTableBody = document.getElementById('inventoryTableBody');
+    let uploadedDealImageData = null;
+    let editingDealRow = null;
+    const dealModalTitle = document.querySelector('#addModal h3');
     const openModal = () => { modal === null || modal === void 0 ? void 0 : modal.classList.add('active'); overlay === null || overlay === void 0 ? void 0 : overlay.classList.add('active'); };
     const closeModal = () => { modal === null || modal === void 0 ? void 0 : modal.classList.remove('active'); overlay === null || overlay === void 0 ? void 0 : overlay.classList.remove('active'); };
-    addVehicleBtn === null || addVehicleBtn === void 0 ? void 0 : addVehicleBtn.addEventListener('click', openModal);
+    const resetDealForm = () => {
+        document.getElementById('carName').value = '';
+        document.getElementById('carPrice').value = '';
+        document.getElementById('carPricePromo').value = '';
+        document.getElementById('carModelYear').value = '';
+        document.getElementById('carMileage').value = '';
+        document.getElementById('carBrand').value = '';
+        document.getElementById('carTransmission').value = '';
+        document.getElementById('carFuelType').value = '';
+        document.getElementById('carDescription').value = '';
+        document.getElementById('carStatus').value = 'open';
+        if (addImgBtn) {
+            addImgBtn.style.backgroundImage = 'none';
+            addImgBtn.textContent = 'ADD';
+        }
+        uploadedDealImageData = null;
+        editingDealRow = null;
+        if (dealModalTitle)
+            dealModalTitle.textContent = 'Add Deal';
+        if (confirmAddVehicle)
+            confirmAddVehicle.textContent = 'Add Deal';
+    };
+    addVehicleBtn === null || addVehicleBtn === void 0 ? void 0 : addVehicleBtn.addEventListener('click', () => { resetDealForm(); openModal(); });
+    addCarBtnTop === null || addCarBtnTop === void 0 ? void 0 : addCarBtnTop.addEventListener('click', () => { resetDealForm(); openModal(); });
     closeModalBtn === null || closeModalBtn === void 0 ? void 0 : closeModalBtn.addEventListener('click', closeModal);
     overlay === null || overlay === void 0 ? void 0 : overlay.addEventListener('click', closeModal);
+    // Image Upload for Deal
+    addImgBtn === null || addImgBtn === void 0 ? void 0 : addImgBtn.addEventListener('click', () => carImageInput === null || carImageInput === void 0 ? void 0 : carImageInput.click());
+    carImageInput === null || carImageInput === void 0 ? void 0 : carImageInput.addEventListener('change', (e) => {
+        var _a;
+        const file = (_a = e.target.files) === null || _a === void 0 ? void 0 : _a[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                var _a;
+                const dataUrl = (_a = event.target) === null || _a === void 0 ? void 0 : _a.result;
+                uploadedDealImageData = dataUrl;
+                if (addImgBtn) {
+                    addImgBtn.style.backgroundImage = `url(${dataUrl})`;
+                    addImgBtn.style.backgroundSize = 'cover';
+                    addImgBtn.style.backgroundPosition = 'center';
+                    addImgBtn.textContent = '';
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    confirmAddVehicle === null || confirmAddVehicle === void 0 ? void 0 : confirmAddVehicle.addEventListener('click', () => {
+        const nameInput = document.getElementById('carName');
+        const priceInput = document.getElementById('carPrice');
+        const brandInput = document.getElementById('carBrand');
+        const statusSelect = document.getElementById('carStatus');
+        const name = nameInput.value;
+        const price = priceInput.value;
+        const brand = brandInput.value;
+        const status = statusSelect.value;
+        const date = editingDealRow
+            ? editingDealRow.cells[2].textContent
+            : new Date().toLocaleString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+        if (!name || !price) {
+            alert('Please fill at least the car name and price.');
+            return;
+        }
+        const statusBadge = status === 'open' ? '<span class="badge in-progress">OPEN</span>' :
+            status === 'in-progress' ? '<span class="badge in-progress">IN PROGRESS</span>' :
+                '<span class="badge closed">CLOSED</span>';
+        if (editingDealRow) {
+            editingDealRow.cells[0].textContent = name;
+            editingDealRow.cells[1].textContent = brand || 'N/A';
+            editingDealRow.cells[3].textContent = price;
+            editingDealRow.cells[4].innerHTML = statusBadge;
+        }
+        else {
+            const rowHTML = `
+                <tr>
+                    <td>${name}</td>
+                    <td>${brand || 'N/A'}</td>
+                    <td>${date}</td>
+                    <td>${price}</td>
+                    <td>${statusBadge}</td>
+                    <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                </tr>
+            `;
+            if (inventoryTableBody) {
+                inventoryTableBody.insertAdjacentHTML('afterbegin', rowHTML);
+            }
+        }
+        closeModal();
+        resetDealForm();
+    });
+    // Handle clicks on the Inventory Table (Edit/Delete)
+    inventoryTableBody === null || inventoryTableBody === void 0 ? void 0 : inventoryTableBody.addEventListener('click', (e) => {
+        var _a;
+        const target = e.target;
+        const editBtn = target.closest('.edit-deal-btn');
+        if (editBtn) {
+            const row = editBtn.closest('tr');
+            editingDealRow = row;
+            if (dealModalTitle)
+                dealModalTitle.textContent = 'Edit Deal';
+            if (confirmAddVehicle)
+                confirmAddVehicle.textContent = 'Update Deal';
+            // Fill form
+            document.getElementById('carName').value = row.cells[0].textContent || '';
+            document.getElementById('carBrand').value = row.cells[1].textContent === 'N/A' ? '' : (row.cells[1].textContent || '');
+            document.getElementById('carPrice').value = row.cells[3].textContent || '';
+            const statusText = ((_a = row.cells[4].textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
+            const statusSelect = document.getElementById('carStatus');
+            if (statusText.includes('open'))
+                statusSelect.value = 'open';
+            else if (statusText.includes('progress'))
+                statusSelect.value = 'in-progress';
+            else if (statusText.includes('closed'))
+                statusSelect.value = 'closed';
+            openModal();
+        }
+    });
+    // Handle Edit buttons on the Dashboard View
+    document.querySelectorAll('.dashboard-content#dashboardView .action-btn.edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+            alert('This takes you to the Manage Inventory section to edit.');
+            // Simple redirect/view switch
+            const menuInventory = document.getElementById('menuInventory');
+            if (menuInventory)
+                menuInventory.click();
+        });
+    });
     // ── Add User Modal ─────────────────────────────────────────────────────────
     const addStaffBtn = document.getElementById('addStaffBtn');
     const userModal = document.getElementById('userModal');
@@ -114,10 +248,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <td>${role}</td>
             <td>${dateStr}</td>
-            <td><span class="status available">Active</span></td>
             <td>
                 <button class="action-btn edit" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                <button class="action-btn delete" title="Suspend"><i class="fa-solid fa-user-slash"></i></button>
+                <button class="action-btn delete" title="Remove"><i class="fa-solid fa-trash"></i></button>
             </td>
         `;
         if (editingRow) {
@@ -157,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
             openUserModal();
         }
         if (deleteBtn) {
-            if (confirm('Are you sure you want to suspend/delete this user?')) {
+            if (confirm('Are you sure you want to remove this user?')) {
                 (_b = deleteBtn.closest('tr')) === null || _b === void 0 ? void 0 : _b.remove();
             }
         }
@@ -165,8 +298,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── View Switching (Dashboard / Users) ────────────────────────────────────
     const menuDashboard = document.getElementById('menuDashboard');
     const menuUsers = document.getElementById('menuUsers');
+    const menuInventory = document.getElementById('menuInventory');
     const dashboardView = document.getElementById('dashboardView');
     const usersView = document.getElementById('usersView');
+    const inventoryView = document.getElementById('inventoryView');
     function switchView(target) {
         // Clear active state from all sidebar items
         document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
@@ -175,6 +310,8 @@ document.addEventListener('DOMContentLoaded', () => {
             dashboardView.style.display = 'none';
         if (usersView)
             usersView.style.display = 'none';
+        if (inventoryView)
+            inventoryView.style.display = 'none';
         if (target === 'dashboard') {
             menuDashboard === null || menuDashboard === void 0 ? void 0 : menuDashboard.classList.add('active');
             if (dashboardView)
@@ -185,8 +322,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (usersView)
                 usersView.style.display = 'block';
         }
+        else if (target === 'inventory') {
+            menuInventory === null || menuInventory === void 0 ? void 0 : menuInventory.classList.add('active');
+            if (inventoryView)
+                inventoryView.style.display = 'block';
+        }
     }
     menuDashboard === null || menuDashboard === void 0 ? void 0 : menuDashboard.addEventListener('click', (e) => { e.preventDefault(); switchView('dashboard'); });
     menuUsers === null || menuUsers === void 0 ? void 0 : menuUsers.addEventListener('click', (e) => { e.preventDefault(); switchView('users'); });
+    menuInventory === null || menuInventory === void 0 ? void 0 : menuInventory.addEventListener('click', (e) => { e.preventDefault(); switchView('inventory'); });
 });
 export {};

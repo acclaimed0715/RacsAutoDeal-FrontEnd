@@ -6,7 +6,7 @@
     width: 100vw;
     height: 100vh;
     background: rgba(0, 0, 0, 0.75);
-    z-index: 1001;
+    z-index: 2500;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease;
@@ -23,7 +23,7 @@
     left: 50%;
     transform: translate(-50%, -50%) scale(0.95);
     background-color: #222;
-    z-index: 1002;
+    z-index: 2600;
     border-radius: 12px;
     max-width: 1200px;
     width: 90%;

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,14 @@
     <link rel="stylesheet" href="admin.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // Immediate session check before rendering body
+        if (localStorage.getItem('adminLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
 </head>
+
 <body>
     <div class="admin-layout">
         <!-- Sidebar -->
@@ -16,12 +24,13 @@
                 <img src="assets/logo.png" alt="Logo" class="admin-logo">
             </div>
             <ul class="sidebar-menu">
-                <li class="active" id="menuDashboard"><a href="#"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                <li class="active" id="menuDashboard"><a href="#"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                </li>
                 <li id="menuInventory"><a href="#"><i class="fa-solid fa-car"></i> Manage Inventory</a></li>
                 <li id="menuUsers"><a href="#"><i class="fa-solid fa-users"></i> Manage Users</a></li>
-                <li id="menuInquiries"><a href="#"><i class="fa-solid fa-envelope"></i> Inquiries</a></li>
                 <li id="menuSettings"><a href="#"><i class="fa-solid fa-gear"></i> Settings</a></li>
-                <li class="logout-link"><a href="index.html"><i class="fa-solid fa-arrow-right-from-bracket"></i> Back to Site</a></li>
+                <li class="logout-link"><a href="index.html"><i class="fa-solid fa-arrow-right-from-bracket"></i> Back
+                        to Site</a></li>
             </ul>
         </aside>
 
@@ -49,21 +58,24 @@
 
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(39, 174, 96, 0.2); color: #27ae60;"><i class="fa-solid fa-car"></i></div>
+                        <div class="stat-icon" style="background: rgba(39, 174, 96, 0.2); color: #27ae60;"><i
+                                class="fa-solid fa-car"></i></div>
                         <div class="stat-info">
                             <h3>Total Vehicles</h3>
-                            <p>24</p>
+                            <p>7</p>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(243, 156, 18, 0.2); color: #f39c12;"><i class="fa-solid fa-eye"></i></div>
+                        <div class="stat-icon" style="background: rgba(243, 156, 18, 0.2); color: #f39c12;"><i
+                                class="fa-solid fa-eye"></i></div>
                         <div class="stat-info">
                             <h3>Page Views</h3>
                             <p>8,204</p>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(139, 41, 29, 0.2); color: #8B291D;"><i class="fa-solid fa-envelope"></i></div>
+                        <div class="stat-icon" style="background: rgba(139, 41, 29, 0.2); color: #8B291D;"><i
+                                class="fa-solid fa-envelope"></i></div>
                         <div class="stat-info">
                             <h3>Total Leads</h3>
                             <p>156</p>
@@ -91,15 +103,17 @@
                                 <td>
                                     <div class="table-vehicle">
                                         <img src="assets/sedan_black.png" alt="Car">
-                                        <span>Honda Civic RS 2024</span>
+                                        <span>Ford Mustang GT 2024</span>
                                     </div>
                                 </td>
-                                <td>Sedan</td>
-                                <td>P1,775,000</td>
+                                <td>Ford</td>
+                                <td>P3,500,000</td>
                                 <td><span class="status available">Available</span></td>
                                 <td>
-                                    <button class="action-btn edit" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="action-btn delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                    <button class="action-btn edit" title="Edit"><i
+                                            class="fa-solid fa-pen"></i></button>
+                                    <button class="action-btn delete" title="Delete"><i
+                                            class="fa-solid fa-trash"></i></button>
                                 </td>
                             </tr>
                             <tr>
@@ -109,31 +123,131 @@
                                         <span>Toyota Innova V 2022</span>
                                     </div>
                                 </td>
-                                <td>SUV</td>
+                                <td>Toyota</td>
                                 <td>P1,750,000</td>
                                 <td><span class="status sold">Sold</span></td>
                                 <td>
-                                    <button class="action-btn edit" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="action-btn delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                    <button class="action-btn edit" title="Edit"><i
+                                            class="fa-solid fa-pen"></i></button>
+                                    <button class="action-btn delete" title="Delete"><i
+                                            class="fa-solid fa-trash"></i></button>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
                                     <div class="table-vehicle">
-                                        <img src="assets/suv_white.png" alt="Car">
-                                        <span>Nissan Livina VL 2023</span>
+                                        <img src="assets/sedan_black.png" alt="Car">
+                                        <span>Honda Civic RS 2024</span>
                                     </div>
                                 </td>
-                                <td>SUV</td>
-                                <td>P1,100,000</td>
+                                <td>Honda</td>
+                                <td>P1,775,000</td>
                                 <td><span class="status available">Available</span></td>
                                 <td>
-                                    <button class="action-btn edit" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="action-btn delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                    <button class="action-btn edit" title="Edit"><i
+                                            class="fa-solid fa-pen"></i></button>
+                                    <button class="action-btn delete" title="Delete"><i
+                                            class="fa-solid fa-trash"></i></button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <div class="dashboard-content" id="inventoryView" style="display: none;">
+                <div class="page-header">
+                    <div class="header-left">
+                        <h1>Car Inventory</h1>
+                        <p class="stats-text">Total: 7 deals</p>
+                    </div>
+                    <div class="header-right">
+                        <button class="add-car-btn" id="addCarBtnTop"><i class="fa-solid fa-plus"></i> Add car</button>
+                        <div class="filter-actions">
+                            <div class="sort-dropdown">
+                                <button class="sort-btn">Sort by: Date Created <i
+                                        class="fa-solid fa-chevron-down"></i></button>
+                            </div>
+                            <button class="filter-btn">Filter <i class="fa-solid fa-filter"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="inventory-table premium-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Appointment Date</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Edit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <tr>
+                                <td>Ford Escape XLs 2012</td>
+                                <td>Ford</td>
+                                <td>Mar 15, 2026 10:30 AM</td>
+                                <td>P750,000</td>
+                                <td><span class="badge in-progress">OPEN</span></td>
+                                <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                            </tr>
+                            <tr>
+                                <td>Ford Escape Titanium 2012</td>
+                                <td>Ford</td>
+                                <td>Mar 16, 2026 09:15 AM</td>
+                                <td>P800,000</td>
+                                <td><span class="badge in-progress">IN PROGRESS</span></td>
+                                <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                            </tr>
+                            <tr>
+                                <td>Nissan Livina VL 2023</td>
+                                <td>Nissan</td>
+                                <td>Mar 18, 2026 02:00 PM</td>
+                                <td>P1,100,000</td>
+                                <td><span class="badge closed">CLOSED</span></td>
+                                <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                            </tr>
+                            <tr>
+                                <td>Honda Civic RS 2024</td>
+                                <td>Honda</td>
+                                <td>Mar 20, 2026 11:45 AM</td>
+                                <td>P1,775,000</td>
+                                <td><span class="badge in-progress">OPEN</span></td>
+                                <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                            </tr>
+                            <tr>
+                                <td>Mazda 3 Sport 2023</td>
+                                <td>Mazda</td>
+                                <td>Mar 21, 2026 01:30 PM</td>
+                                <td>P1,500,000</td>
+                                <td><span class="badge in-progress">IN PROGRESS</span></td>
+                                <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                            </tr>
+                            <tr>
+                                <td>Toyota Innova V 2022</td>
+                                <td>Toyota</td>
+                                <td>Mar 22, 2026 04:00 PM</td>
+                                <td>P1,750,000</td>
+                                <td><span class="badge closed">CLOSED</span></td>
+                                <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                            </tr>
+                            <tr>
+                                <td>Ford Mustang GT 2024</td>
+                                <td>Ford</td>
+                                <td>Mar 24, 2026 03:00 PM</td>
+                                <td>P3,500,000</td>
+                                <td><span class="badge in-progress">OPEN</span></td>
+                                <td><button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button></td>
+                            </tr>
+                            <!-- More rows will be added dynamically -->
+                        </tbody>
+                    </table>
+                    <div class="table-footer">
+                        <button class="load-more-btn">Load More</button>
+                    </div>
                 </div>
             </div>
 
@@ -153,7 +267,6 @@
                                 <th>Staff Member</th>
                                 <th>Role</th>
                                 <th>Date Added</th>
-                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -161,31 +274,35 @@
                             <tr>
                                 <td>
                                     <div class="table-vehicle">
-                                        <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem;">JD</div>
+                                        <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem;">JD
+                                        </div>
                                         <span>John Doe</span>
                                     </div>
                                 </td>
                                 <td>Sales Staff</td>
                                 <td>Mar 12, 2026</td>
-                                <td><span class="status available">Active</span></td>
                                 <td>
-                                    <button class="action-btn edit" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="action-btn delete" title="Suspend"><i class="fa-solid fa-user-slash"></i></button>
+                                    <button class="action-btn edit" title="Edit"><i
+                                            class="fa-solid fa-pen"></i></button>
+                                    <button class="action-btn delete" title="Remove"><i
+                                            class="fa-solid fa-trash"></i></button>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
                                     <div class="table-vehicle">
-                                        <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem;">MA</div>
+                                        <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem;">MA
+                                        </div>
                                         <span>Maria Ava</span>
                                     </div>
                                 </td>
                                 <td>Inventory Manager</td>
                                 <td>Feb 05, 2026</td>
-                                <td><span class="status available">Active</span></td>
                                 <td>
-                                    <button class="action-btn edit" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="action-btn delete" title="Suspend"><i class="fa-solid fa-user-slash"></i></button>
+                                    <button class="action-btn edit" title="Edit"><i
+                                            class="fa-solid fa-pen"></i></button>
+                                    <button class="action-btn delete" title="Remove"><i
+                                            class="fa-solid fa-trash"></i></button>
                                 </td>
                             </tr>
                         </tbody>
@@ -197,40 +314,70 @@
 
     <!-- Add Vehicle Modal -->
     <div class="admin-modal-overlay" id="addModalOverlay"></div>
-    <div class="admin-modal" id="addModal">
-        <div class="modal-header">
-            <h2>Add New Vehicle</h2>
-            <i class="fa-solid fa-xmark close-modal" id="closeModalBtn"></i>
+    <!-- Add Deal Modal -->
+    <div class="user-modal add-deal-modal" id="addModal">
+        <div class="user-modal-header">
+            <h3>Add Deal</h3>
+            <span class="close-user-modal" id="closeModalBtn"><i class="fa-solid fa-circle-xmark"></i></span>
         </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label>Vehicle Name & Year</label>
-                <input type="text" placeholder="e.g. Ford Mustang 2024">
-            </div>
-            <div class="form-group-row">
-                <div class="form-group">
-                    <label>Category</label>
-                    <select>
-                        <option>Sedan</option>
-                        <option>SUV</option>
-                        <option>Coupe</option>
-                        <option>Hatchback</option>
-                        <option>Van</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Price</label>
-                    <input type="text" placeholder="e.g. P1,500,000">
+        <div class="user-modal-body">
+            <div class="deal-section">
+                <label class="section-label">Add Image</label>
+                <div class="deal-image-upload" id="carImageUpload">
+                    <button class="add-img-btn">ADD</button>
+                    <input type="file" id="carImageInput" hidden accept="image/*">
                 </div>
             </div>
-            <div class="form-group">
-                <label>Upload Image</label>
-                <div class="image-upload-box">
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span>Drag & drop or click to upload</span>
+
+            <div class="deal-section">
+                <label class="section-label">Car Details</label>
+                <div class="deal-form-group">
+                    <input type="text" id="carName" placeholder="Car Name" class="deal-input">
+                </div>
+                <div class="deal-form-group">
+                    <input type="text" id="carPrice" placeholder="Price" class="deal-input">
+                </div>
+                <div class="deal-form-row">
+                    <div class="deal-form-group">
+                        <input type="text" id="carPricePromo" placeholder="Price" class="deal-input">
+                    </div>
+                    <div class="deal-form-group">
+                        <input type="text" id="carModelYear" placeholder="Model/Year" class="deal-input">
+                    </div>
+                    <div class="deal-form-group">
+                        <input type="text" id="carMileage" placeholder="Mileage" class="deal-input">
+                    </div>
+                </div>
+                <div class="deal-form-row">
+                    <div class="deal-form-group">
+                        <input type="text" id="carBrand" placeholder="Brand" class="deal-input">
+                    </div>
+                    <div class="deal-form-group">
+                        <input type="text" id="carTransmission" placeholder="Transmission" class="deal-input">
+                    </div>
+                </div>
+                <div class="deal-form-group">
+                    <input type="text" id="carFuelType" placeholder="Fuel Type" class="deal-input">
                 </div>
             </div>
-            <button class="save-btn" style="width: 100%; margin-top: 1rem;">Save Vehicle</button>
+
+            <div class="deal-section">
+                <label class="section-label">Description</label>
+                <div class="deal-form-group">
+                    <textarea id="carDescription" placeholder="Leave a description" class="deal-textarea"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="user-modal-footer">
+            <div class="status-selector">
+                <label>Status</label>
+                <select id="carStatus" class="status-select">
+                    <option value="open">Open</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="closed">Closed</option>
+                </select>
+            </div>
+            <button class="user-add-btn add-deal-confirm-btn" id="confirmAddVehicle">Add Deal</button>
         </div>
     </div>
 
@@ -303,4 +450,5 @@
 
     <script type="module" src="admin.js"></script>
 </body>
+
 </html>

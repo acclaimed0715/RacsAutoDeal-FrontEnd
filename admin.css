@@ -553,3 +553,250 @@ body {
     transition: background 0.3s;
 }
 .user-add-btn:hover { background-color: #a53224; }
+
+/* Add Deal Modal Styles */
+.add-deal-modal {
+    width: 650px;
+    max-width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.user-modal-body {
+    padding: 2.5rem;
+}
+
+.deal-section {
+    margin-bottom: 2.5rem;
+}
+
+.section-label {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0c243d;
+    margin-bottom: 1.2rem;
+}
+
+.deal-image-upload {
+    background-color: #f4f7f9;
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: inline-block;
+}
+
+.add-img-btn {
+    padding: 0.8rem 2rem;
+    background: #ffffff;
+    border: 1px solid #e1e8ed;
+    border-radius: 6px;
+    color: #95afc0;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.deal-form-group {
+    margin-bottom: 1rem;
+}
+
+.deal-form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.deal-form-row .deal-form-group {
+    flex: 1;
+}
+
+.deal-input, .deal-textarea {
+    width: 100%;
+    padding: 1.1rem;
+    background-color: #f4f7f9;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #333;
+    outline: none;
+}
+
+.deal-input::placeholder, .deal-textarea::placeholder {
+    color: #95afc0;
+}
+
+.deal-textarea {
+    height: 120px;
+    resize: none;
+}
+
+.status-selector {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.status-selector label {
+    font-weight: 700;
+    color: #0c243d;
+    font-size: 1.1rem;
+}
+
+.status-select {
+    padding: 0.8rem 1.5rem;
+    background-color: #f4f7f9;
+    border: none;
+    border-radius: 8px;
+    color: #4b6584;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+}
+
+.add-deal-confirm-btn {
+    background-color: #6a2c2c !important; /* Brownish color from mockup */
+    border-radius: 30px !important;
+    padding: 0.8rem 2.5rem !important;
+}
+
+.add-deal-confirm-btn:hover {
+    background-color: #551e1e !important;
+}
+
+.close-user-modal {
+    font-size: 1.5rem !important;
+}
+
+/* Premium Inventory Section */
+.header-left h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stats-text {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.add-car-btn {
+    background: #ffffff;
+    color: #121212;
+    border: none;
+    padding: 0.8rem 1.8rem;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.add-car-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+.header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1.5rem;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.sort-btn, .filter-btn {
+    background: #ffffff;
+    color: #121212;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.9rem;
+}
+
+.sort-btn i, .filter-btn i {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.premium-table {
+    margin-top: 1rem;
+    border-spacing: 0;
+}
+
+.premium-table th {
+    padding: 1.5rem;
+    border-bottom: 2px solid var(--border);
+    font-size: 1rem;
+    color: #888;
+}
+
+.premium-table td {
+    padding: 1.5rem;
+    font-size: 1rem;
+    vertical-align: middle;
+}
+
+.badge {
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.badge.in-progress {
+    background: rgba(181, 206, 255, 0.15);
+    color: #b5ceff;
+}
+
+.badge.closed {
+    background: rgba(220, 221, 255, 0.15);
+    color: #dcddff;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.icon-btn:hover {
+    color: #fff;
+}
+
+.table-footer {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 0;
+}
+
+.load-more-btn {
+    background: #ffffff;
+    color: #121212;
+    border: none;
+    padding: 1rem 2.5rem;
+    border-radius: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.load-more-btn:hover {
+    opacity: 0.9;
+}

@@ -30,6 +30,7 @@ interface CarEntry {
     torque?: string;
     safety?: string;
     seating?: string;
+    posted: string;
 }
 
 type CarDataDictionary = Record<CarId, CarEntry>;
@@ -54,6 +55,7 @@ const carData: CarDataDictionary = {
         torque: '171 lb-ft @ 4500 rpm',
         safety: 'Front Airbags, ABS, ESC',
         seating: '5 Seater',
+        posted: '1 Day Ago',
     },
     escape2012_titanium: {
         title: 'Ford Escape Titanium 2012',
@@ -72,6 +74,7 @@ const carData: CarDataDictionary = {
         torque: '270 lb-ft @ 3000 rpm',
         safety: 'Front/Side Airbags, ABS, Blind Spot Monitor',
         seating: '5 Seater',
+        posted: '1 Day Ago',
     },
     livina2023: {
         title: 'Nissan Livina VL 2023',
@@ -90,6 +93,7 @@ const carData: CarDataDictionary = {
         torque: '141 Nm @ 4000 rpm',
         safety: 'Dual Airbags, ABS with EBD',
         seating: '7 Seater',
+        posted: '2 Days Ago',
     },
     civic_rs: {
         title: 'Honda Civic RS 2024',
@@ -108,6 +112,7 @@ const carData: CarDataDictionary = {
         torque: '240 Nm @ 1700-4500 rpm',
         safety: 'Honda SENSING, 6 Airbags, ABS',
         seating: '5 Seater',
+        posted: '3 Days Ago',
     },
     mazda3_sport: {
         title: 'Mazda 3 Sport 2023',
@@ -126,6 +131,7 @@ const carData: CarDataDictionary = {
         torque: '200 Nm @ 4000 rpm',
         safety: 'i-ACTIVSENSE, 7 Airbags, ABS',
         seating: '5 Seater',
+        posted: '4 Days Ago',
     },
     innova_v: {
         title: 'Toyota Innova V 2022',
@@ -144,6 +150,7 @@ const carData: CarDataDictionary = {
         torque: '360 Nm @ 1200-3400 rpm',
         safety: 'Dual Airbags, ABS, VSC',
         seating: '7 Seater',
+        posted: '5 Days Ago',
     },
     mustang_gt: {
         title: 'Ford Mustang GT 2024',
@@ -162,6 +169,7 @@ const carData: CarDataDictionary = {
         torque: '560 Nm @ 4900 rpm',
         safety: 'Ford Co-Pilot360, 8 Airbags, ABS',
         seating: '4 Seater',
+        posted: '1 Day Ago',
     },
 };
 
@@ -269,7 +277,7 @@ window.openPreview = (carId: CarId): void => {
 
     updateCarousel();
     if (eleTitle) eleTitle.textContent = entry.title;
-    
+
     // Description Tab Populating
     if (eleName) eleName.innerHTML = `<strong>Car Name:</strong> <span>${entry.name}</span>`;
     if (eleModel) eleModel.innerHTML = `<strong>Car Model:</strong> <span>${entry.model}</span>`;
@@ -299,6 +307,8 @@ window.openPreview = (carId: CarId): void => {
     const tabs = document.querySelectorAll('.tab-item');
     const tabContents = document.querySelectorAll('.tab-content');
 
+    const carPostedTime = document.getElementById('carPostedTime');
+    if (carPostedTime) carPostedTime.textContent = entry.posted;
     // Reset to Description tab whenever opened
     tabs.forEach(t => t.classList.remove('active'));
     tabContents.forEach(c => c.classList.remove('active'));
@@ -320,10 +330,29 @@ window.openPreview = (carId: CarId): void => {
         };
     });
 
+    // Configure Inquire button (Custom Gmail-style Composer)
+    const inquireBtn = document.getElementById('inquireBtnModal');
+    const emailComposer = document.getElementById('emailComposer');
+    const composerSubject = document.getElementById('composerSubject') as HTMLInputElement;
+    const composerMessage = document.getElementById('composerMessage') as HTMLTextAreaElement;
+
+    if (inquireBtn && emailComposer && composerSubject && composerMessage) {
+        inquireBtn.onclick = () => {
+            composerSubject.value = `Inquiry for ${entry.title}`;
+            composerMessage.value = 
+                `Hi Racs Auto Deal,\n\nI am interested in inquiring about the following unit:\n\n` +
+                `Unit: ${entry.title}\n` +
+                `Year: ${entry.model}\n` +
+                `Price: ${entry.price}\n\n` +
+                `Please send me more details. Thank you!`;
+            
+            emailComposer.classList.add('active');
+        };
+    }
+
     // Sync favorite button state
     const favoriteBtn = document.getElementById('favoriteBtn');
-    const favoriteIcon = document.getElementById('favoriteIcon');
-    if (favoriteBtn && favoriteIcon) {
+    if (favoriteBtn) {
         favoriteBtn.classList.toggle('favorited', entry.isFavorited);
     }
 
@@ -336,19 +365,27 @@ window.openPreview = (carId: CarId): void => {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ── Scroll button ──────────────────────────────────────────────────────────
-    const scrollBtn = document.getElementById('scrollBtn');
-    scrollBtn?.addEventListener('click', () => {
-        window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
-    });
-
-    // ── Filter Sidebar Toggle ──────────────────────────────────────────────────
+    // ── Elements & State ──────────────────────────────────────────────────────────
     const filterBtn = document.querySelector<HTMLElement>('.filter-btn');
     const filterSidebar = document.getElementById('filterSidebar');
     const filterOverlay = document.getElementById('filterOverlay');
     const closeFilterBtn = document.getElementById('closeFilterBtn');
     const applyFilterBtn = document.getElementById('applyFilterBtn');
+    const filterLists = document.querySelectorAll<HTMLElement>('.filter-list');
+    const carCards = document.querySelectorAll<HTMLElement>('.car-card');
+    
+    // Brand & Price Inputs
+    const brandSearchInput = document.getElementById('brandSearchInput') as HTMLInputElement;
+    const minPriceInput = document.getElementById('minPriceInput') as HTMLInputElement;
+    const maxPriceInput = document.getElementById('maxPriceInput') as HTMLInputElement;
 
+    // Scroll button
+    const scrollBtn = document.getElementById('scrollBtn');
+    scrollBtn?.addEventListener('click', () => {
+        window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+    });
+
+    // ── Filter Sidebar Logic ──────────────────────────────────────────────────
     const openFilter = (): void => { filterSidebar?.classList.add('active'); filterOverlay?.classList.add('active'); };
     const closeFilter = (): void => { filterSidebar?.classList.remove('active'); filterOverlay?.classList.remove('active'); };
 
@@ -357,19 +394,93 @@ document.addEventListener('DOMContentLoaded', () => {
     filterOverlay?.addEventListener('click', closeFilter);
     applyFilterBtn?.addEventListener('click', closeFilter);
 
-    // ── Show All Vehicles Toggle ───────────────────────────────────────────────
-    const showAllBtn = document.getElementById('showAllBtn');
-    const hiddenVehicles = document.getElementById('hiddenVehicles');
-
-    if (showAllBtn && hiddenVehicles) {
-        showAllBtn.addEventListener('click', () => {
-            const isHidden = hiddenVehicles.style.display === 'none';
-            hiddenVehicles.style.display = isHidden ? 'grid' : 'none';
-            showAllBtn.innerHTML = isHidden
-                ? '<i class="fa-regular fa-eye-slash"></i> <span>Hide vehicles</span>'
-                : '<i class="fa-regular fa-images"></i> <span>Show all vehicles</span>';
+    // Section Toggles (Accordion)
+    document.querySelectorAll('.filter-group-header').forEach(header => {
+        header.addEventListener('click', () => {
+            header.parentElement?.classList.toggle('collapsed');
         });
+    });
+
+    function applyFilters(): void {
+        const activeVehicleTypes: string[] = [];
+        const activeCategories: string[] = [];
+        const brandSearch = brandSearchInput?.value.toLowerCase().trim() || '';
+        const minPrice = parseInt(minPriceInput?.value) || 0;
+        const maxPrice = parseInt(maxPriceInput?.value) || Infinity;
+
+        filterLists.forEach(list => {
+            const groupHeader = list.closest('.filter-group')?.querySelector('.filter-group-title');
+            if (!groupHeader) return;
+            const groupTitle = groupHeader.textContent?.toUpperCase() ?? '';
+
+            list.querySelectorAll<HTMLElement>('li.active').forEach(li => {
+                const text = li.textContent?.trim().toLowerCase() ?? '';
+                if (groupTitle.includes('VEHICLE TYPE')) activeVehicleTypes.push(text);
+                else if (groupTitle.includes('CATEGORY')) activeCategories.push(text);
+            });
+        });
+
+        carCards.forEach(card => {
+            const carId = card.getAttribute('data-id') as CarId;
+            const entry = carData[carId];
+            if (!entry) return;
+
+            // 1. Vehicle Type
+            let showType = true;
+            if (activeVehicleTypes.length > 0) {
+                const type = card.getAttribute('data-category')?.toLowerCase();
+                showType = !!(type && activeVehicleTypes.includes(type));
+            }
+
+            // 2. Category (Badges)
+            let showCat = true;
+            if (activeCategories.length > 0) {
+                const badgeText = card.querySelector('.car-badge')?.textContent?.toLowerCase() || '';
+                showCat = activeCategories.some(cat => badgeText.includes(cat));
+            }
+
+            // 3. Brand Search
+            const showBrand = brandSearch === '' || 
+                             entry.brand.toLowerCase().includes(brandSearch) || 
+                             entry.name.toLowerCase().includes(brandSearch);
+
+            // 4. Price Filter
+            const numericPrice = parseInt(entry.price.replace(/[^0-9]/g, '')) || 0;
+            const showPrice = numericPrice >= minPrice && numericPrice <= maxPrice;
+
+            card.style.display = (showType && showCat && showBrand && showPrice) ? 'flex' : 'none';
+        });
+
+        const gridTitle = document.getElementById('dynamicCategoryTitle');
+        if (gridTitle) {
+            gridTitle.textContent = activeVehicleTypes.length === 0
+                ? 'All Vehicles'
+                : activeVehicleTypes.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(', ');
+        }
     }
+
+    // Input List Actions
+    brandSearchInput?.addEventListener('input', applyFilters);
+    minPriceInput?.addEventListener('input', applyFilters);
+    maxPriceInput?.addEventListener('input', applyFilters);
+
+    filterLists.forEach(list => {
+        list.querySelectorAll<HTMLElement>('li').forEach(li => {
+            li.addEventListener('click', function() {
+                this.classList.toggle('active');
+                applyFilters();
+            });
+        });
+    });
+
+    // Reset button
+    document.querySelector<HTMLElement>('.filter-reset-btn')?.addEventListener('click', () => {
+        filterLists.forEach(list => list.querySelectorAll('li').forEach(li => li.classList.remove('active')));
+        if (brandSearchInput) brandSearchInput.value = '';
+        if (minPriceInput) minPriceInput.value = '';
+        if (maxPriceInput) maxPriceInput.value = '';
+        applyFilters();
+    });
 
     // ── Favorites Logic ───────────────────────────────────────────
     const navFavBtn = document.getElementById('navFavBtn');
@@ -379,234 +490,171 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeFavBtn = document.getElementById('closeFavBtn');
     const favModalBody = document.getElementById('favModalBody');
 
+    const openFavorites = (): void => { favModal?.classList.add('active'); favOverlay?.classList.add('active'); document.body.style.overflow = 'hidden'; };
+    const closeFavorites = (): void => { favModal?.classList.remove('active'); favOverlay?.classList.remove('active'); document.body.style.overflow = 'auto'; };
+
     function updateFavoritesUI(): void {
         if (!favModalBody || !favCount) return;
-
         favModalBody.innerHTML = '';
         let count = 0;
 
         for (const carId in carData) {
             const entry = carData[carId as CarId];
-            if (!entry || !entry.isFavorited) continue;
+            if (entry?.isFavorited) {
+                count++;
+                const item = document.createElement('div');
+                item.className = 'fav-item';
+                const priceMatch = entry.price.match(/₱[0-9,]+/);
+                const displayPrice = priceMatch ? priceMatch[0] : entry.price;
 
-            count++;
-            const item = document.createElement('div');
-            item.className = 'fav-item';
-
-            // Safe price extraction
-            const priceParts = entry.price.split(' ');
-            const displayPrice = priceParts.length > 2 ? priceParts[2] : entry.price;
-
-            item.innerHTML = `
-                <div class="fav-item-img">
-                    <img src="${entry.images[0]}" alt="${entry.title}">
-                </div>
-                <div class="fav-item-info">
-                    <span class="fav-item-title">${entry.title}</span>
-                    <span class="fav-item-price">${displayPrice}</span>
-                </div>
-                <i class="fa-solid fa-trash remove-fav-btn" data-id="${carId}" title="Remove from Favorites"></i>
-            `;
-
-            item.addEventListener('click', (e: Event) => {
-                const target = e.target as HTMLElement;
-                if (!target.classList.contains('remove-fav-btn')) {
-                    closeFavorites();
-                    window.openPreview(carId as CarId);
-                }
-            });
-
-            favModalBody.appendChild(item);
+                item.innerHTML = `
+                    <div class="fav-item-img"><img src="${entry.images[0]}" alt="${entry.title}"></div>
+                    <div class="fav-item-info">
+                        <span class="fav-item-title">${entry.title}</span>
+                        <div class="dealer-action">
+                            <button class="message-dealer-btn inquire-fav-btn" data-id="${carId}">Inquire</button>
+                        </div>
+                        <span class="fav-item-price">${displayPrice}</span>
+                    </div>
+                    <i class="fa-solid fa-trash remove-fav-btn" data-id="${carId}"></i>
+                `;
+                item.addEventListener('click', (e) => {
+                    if (!(e.target as HTMLElement).classList.contains('remove-fav-btn') && !(e.target as HTMLElement).classList.contains('inquire-fav-btn')) {
+                        closeFavorites();
+                        window.openPreview(carId as CarId);
+                    }
+                });
+                favModalBody.appendChild(item);
+            }
         }
-
         favCount.textContent = count.toString();
         favCount.classList.toggle('active', count > 0);
+        if (count === 0) favModalBody.innerHTML = '<div class="empty-fav-message">You haven\'t favorited any cars yet.</div>';
 
-        if (count === 0) {
-            favModalBody.innerHTML = '<div class="empty-fav-message">You haven\'t favorited any cars yet.</div>';
-        }
-
-        const removeBtns = favModalBody.querySelectorAll('.remove-fav-btn');
-        removeBtns.forEach(btn => {
-            btn.addEventListener('click', (e: Event) => {
+        favModalBody.querySelectorAll('.remove-fav-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const carId = (btn as HTMLElement).getAttribute('data-id') as CarId;
-                if (carData[carId]) {
-                    carData[carId].isFavorited = false;
+                const id = btn.getAttribute('data-id') as CarId;
+                if (carData[id]) {
+                    carData[id].isFavorited = false;
                     updateFavoritesUI();
-
-                    if (window.currentCarId === carId) {
-                        const favoriteBtn = document.getElementById('favoriteBtn');
-                        const favoriteIcon = document.getElementById('favoriteIcon');
-                        if (favoriteBtn && favoriteIcon) {
-                            favoriteBtn.classList.remove('favorited');
-                        }
-                    }
+                    document.querySelectorAll(`.fav-card-btn[data-id="${id}"]`).forEach(b => b.classList.remove('favorited'));
+                    if (window.currentCarId === id) document.getElementById('favoriteBtn')?.classList.remove('favorited');
                 }
             });
         });
     }
-
-    const openFavorites = (): void => {
-        favModal?.classList.add('active');
-        favOverlay?.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    };
-
-    const closeFavorites = (): void => {
-        favModal?.classList.remove('active');
-        favOverlay?.classList.remove('active');
-        document.body.style.overflow = 'auto';
-    };
 
     navFavBtn?.addEventListener('click', openFavorites);
     closeFavBtn?.addEventListener('click', closeFavorites);
     favOverlay?.addEventListener('click', closeFavorites);
 
-    updateFavoritesUI();
-
-    // ── Preview Modal Actions ─────────────────────────────────────────
-    const previewModal = document.getElementById('previewModal');
-    const previewOverlay = document.getElementById('previewOverlay');
-    const closePreviewBtn = document.getElementById('closePreviewBtn');
-    const favoriteBtn = document.getElementById('favoriteBtn');
-    const favoriteIcon = document.getElementById('favoriteIcon');
-
-    function closePreviewModal(): void {
-        previewModal?.classList.remove('active');
-        previewOverlay?.classList.remove('active');
-        document.body.style.overflow = 'auto';
-    }
-
-    closePreviewBtn?.addEventListener('click', closePreviewModal);
-    previewOverlay?.addEventListener('click', closePreviewModal);
-
-    // ── Favorite button toggle ────────────────────────────────────────────────
-    if (favoriteBtn && favoriteIcon) {
-        favoriteBtn.addEventListener('click', () => {
-            const carId = window.currentCarId;
-            if (!carId) return;
-
-            const entry = carData[carId as CarId];
+    // Initial Sync
+    const favCardBtns = document.querySelectorAll<HTMLElement>('.fav-card-btn');
+    favCardBtns.forEach(btn => {
+        const carId = btn.getAttribute('data-id') as CarId;
+        if (carId && carData[carId]?.isFavorited) btn.classList.add('favorited');
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!carId || !carData[carId]) return;
+            const entry = carData[carId];
             entry.isFavorited = !entry.isFavorited;
-
-            favoriteBtn.classList.toggle('favorited', entry.isFavorited);
+            btn.classList.toggle('favorited', entry.isFavorited);
+            if (window.currentCarId === carId) document.getElementById('favoriteBtn')?.classList.toggle('favorited', entry.isFavorited);
             updateFavoritesUI();
         });
-    }
-
-    // ── Filtering (Multi-Select) ──────────────────────────────────────────────
-    const carCards = document.querySelectorAll<HTMLElement>('.car-card');
-
-    // Auto-assign data-category from title text if missing
-    carCards.forEach(card => {
-        if (card.getAttribute('data-category')) return;
-        const title = card.querySelector('.car-title')?.textContent?.toLowerCase() ?? '';
-        if (title.includes('escape') || title.includes('innova') || title.includes('livina')) card.setAttribute('data-category', 'suv');
-        else if (title.includes('civic')) card.setAttribute('data-category', 'sedan');
-        else if (title.includes('mazda')) card.setAttribute('data-category', 'hatchback');
-        else if (title.includes('mustang')) card.setAttribute('data-category', 'coupe');
     });
 
-    const filterLists = document.querySelectorAll<HTMLElement>('.filter-list');
+    updateFavoritesUI();
 
-    function applyFilters(): void {
-        const activeVehicleTypes: string[] = [];
-        const activeCategories: string[] = [];
+    // ── Preview & Reporting Logic ───────────────────────────────────
+    const previewOverlay = document.getElementById('previewOverlay');
+    const closePreviewBtn = document.getElementById('closePreviewBtn');
+    const closePreview = () => { document.getElementById('previewModal')?.classList.remove('active'); previewOverlay?.classList.remove('active'); document.body.style.overflow = 'auto'; };
+    closePreviewBtn?.addEventListener('click', closePreview);
+    previewOverlay?.addEventListener('click', closePreview);
 
-        filterLists.forEach(list => {
-            const groupHeader = list.closest('.filter-group')?.querySelector('.filter-group-title');
-            if (!groupHeader) return;
-            const groupTitle = groupHeader.textContent?.toUpperCase() ?? '';
+    const openReportBtn = document.getElementById('openReportBtn');
+    const reportModal = document.getElementById('reportModal');
+    const reportOverlay = document.getElementById('reportOverlay');
+    const closeReportBtn = document.getElementById('closeReportBtn');
+    const reportForm = document.getElementById('reportForm') as HTMLFormElement;
 
-            list.querySelectorAll<HTMLElement>('li.active').forEach(li => {
-                const text = li.textContent?.trim().toLowerCase() ?? '';
-                if (text === 'all') return;
-                if (groupTitle.includes('VEHICLE TYPE')) activeVehicleTypes.push(text);
-                else if (groupTitle.includes('CATEGORY')) activeCategories.push(text);
-            });
-        });
+    openReportBtn?.addEventListener('click', () => { reportModal!.style.display = 'block'; reportOverlay!.style.display = 'block'; document.body.style.overflow = 'hidden'; });
+    const closeReport = () => { reportModal!.style.display = 'none'; reportOverlay!.style.display = 'none'; document.body.style.overflow = 'auto'; };
+    closeReportBtn?.addEventListener('click', closeReport);
+    reportOverlay?.addEventListener('click', closeReport);
 
-        // Dynamic grid title
-        const gridTitle = document.getElementById('dynamicCategoryTitle');
-        if (gridTitle) {
-            gridTitle.textContent = activeVehicleTypes.length === 0
-                ? 'All Vehicles'
-                : activeVehicleTypes.map(t => t.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')).join(', ');
-        }
-
-        const showAllContainer = document.querySelector<HTMLElement>('.show-all-container');
-
-        // Show/hide cards
-        carCards.forEach(card => {
-            let showType = true;
-            let showCat = true;
-
-            if (activeVehicleTypes.length > 0) {
-                const cat = card.getAttribute('data-category')?.toLowerCase();
-                showType = !!(cat && activeVehicleTypes.includes(cat));
-            }
-            if (activeCategories.length > 0) {
-                showCat = (
-                    (activeCategories.includes('new') && !!card.querySelector('.badge-new')) ||
-                    (activeCategories.includes('best deal') && !!card.querySelector('.badge-best-deal')) ||
-                    (activeCategories.includes('most clicked') && !!card.querySelector('.badge-most-clicked'))
-                );
-            }
-
-            card.style.display = showType && showCat ? 'flex' : 'none';
-        });
-
-        // Smart hidden-vehicles toggle
-        if (hiddenVehicles) {
-            const filtersActive = activeVehicleTypes.length > 0 || activeCategories.length > 0;
-            hiddenVehicles.style.display = filtersActive ? 'grid' : 'none';
-            if (showAllContainer) showAllContainer.style.display = filtersActive ? 'none' : 'flex';
-        }
-    }
-
-    filterLists.forEach(list => {
-        list.querySelectorAll<HTMLElement>('li').forEach(li => {
-            li.addEventListener('click', function () {
-                const filterText = this.textContent?.trim().toLowerCase() ?? '';
-
-                if (filterText === 'all') {
-                    list.querySelectorAll('li').forEach(el => el.classList.remove('active'));
-                    this.classList.add('active');
-                } else {
-                    this.classList.toggle('active');
-
-                    // Deselect "All" when a specific item is chosen
-                    if (this.classList.contains('active')) {
-                        Array.from(list.querySelectorAll<HTMLElement>('li')).find(el => el.textContent?.trim().toLowerCase() === 'all')?.classList.remove('active');
-                    }
-
-                    // Re-activate "All" if nothing is selected
-                    if (!list.querySelector('li.active')) {
-                        Array.from(list.querySelectorAll<HTMLElement>('li')).find(el => el.textContent?.trim().toLowerCase() === 'all')?.classList.add('active');
-                    }
-                }
-
-                applyFilters();
-            });
-        });
+    reportForm?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const btn = reportForm.querySelector('.report-submit-btn') as HTMLButtonElement;
+        const original = btn.textContent;
+        btn.textContent = 'Sending...';
+        btn.disabled = true;
+        setTimeout(() => {
+            btn.textContent = 'Report Sent!';
+            btn.style.background = '#27ae60';
+            setTimeout(() => { closeReport(); reportForm.reset(); btn.textContent = original; btn.style.background = ''; btn.disabled = false; alert('Thank you! Your report has been submitted.'); }, 1500);
+        }, 1000);
     });
 
-    // Reset filter button
-    document.querySelector<HTMLElement>('.filter-reset-btn')?.addEventListener('click', () => {
-        filterLists.forEach(list => {
-            list.querySelectorAll('li').forEach(li => li.classList.remove('active'));
-            Array.from(list.querySelectorAll<HTMLElement>('li')).find(el => el.textContent?.trim().toLowerCase() === 'all')?.classList.add('active');
-        });
-        applyFilters();
-    });
-
-    // ── Fixed Navbar (always visible, style changes on scroll) ──────────────
+    // ── Scroll Behaviors ──────────────────────────────────────────
     const smartNav = document.querySelector<HTMLElement>('.smart-nav');
+    if (smartNav) window.addEventListener('scroll', () => smartNav.classList.toggle('scrolled', window.scrollY > 80));
 
-    if (smartNav) {
-        window.addEventListener('scroll', () => {
-            smartNav.classList.toggle('scrolled', window.scrollY > 80);
+    // ── Preview Modal Favorite Toggle ──────────────────────────────
+    const favoriteBtn = document.getElementById('favoriteBtn');
+    favoriteBtn?.addEventListener('click', () => {
+        const carId = window.currentCarId;
+        if (!carId || !carData[carId]) return;
+        const entry = carData[carId];
+        entry.isFavorited = !entry.isFavorited;
+        favoriteBtn.classList.toggle('favorited', entry.isFavorited);
+        
+        // Sync back to inventory card
+        document.querySelectorAll(`.fav-card-btn[data-id="${carId}"]`).forEach(btn => btn.classList.toggle('favorited', entry.isFavorited));
+        updateFavoritesUI();
+    });
+
+    // ── Email Composer Global Logic ────────────────────────────────
+    const emailComposer = document.getElementById('emailComposer');
+    const closeComposerBtn = document.getElementById('closeComposerBtn');
+    const sendEmailBtn = document.getElementById('sendEmailBtn') as HTMLButtonElement;
+    const composerDelete = document.querySelector('.composer-delete');
+
+    const closeComposer = () => emailComposer?.classList.remove('active');
+
+    closeComposerBtn?.addEventListener('click', closeComposer);
+    composerDelete?.addEventListener('click', closeComposer);
+
+    sendEmailBtn?.addEventListener('click', () => {
+        const fromField = document.getElementById('composerFrom') as HTMLInputElement;
+        if (fromField && !fromField.value.trim()) {
+            alert('Please enter your email in the "From" field.');
+            fromField.focus();
+            return;
+        }
+
+        if (!sendEmailBtn) return;
+        const originalText = sendEmailBtn.textContent;
+        sendEmailBtn.textContent = 'Sending...';
+        sendEmailBtn.disabled = true;
+
+        setTimeout(() => {
+            alert('Your inquiry has been sent to our sales team!');
+            closeComposer();
+            if (fromField) fromField.value = ''; // Clean up
+            sendEmailBtn.textContent = originalText;
+            sendEmailBtn.disabled = false;
+        }, 1500);
+    });
+
+    // ── FAQs ──────────────────────────────────────────────────────
+    document.querySelectorAll('.faq-item').forEach(item => {
+        item.querySelector('.faq-question')?.addEventListener('click', () => {
+            const wasActive = item.classList.contains('active');
+            document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+            if (!wasActive) item.classList.add('active');
         });
-    }
+    });
 });

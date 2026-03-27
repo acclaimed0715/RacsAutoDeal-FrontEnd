@@ -28,6 +28,7 @@
                 </li>
                 <li id="menuInventory"><a href="#"><i class="fa-solid fa-car"></i> Manage Inventory</a></li>
                 <li id="menuUsers"><a href="#"><i class="fa-solid fa-users"></i> Manage Users</a></li>
+                <li id="menuReports"><a href="#"><i class="fa-solid fa-flag"></i> Manage Reports</a></li>
                 <li id="menuSettings"><a href="#"><i class="fa-solid fa-gear"></i> Settings</a></li>
                 <li class="logout-link"><a href="index.html"><i class="fa-solid fa-arrow-right-from-bracket"></i> Back
                         to Site</a></li>
@@ -37,9 +38,8 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="topbar">
-                <div class="topbar-search">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Search inventory...">
+                <div class="topbar-left">
+                    <h2 id="currentViewTitle">Dashboard</h2>
                 </div>
                 <div class="topbar-right">
                     <div class="notifications"><i class="fa-regular fa-bell"></i></div>
@@ -86,6 +86,10 @@
                 <div class="table-container">
                     <div class="table-header">
                         <h2>Recent Inventory</h2>
+                        <div class="section-search">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="dashboardSearch" placeholder="Search recent items...">
+                        </div>
                         <a href="#" class="view-all">View All</a>
                     </div>
                     <table class="inventory-table">
@@ -159,16 +163,36 @@
                 <div class="page-header">
                     <div class="header-left">
                         <h1>Car Inventory</h1>
+                        <div class="section-search inventory-search">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="inventorySearch" placeholder="Search by name, brand, or status...">
+                        </div>
                         <p class="stats-text">Total: 7 deals</p>
                     </div>
                     <div class="header-right">
                         <button class="add-car-btn" id="addCarBtnTop"><i class="fa-solid fa-plus"></i> Add car</button>
                         <div class="filter-actions">
                             <div class="sort-dropdown">
-                                <button class="sort-btn">Sort by: Date Created <i
+                                <button class="sort-btn" id="sortBtn">Sort by: Date Created <i
                                         class="fa-solid fa-chevron-down"></i></button>
+                                <ul class="dropdown-menu" id="sortDropdown">
+                                    <li data-sort="date-new">Date Created (Newest)</li>
+                                    <li data-sort="date-old">Date Created (Oldest)</li>
+                                    <li data-sort="price-high">Price (High to Low)</li>
+                                    <li data-sort="price-low">Price (Low to High)</li>
+                                    <li data-sort="name-az">Name (A-Z)</li>
+                                </ul>
                             </div>
-                            <button class="filter-btn">Filter <i class="fa-solid fa-filter"></i></button>
+                            <div class="filter-dropdown">
+                                <button class="filter-btn" id="filterBtn">Filter <i
+                                        class="fa-solid fa-filter"></i></button>
+                                <ul class="dropdown-menu" id="filterDropdown">
+                                    <li data-filter="all">All Status</li>
+                                    <li data-filter="open">Open</li>
+                                    <li data-filter="in-progress">In Progress</li>
+                                    <li data-filter="closed">Closed</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -281,6 +305,10 @@
                 <div class="table-container">
                     <div class="table-header">
                         <h2>Staff Directory</h2>
+                        <div class="section-search">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="userSearch" placeholder="Search staff members...">
+                        </div>
                     </div>
                     <table class="inventory-table">
                         <thead>
@@ -328,6 +356,183 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <div class="dashboard-content" id="reportsView" style="display: none;">
+                <div class="page-header">
+                    <div class="header-left">
+                        <h1>User Reports</h1>
+                        <div class="section-search">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="reportSearch" placeholder="Search reports by user or reason...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2>Pending & Resolved Reports</h2>
+                    </div>
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Reason</th>
+                                <th>Date Submitted</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTableBody">
+                            <tr>
+                                <td>
+                                    <div class="table-vehicle">
+                                        <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem; background: #3498db;">UK</div>
+                                        <span>Unknown User</span>
+                                    </div>
+                                </td>
+                                <td>Technical Issue</td>
+                                <td>Mar 26, 2026</td>
+                                <td><span class="badge in-progress">PENDING</span></td>
+                                <td>
+                                    <button class="action-btn edit" title="View"><i class="fa-solid fa-eye"></i></button>
+                                    <button class="action-btn delete" title="Resolve"><i class="fa-solid fa-check"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="table-vehicle">
+                                        <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem; background: #9b59b6;">AL</div>
+                                        <span>Alex Lee</span>
+                                    </div>
+                                </td>
+                                <td>Sold Vehicle Still Listed</td>
+                                <td>Mar 27, 2026</td>
+                                <td><span class="badge in-progress">PENDING</span></td>
+                                <td>
+                                    <button class="action-btn edit" title="View"><i class="fa-solid fa-eye"></i></button>
+                                    <button class="action-btn delete" title="Resolve"><i class="fa-solid fa-check"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="table-vehicle">
+                                        <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem; background: #e67e22;">GU</div>
+                                        <span>Guest User</span>
+                                    </div>
+                                </td>
+                                <td>Incorrect Listing</td>
+                                <td>Mar 25, 2026</td>
+                                <td><span class="badge closed">RESOLVED</span></td>
+                                <td>
+                                    <button class="action-btn edit" title="View"><i class="fa-solid fa-eye"></i></button>
+                                    <button class="action-btn delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="dashboard-content" id="settingsView" style="display: none;">
+                <div class="page-header">
+                    <h1>System Settings</h1>
+                    <button class="save-btn" id="saveSettingsBtn"><i class="fa-solid fa-check"></i> Save
+                        Changes</button>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>General Configuration</h3>
+                        <div class="settings-form">
+                            <div class="form-group">
+                                <label>Business Name</label>
+                                <input type="text" id="settingBusinessName" value="Racs Auto Deal">
+                            </div>
+                            <div class="form-group">
+                                <label>Contact Email</label>
+                                <input type="email" id="settingContactEmail" value="contact@racsautodeal.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Phone Number</label>
+                                <input type="text" id="settingPhone" value="+63 912 345 6789">
+                            </div>
+                            <div class="form-group">
+                                <label>Address</label>
+                                <textarea id="settingAddress"
+                                    rows="3">123 Auto Avenue, Quezon City, Metro Manila</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Security & Access</h3>
+                        <div class="settings-form">
+                            <div class="form-group">
+                                <label>Admin Password</label>
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="settingAdminPassword" value="********">
+                                    <button class="toggle-password"><i class="fa-solid fa-eye"></i></button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Two-Factor Authentication</label>
+                                <label class="switch-toggle">
+                                    <input type="checkbox" id="setting2FA">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>Session Timeout (Minutes)</label>
+                                <input type="number" id="settingTimeout" value="60">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Notifications</h3>
+                        <div class="settings-form">
+                            <div class="notification-item">
+                                <div class="notif-info">
+                                    <h4>Email Notifications</h4>
+                                    <p>Receive email for new leads and inquiries</p>
+                                </div>
+                                <label class="switch-toggle">
+                                    <input type="checkbox" checked id="settingNotifEmail">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="notification-item">
+                                <div class="notif-info">
+                                    <h4>Inventory Alerts</h4>
+                                    <p>Notify when stock level is low</p>
+                                </div>
+                                <label class="switch-toggle">
+                                    <input type="checkbox" checked id="settingNotifStock">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Appearance</h3>
+                        <div class="settings-form">
+                            <div class="form-group">
+                                <label>Dashboard Theme</label>
+                                <select id="settingTheme">
+                                    <option value="dark">Dark Mode (Default)</option>
+                                    <option value="light">Light Mode</option>
+                                    <option value="luxury">Luxury Gold</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Currency Symbol</label>
+                                <input type="text" id="settingCurrency" value="P">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -479,10 +684,18 @@
                     <i class="fa-solid fa-grip-vertical"></i>
                     <select class="user-input select-role" id="userRole">
                         <option value="" disabled selected>Select Role</option>
-                        <option value="Admin">Admin</option>
-                        <option value="Sales Staff">Sales Staff</option>
                         <option value="Inventory Manager">Inventory Manager</option>
                     </select>
+                </div>
+            </div>
+
+            <div class="user-form-group">
+                <label>Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" class="user-input" id="userPassword"
+                        placeholder="Create a temporary password">
+                    <button class="toggle-password user-modal-toggle" id="toggleUserPass"><i
+                            class="fa-solid fa-eye"></i></button>
                 </div>
             </div>
 

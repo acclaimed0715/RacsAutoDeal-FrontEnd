@@ -64,12 +64,14 @@
 
 .preview-container {
     display: flex;
-    gap: 4rem;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 3rem;
+    align-items: center;
 }
 
 .preview-left {
-    flex: 1.3;
+    width: 100%;
+    max-width: 850px;
 }
 
 .preview-image-wrapper {
@@ -183,32 +185,34 @@
 }
 
 .star-badge.favorited {
-    color: #f39c12;
+    color: #8B291D;
     /* Golden yellow */
 }
 
+.preview-right {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+}
+
 .preview-car-info {
-    margin-bottom: 2.5rem;
+    text-align: center;
+    margin-bottom: 3.5rem;
 }
 
 .preview-car-info h1 {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: 800;
     margin: 0 0 0.5rem 0;
     line-height: 1.2;
 }
 
 .preview-car-info span {
-    font-size: 0.95rem;
+    font-size: 1rem;
     color: #888;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.preview-right {
-    flex: 1.1;
-    display: flex;
-    flex-direction: column;
+    letter-spacing: 1px;
 }
 
 .main-features-grid {
@@ -249,9 +253,10 @@
 
 .tabs-header {
     display: flex;
-    gap: 2.5rem;
+    justify-content: center;
+    gap: 3rem;
     border-bottom: 2px solid #333;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
     padding-bottom: 0.5rem;
 }
 
@@ -346,8 +351,8 @@
 
 .dealer-action {
     display: flex;
-    justify-content: flex-end; /* Align to right like the Inquire button in the image */
-    margin-top: 2.5rem;
+    justify-content: center;
+    margin-top: 3.5rem;
 }
 
 .message-dealer-btn {

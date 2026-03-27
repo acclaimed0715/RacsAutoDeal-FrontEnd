@@ -71,78 +71,263 @@
         <div class="inventory-content">
             <h2 class="category-title" id="dynamicCategoryTitle">All Vehicles</h2>
             <div class="car-grid">
-                <div class="car-card">
+                <div class="car-card" data-id="escape2012" onclick="openPreview('escape2012')">
                     <div class="car-image-wrapper">
-                        <span class="car-badge badge-best-deal"><i class="fa-regular fa-star"></i> Best Deal</span>
-                        <img src="assets/suv_silver.png" alt="Ford Escape XLs 2012" class="car-image">
+                        <span class="car-badge">BEST DEAL</span>
+                        <img src="assets/suv_silver.png" alt="Ford Escape" class="car-image">
                     </div>
-                    <h3 class="car-title">Ford Escape XLs 2012</h3>
-                    <button class="preview-btn" onclick="openPreview('escape2012')"><i class="fa-regular fa-eye"></i>
-                        Preview</button>
-                </div>
-                <div class="car-card">
-                    <div class="car-image-wrapper">
-                        <span class="car-badge badge-most-clicked"><i class="fa-solid fa-hand-pointer"></i> Most
-                            Clicked</span>
-                        <img src="assets/suv_gray.png" alt="Ford Escape Titanium 2012" class="car-image">
+                    <div class="car-card-middle">
+                        <h3 class="card-name">Ford Escape XLs 2012</h3>
+                        <div class="card-features-row">
+                            <div class="card-feat-compact"><span>Year</span><b>2012</b></div>
+                            <div class="card-feat-compact"><span>Mileage</span><b>45,000 KM</b></div>
+                            <div class="card-feat-compact"><span>Fuel</span><b>Gasoline</b></div>
+                            <div class="card-feat-compact"><span>Trans</span><b>Auto</b></div>
+                        </div>
                     </div>
-                    <h3 class="car-title">Ford Escape Titanium 2012</h3>
-                    <button class="preview-btn" onclick="openPreview('escape2012_titanium')"><i
-                            class="fa-regular fa-eye"></i> Preview</button>
-                </div>
-                <div class="car-card">
-                    <div class="car-image-wrapper">
-                        <span class="car-badge badge-new"><i class="fa-solid fa-arrow-trend-up"></i> New</span>
-                        <img src="assets/suv_white.png" alt="Nissan Livina VL 2023" class="car-image">
+                    <div class="car-card-right">
+                        <div class="card-price">₱750,000</div>
+                        <div class="card-action-icon fav-card-btn" data-id="escape2012"><i class="fa-solid fa-key"></i></div>
+                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> 1 Day Ago</div>
                     </div>
-                    <h3 class="car-title">Nissan Livina VL 2023</h3>
-                    <button class="preview-btn" onclick="openPreview('livina2023')"><i class="fa-regular fa-eye"></i>
-                        Preview</button>
-                </div>
-            </div>
-
-            <!-- Expanding grid for Show All -->
-            <div class="car-grid hidden-vehicles" id="hiddenVehicles" style="display: none; margin-top: 2.5rem;">
-                <div class="car-card">
-                    <div class="car-image-wrapper">
-                        <img src="assets/sedan_black.png" alt="Honda Civic RS 2024" class="car-image">
-                    </div>
-                    <h3 class="car-title">Honda Civic RS 2024</h3>
-                    <button class="preview-btn" onclick="openPreview('civic_rs')"><i class="fa-regular fa-eye"></i>
-                        Preview</button>
-                </div>
-                <div class="car-card">
-                    <div class="car-image-wrapper">
-                        <img src="assets/hatchback_red.png" alt="Mazda 3 Sport 2023" class="car-image">
-                    </div>
-                    <h3 class="car-title">Mazda 3 Sport 2023</h3>
-                    <button class="preview-btn" onclick="openPreview('mazda3_sport')"><i class="fa-regular fa-eye"></i>
-                        Preview</button>
-                </div>
-                <div class="car-card">
-                    <div class="car-image-wrapper">
-                        <img src="assets/suv_gray.png" alt="Toyota Innova V 2022" class="car-image">
-                    </div>
-                    <h3 class="car-title">Toyota Innova V 2022</h3>
-                    <button class="preview-btn" onclick="openPreview('innova_v')"><i class="fa-regular fa-eye"></i>
-                        Preview</button>
                 </div>
 
-                <div class="car-card" data-category="Coupe">
+                <div class="car-card" data-id="escape2012_titanium" onclick="openPreview('escape2012_titanium')">
                     <div class="car-image-wrapper">
-                        <img src="assets/sedan_black.png" alt="Ford Mustang GT 2024" class="car-image">
+                        <span class="car-badge">MOST CLICKED</span>
+                        <img src="assets/suv_gray.png" alt="Ford Escape" class="car-image">
                     </div>
-                    <h3 class="car-title">Ford Mustang GT 2024</h3>
-                    <button class="preview-btn" onclick="openPreview('mustang_gt')"><i class="fa-regular fa-eye"></i> Preview</button>
+                    <div class="car-card-middle">
+                        <h3 class="card-name">Ford Escape Titanium 2012</h3>
+                        <div class="card-features-row">
+                            <div class="card-feat-compact"><span>Year</span><b>2012</b></div>
+                            <div class="card-feat-compact"><span>Mileage</span><b>38,000 KM</b></div>
+                            <div class="card-feat-compact"><span>Fuel</span><b>Gasoline</b></div>
+                            <div class="card-feat-compact"><span>Trans</span><b>Auto</b></div>
+                        </div>
+                    </div>
+                    <div class="car-card-right">
+                        <div class="card-price">₱800,000</div>
+                        <div class="card-action-icon fav-card-btn" data-id="escape2012_titanium"><i class="fa-solid fa-key"></i></div>
+                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> 1 Day Ago</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="show-all-container">
-                <button class="show-all-btn" id="showAllBtn"><i class="fa-regular fa-images"></i> <span>Show all
-                        vehicles</span></button>
+                <div class="car-card" data-id="livina2023" onclick="openPreview('livina2023')">
+                    <div class="car-image-wrapper">
+                        <span class="car-badge">NEW</span>
+                        <img src="assets/suv_white.png" alt="Nissan Livina" class="car-image">
+                    </div>
+                    <div class="car-card-middle">
+                        <h3 class="card-name">Nissan Livina VL 2023</h3>
+                        <div class="card-features-row">
+                            <div class="card-feat-compact"><span>Year</span><b>2023</b></div>
+                            <div class="card-feat-compact"><span>Mileage</span><b>15,000 KM</b></div>
+                            <div class="card-feat-compact"><span>Fuel</span><b>Gasoline</b></div>
+                            <div class="card-feat-compact"><span>Trans</span><b>Auto</b></div>
+                        </div>
+                    </div>
+                    <div class="car-card-right">
+                        <div class="card-price">₱1,100,000</div>
+                        <div class="card-action-icon fav-card-btn" data-id="livina2023"><i class="fa-solid fa-key"></i></div>
+                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> 2 Days Ago</div>
+                    </div>
+                </div>
+
+                <div class="car-card" data-id="civic_rs" onclick="openPreview('civic_rs')">
+                    <div class="car-image-wrapper">
+                        <img src="assets/sedan_black.png" alt="Honda Civic" class="car-image">
+                    </div>
+                    <div class="car-card-middle">
+                        <h3 class="card-name">Honda Civic RS 2024</h3>
+                        <div class="card-features-row">
+                            <div class="card-feat-compact"><span>Year</span><b>2024</b></div>
+                            <div class="card-feat-compact"><span>Mileage</span><b>5,000 KM</b></div>
+                            <div class="card-feat-compact"><span>Fuel</span><b>Gasoline</b></div>
+                            <div class="card-feat-compact"><span>Trans</span><b>CVT</b></div>
+                        </div>
+                    </div>
+                    <div class="car-card-right">
+                        <div class="card-price">₱1,775,000</div>
+                        <div class="card-action-icon fav-card-btn" data-id="civic_rs"><i class="fa-solid fa-key"></i></div>
+                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> 3 Days Ago</div>
+                    </div>
+                </div>
+
+                <div class="car-card" data-id="mazda3_sport" onclick="openPreview('mazda3_sport')">
+                    <div class="car-image-wrapper">
+                        <img src="assets/hatchback_red.png" alt="Mazda 3" class="car-image">
+                    </div>
+                    <div class="car-card-middle">
+                        <h3 class="card-name">Mazda 3 Sport 2023</h3>
+                        <div class="card-features-row">
+                            <div class="card-feat-compact"><span>Year</span><b>2023</b></div>
+                            <div class="card-feat-compact"><span>Mileage</span><b>12,000 KM</b></div>
+                            <div class="card-feat-compact"><span>Fuel</span><b>Hybrid</b></div>
+                            <div class="card-feat-compact"><span>Trans</span><b>Auto</b></div>
+                        </div>
+                    </div>
+                    <div class="car-card-right">
+                        <div class="card-price">₱1,500,000</div>
+                        <div class="card-action-icon fav-card-btn" data-id="mazda3_sport"><i class="fa-solid fa-key"></i></div>
+                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> 4 Days Ago</div>
+                    </div>
+                </div>
+
+                <div class="car-card" data-id="innova_v" onclick="openPreview('innova_v')">
+                    <div class="car-image-wrapper">
+                        <img src="assets/suv_gray.png" alt="Toyota Innova" class="car-image">
+                    </div>
+                    <div class="car-card-middle">
+                        <h3 class="card-name">Toyota Innova V 2022</h3>
+                        <div class="card-features-row">
+                            <div class="card-feat-compact"><span>Year</span><b>2022</b></div>
+                            <div class="card-feat-compact"><span>Mileage</span><b>28,000 KM</b></div>
+                            <div class="card-feat-compact"><span>Fuel</span><b>Diesel</b></div>
+                            <div class="card-feat-compact"><span>Trans</span><b>Auto</b></div>
+                        </div>
+                    </div>
+                    <div class="car-card-right">
+                        <div class="card-price">₱1,750,000</div>
+                        <div class="card-action-icon fav-card-btn" data-id="innova_v"><i class="fa-solid fa-key"></i></div>
+                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> 5 Days Ago</div>
+                    </div>
+                </div>
+
+                <div class="car-card" data-id="mustang_gt" data-category="Coupe" onclick="openPreview('mustang_gt')">
+                    <div class="car-image-wrapper">
+                        <img src="assets/sedan_black.png" alt="Mustang GT" class="car-image">
+                    </div>
+                    <div class="car-card-middle">
+                        <h3 class="card-name">Ford Mustang GT 2024</h3>
+                        <div class="card-features-row">
+                            <div class="card-feat-compact"><span>Year</span><b>2024</b></div>
+                            <div class="card-feat-compact"><span>Mileage</span><b>2,000 KM</b></div>
+                            <div class="card-feat-compact"><span>Fuel</span><b>Gas V8</b></div>
+                            <div class="card-feat-compact"><span>Trans</span><b>Auto</b></div>
+                        </div>
+                    </div>
+                    <div class="car-card-right">
+                        <div class="card-price">₱3,500,000</div>
+                        <div class="card-action-icon fav-card-btn" data-id="mustang_gt"><i class="fa-solid fa-key"></i></div>
+                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> 1 Day Ago</div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
+
+    <section class="support-section" id="support">
+        <div class="support-container">
+            <div class="section-title">
+                <h2>Help & Support</h2>
+                <p>Everything you need to know about buying and selling with Racs Auto Deal.</p>
+            </div>
+
+            <div class="support-grid">
+                <!-- FAQs -->
+                <div class="faq-accordion">
+                    <h3>Frequently Asked Questions</h3>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>How do I book a test drive?</span>
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>You can book a test drive by clicking the "Inquire" button on any vehicle page or calling us directly at 0917 110 6548. Our team will coordinate with you for a schedule.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>Do you offer car financing?</span>
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes! We partner with various banks to provide competitive financing options tailored to your budget. Visit our showroom for a quick computation.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>What documents are needed to sell my car?</span>
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>To sell your car, you'll need the Original OR/CR, valid IDs, and a duly signed Deed of Sale. We can handle the appraisal and offer a fair market price.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>Are the vehicles in your inventory inspected?</span>
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Absolutely. Every vehicle undergoes a thorough multi-point inspection and detailed reconditioning before being listed to ensure your peace of mind.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Support Actions -->
+                <div class="support-actions-side">
+                    <div class="contact-card-simple">
+                        <i class="fa-solid fa-phone"></i>
+                        <span>Contact Us +123 456 789</span>
+                    </div>
+                    <button class="report-trigger-btn" id="openReportBtn">
+                        <i class="fa-solid fa-flag"></i>
+                        <span>Submit A Report</span>
+                    </button>
+                    <p class="support-footer-note">Send Report if you have any issues.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Send Report Modal -->
+    <div class="report-modal-overlay" id="reportOverlay"></div>
+    <div class="report-modal" id="reportModal">
+        <div class="report-modal-content">
+            <span class="close-report-btn" id="closeReportBtn"><i class="fa-solid fa-xmark"></i></span>
+            <h2>Send Report</h2>
+            
+            <form id="reportForm">
+                <div class="form-group">
+                    <label>Reason *</label>
+                    <div class="select-wrapper">
+                        <select id="reportReason" required>
+                            <option value="" disabled selected>Select Reason</option>
+                            <option value="inquiry">Inquiry Not Responding</option>
+                            <option value="listing">Fake / Duplicate Listing</option>
+                            <option value="sold">Sold Vehicle Still Listed</option>
+                            <option value="price">Price Discrepancy</option>
+                            <option value="technical">Technical Issue</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Describe the issue</label>
+                    <textarea id="reportIssue" placeholder="Enter details here..." rows="5"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Evidence (Optional)</label>
+                    <div class="upload-btn-wrapper">
+                        <button type="button" class="upload-btn">
+                            <span>Upload Screenshot</span>
+                            <i class="fa-solid fa-download"></i>
+                        </button>
+                        <input type="file" id="reportFile" hidden>
+                    </div>
+                </div>
+
+                <p class="report-form-note">Send Report if you have any issues.</p>
+                
+                <button type="submit" class="report-submit-btn">Submit</button>
+            </form>
+        </div>
+    </div>
 
     <footer class="site-footer">
         <div class="footer-container">
@@ -206,6 +391,11 @@
         <div class="preview-modal-content">
             <span class="close-preview-btn" id="closePreviewBtn"><i class="fa-solid fa-xmark"></i></span>
 
+            <div class="preview-car-info">
+                <h1 id="carTitle">Title</h1>
+                <span id="carPostedTime">Posted 1 hr ago</span>
+            </div>
+
             <div class="preview-container">
                 <div class="preview-left">
                     <div class="preview-image-wrapper">
@@ -222,10 +412,6 @@
                 </div>
 
                 <div class="preview-right">
-                    <div class="preview-car-info">
-                        <h1 id="carTitle">Title</h1>
-                        <span>Posted 1 hr ago</span>
-                    </div>
                     <div class="main-features-grid">
                         <div class="feature-block">
                             <i class="fa-solid fa-car"></i>
@@ -273,7 +459,7 @@
                     </div>
 
                     <div class="dealer-action">
-                        <button class="message-dealer-btn">Inquire</button>
+                        <button class="message-dealer-btn" id="inquireBtnModal">Inquire</button>
                     </div>
                 </div>
             </div>
@@ -296,7 +482,7 @@
                     <div class="filter-group-title">
                         <i class="fa-solid fa-layer-group"></i> CATEGORY
                     </div>
-                    <i class="fa-solid fa-minus"></i>
+                    <i class="fa-solid fa-chevron-down section-toggle"></i>
                 </div>
                 <ul class="filter-list">
                     <li><i class="fa-solid fa-arrow-trend-up"></i> New</li>
@@ -311,7 +497,7 @@
                     <div class="filter-group-title">
                         <i class="fa-solid fa-car"></i> VEHICLE TYPE
                     </div>
-                    <i class="fa-solid fa-minus"></i>
+                    <i class="fa-solid fa-chevron-down section-toggle"></i>
                 </div>
                 <ul class="filter-list text-only">
                     <li>Sports Car</li>
@@ -329,17 +515,31 @@
                     <div class="filter-group-title">
                         <i class="fa-solid fa-car"></i> SEARCH BRAND
                     </div>
-                    <i class="fa-solid fa-minus"></i>
+                    <i class="fa-solid fa-chevron-down section-toggle"></i>
                 </div>
                 <div class="filter-search-input">
-                    <input type="text" placeholder="Search Here...">
+                    <input type="text" id="brandSearchInput" placeholder="Search Here...">
                 </div>
             </div>
 
             <!-- Price -->
-            <div class="filter-group standalone">
-                <div class="filter-label"><i class="fa-solid fa-tag"></i> PRICE</div>
-                <div class="filter-label faded"><i class="fa-solid fa-wallet"></i> MIN - MAX</div>
+            <div class="filter-group">
+                <div class="filter-group-header">
+                    <div class="filter-group-title">
+                        <i class="fa-solid fa-tag"></i> PRICE RANGE
+                    </div>
+                    <i class="fa-solid fa-chevron-down section-toggle"></i>
+                </div>
+                <div class="price-range-inputs">
+                    <div class="price-input-wrapper">
+                        <span>MIN</span>
+                        <input type="number" id="minPriceInput" placeholder="Min Price">
+                    </div>
+                    <div class="price-input-wrapper">
+                        <span>MAX</span>
+                        <input type="number" id="maxPriceInput" placeholder="Max Price">
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -350,6 +550,45 @@
             </div>
         </div>
     </aside>
+
+    <!-- Gmail Style Composer -->
+    <div class="email-composer" id="emailComposer">
+        <div class="composer-header">
+            <span>New Message</span>
+            <div class="composer-actions">
+                <i class="fa-solid fa-minus"></i>
+                <i class="fa-solid fa-expand"></i>
+                <i class="fa-solid fa-xmark" id="closeComposerBtn"></i>
+            </div>
+        </div>
+        <div class="composer-body">
+            <div class="composer-field">
+                <span>From</span>
+                <input type="email" id="composerFrom" placeholder="Your Email">
+            </div>
+            <div class="composer-field">
+                <span>To</span>
+                <input type="text" value="sales@racsautodeal.com" readonly>
+            </div>
+            <div class="composer-field">
+                <span>Subject</span>
+                <input type="text" id="composerSubject" value="">
+            </div>
+            <textarea id="composerMessage" class="composer-textarea"></textarea>
+        </div>
+        <div class="composer-footer">
+            <button class="compose-send-btn" id="sendEmailBtn">Send</button>
+            <div class="footer-icons">
+                <i class="fa-solid fa-font"></i>
+                <i class="fa-solid fa-paperclip"></i>
+                <i class="fa-solid fa-link"></i>
+                <i class="fa-solid fa-face-smile"></i>
+                <i class="fa-brands fa-google-drive"></i>
+                <i class="fa-solid fa-image"></i>
+            </div>
+            <i class="fa-solid fa-trash-can composer-delete"></i>
+        </div>
+    </div>
 
     <!-- Favorites Modal -->
     <div class="fav-modal" id="favModal">

@@ -8,7 +8,7 @@ if (localStorage.getItem('adminLoggedIn') !== 'true') {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type AdminView = 'dashboard' | 'users' | 'inventory';
+type AdminView = 'dashboard' | 'users' | 'inventory' | 'settings' | 'reports';
 
 // ─── DOM Ready ────────────────────────────────────────────────────────────────
 
@@ -287,6 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
         (document.getElementById('userEmail') as HTMLInputElement).value = '';
         (document.getElementById('userPhone') as HTMLInputElement).value = '';
         (document.getElementById('userRole') as HTMLSelectElement).value = '';
+        (document.getElementById('userPassword') as HTMLInputElement).value = '';
         
         const avatarBtn = document.getElementById('avatarPreviewBtn');
         if (avatarBtn) {
@@ -334,8 +335,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const firstName = (document.getElementById('userFirstName') as HTMLInputElement)?.value;
         const lastName = (document.getElementById('userLastName') as HTMLInputElement)?.value;
         const role = (document.getElementById('userRole') as HTMLSelectElement)?.value;
+        const password = (document.getElementById('userPassword') as HTMLInputElement)?.value;
 
-        if (!username || !firstName || !lastName || !role) {
+        const isAdding = !editingRow;
+
+        if (!username || !firstName || !lastName || !role || (isAdding && !password)) {
             alert('Please fill all required fields and select a role.');
             return;
         }
@@ -423,29 +427,212 @@ document.addEventListener('DOMContentLoaded', () => {
     const dashboardView  = document.getElementById('dashboardView') as HTMLElement | null;
     const usersView      = document.getElementById('usersView')     as HTMLElement | null;
     const inventoryView  = document.getElementById('inventoryView') as HTMLElement | null;
+    const settingsView   = document.getElementById('settingsView')  as HTMLElement | null;
+    const reportsView    = document.getElementById('reportsView')   as HTMLElement | null;
 
     function switchView(target: AdminView): void {
         // Clear active state from all sidebar items
         document.querySelectorAll<HTMLElement>('.sidebar-menu li').forEach(li => li.classList.remove('active'));
 
         // Hide all views
+        document.getElementById('menuSettings')?.classList.remove('active');
+        document.getElementById('menuReports')?.classList.remove('active');
+        
         if (dashboardView) dashboardView.style.display = 'none';
         if (usersView)     usersView.style.display     = 'none';
         if (inventoryView) inventoryView.style.display = 'none';
+        if (settingsView)  settingsView.style.display  = 'none';
+        if (reportsView)   reportsView.style.display   = 'none';
 
         if (target === 'dashboard') {
             menuDashboard?.classList.add('active');
             if (dashboardView) dashboardView.style.display = 'block';
+            updateTopTitle('Dashboard');
         } else if (target === 'users') {
             menuUsers?.classList.add('active');
             if (usersView) usersView.style.display = 'block';
+            updateTopTitle('Manage Users');
         } else if (target === 'inventory') {
             menuInventory?.classList.add('active');
             if (inventoryView) inventoryView.style.display = 'block';
+            updateTopTitle('Inventory Management');
+        } else if (target === 'settings') {
+            document.getElementById('menuSettings')?.classList.add('active');
+            if (settingsView) settingsView.style.display = 'block';
+            updateTopTitle('System Settings');
+        } else if (target === 'reports') {
+            document.getElementById('menuReports')?.classList.add('active');
+            if (reportsView) reportsView.style.display = 'block';
+            updateTopTitle('User Reports');
         }
+    }
+
+    function updateTopTitle(title: string): void {
+        const topTitle = document.getElementById('currentViewTitle');
+        if (topTitle) topTitle.textContent = title;
     }
 
     menuDashboard?.addEventListener('click', (e: Event) => { e.preventDefault(); switchView('dashboard'); });
     menuUsers?.addEventListener('click',     (e: Event) => { e.preventDefault(); switchView('users');     });
     menuInventory?.addEventListener('click', (e: Event) => { e.preventDefault(); switchView('inventory'); });
+    document.getElementById('menuSettings')?.addEventListener('click', (e: Event) => { e.preventDefault(); switchView('settings'); });
+    document.getElementById('menuReports')?.addEventListener('click', (e: Event) => { e.preventDefault(); switchView('reports'); });
+
+    // ── Inventory Sort & Filter Logic ─────────────────────────────────────────
+    const sortBtn = document.getElementById('sortBtn');
+    const filterBtn = document.getElementById('filterBtn');
+    const sortDropdown = document.getElementById('sortDropdown');
+    const filterDropdown = document.getElementById('filterDropdown');
+
+    const toggleDropdown = (dropdown: HTMLElement | null) => {
+        if (!dropdown) return;
+        const isActive = dropdown.classList.contains('active');
+        // Close others first
+        document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('active'));
+        if (!isActive) dropdown.classList.add('active');
+    };
+
+    sortBtn?.addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown(sortDropdown); });
+    filterBtn?.addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown(filterDropdown); });
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('active'));
+    });
+
+    const parsePrice = (priceStr: string): number => {
+        return parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 0;
+    };
+
+    const parseDate = (dateStr: string): number => {
+        return new Date(dateStr).getTime() || 0;
+    };
+
+    const inventoryTable = document.getElementById('inventoryTableBody');
+
+    // Sorting Logic
+    sortDropdown?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const sortType = target.getAttribute('data-sort');
+        if (!sortType || !inventoryTable) return;
+
+        const rows = Array.from(inventoryTable.querySelectorAll('tr')) as HTMLTableRowElement[];
+        
+        rows.sort((a, b) => {
+            const valA_name = a.cells[0].textContent?.toLowerCase() || '';
+            const valB_name = b.cells[0].textContent?.toLowerCase() || '';
+            const valA_price = parsePrice(a.cells[3].textContent || '');
+            const valB_price = parsePrice(b.cells[3].textContent || '');
+            const valA_date = parseDate(a.cells[2].textContent || '');
+            const valB_date = parseDate(b.cells[2].textContent || '');
+
+            switch (sortType) {
+                case 'name-az': return valA_name.localeCompare(valB_name);
+                case 'price-high': return valB_price - valA_price;
+                case 'price-low': return valA_price - valB_price;
+                case 'date-new': return valB_date - valA_date;
+                case 'date-old': return valA_date - valB_date;
+                default: return 0;
+            }
+        });
+
+        rows.forEach(row => inventoryTable.appendChild(row));
+        if (sortBtn) sortBtn.childNodes[0].textContent = `Sort by: ${target.textContent} `;
+    });
+
+    // Filtering Logic
+    filterDropdown?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const filterStatus = target.getAttribute('data-filter');
+        if (!filterStatus || !inventoryTable) return;
+
+        const rows = Array.from(inventoryTable.querySelectorAll('tr')) as HTMLTableRowElement[];
+        
+        rows.forEach(row => {
+            const statusLabel = row.cells[4].textContent?.toLowerCase().trim() || '';
+            if (filterStatus === 'all' || statusLabel.replace(/\s+/g, '-') === filterStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        if (filterBtn) filterBtn.childNodes[0].textContent = `Filter: ${target.textContent} `;
+    });
+
+    // ── Universal Search Logic ────────────────────────────────────────────────
+    const setupSearch = (inputId: string, tableId: string) => {
+        const input = document.getElementById(inputId) as HTMLInputElement;
+        const tableBody = document.getElementById(tableId);
+        
+        input?.addEventListener('input', (e) => {
+            const query = (e.target as HTMLInputElement).value.toLowerCase();
+            const rows = tableBody?.querySelectorAll('tr');
+            
+            rows?.forEach(row => {
+                const text = row.textContent?.toLowerCase() || '';
+                (row as HTMLElement).style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+    };
+
+    // Special case for dashboard search which has multiple tables or a different structure
+    const dashboardSearchInput = document.getElementById('dashboardSearch') as HTMLInputElement;
+    dashboardSearchInput?.addEventListener('input', (e) => {
+        const query = (e.target as HTMLInputElement).value.toLowerCase();
+        const dashboardTable = document.querySelector('#dashboardView .inventory-table tbody');
+        dashboardTable?.querySelectorAll('tr').forEach(row => {
+            const text = row.textContent?.toLowerCase() || '';
+            (row as HTMLElement).style.display = text.includes(query) ? '' : 'none';
+        });
+    });
+
+    setupSearch('inventorySearch', 'inventoryTableBody');
+    setupSearch('userSearch',      'staffTableBody');
+    setupSearch('reportSearch',    'reportsTableBody');
+
+    // ── Settings Functionality ──────────────────────────────────────────────
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    saveSettingsBtn?.addEventListener('click', () => {
+        // Simulate saving
+        saveSettingsBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        saveSettingsBtn.setAttribute('disabled', 'true');
+        
+        setTimeout(() => {
+            saveSettingsBtn.innerHTML = '<i class="fa-solid fa-check"></i> Saved!';
+            saveSettingsBtn.style.background = '#27ae60';
+            
+            setTimeout(() => {
+                saveSettingsBtn.innerHTML = '<i class="fa-solid fa-check"></i> Save Changes';
+                saveSettingsBtn.style.background = '';
+                saveSettingsBtn.removeAttribute('disabled');
+                alert('Settings saved successfully!');
+            }, 1500);
+        }, 1000);
+    });
+
+    const togglePasswordBtn = document.querySelector('.toggle-password');
+    togglePasswordBtn?.addEventListener('click', () => {
+        const passInput = document.getElementById('settingAdminPassword') as HTMLInputElement;
+        const icon = togglePasswordBtn.querySelector('i');
+        if (passInput.type === 'password') {
+            passInput.type = 'text';
+            icon?.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            passInput.type = 'password';
+            icon?.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    });
+
+    const toggleUserPass = document.getElementById('toggleUserPass');
+    toggleUserPass?.addEventListener('click', () => {
+        const passInput = document.getElementById('userPassword') as HTMLInputElement;
+        const icon = toggleUserPass.querySelector('i');
+        if (passInput.type === 'password') {
+            passInput.type = 'text';
+            icon?.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            passInput.type = 'password';
+            icon?.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    });
 });

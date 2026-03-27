@@ -4,6 +4,7 @@ if (localStorage.getItem('adminLoggedIn') !== 'true') {
 }
 // ─── DOM Ready ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    var _a, _b;
     // ── Logout Functionality ──────────────────────────────────────────────────
     const logoutLink = document.querySelector('.logout-link a');
     logoutLink === null || logoutLink === void 0 ? void 0 : logoutLink.addEventListener('click', (e) => {
@@ -258,6 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('userEmail').value = '';
         document.getElementById('userPhone').value = '';
         document.getElementById('userRole').value = '';
+        document.getElementById('userPassword').value = '';
         const avatarBtn = document.getElementById('avatarPreviewBtn');
         if (avatarBtn) {
             avatarBtn.style.backgroundImage = 'none';
@@ -298,12 +300,14 @@ document.addEventListener('DOMContentLoaded', () => {
         openUserModal();
     });
     confirmAddUserBtn === null || confirmAddUserBtn === void 0 ? void 0 : confirmAddUserBtn.addEventListener('click', () => {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e;
         const username = (_a = document.getElementById('userUsername')) === null || _a === void 0 ? void 0 : _a.value;
         const firstName = (_b = document.getElementById('userFirstName')) === null || _b === void 0 ? void 0 : _b.value;
         const lastName = (_c = document.getElementById('userLastName')) === null || _c === void 0 ? void 0 : _c.value;
         const role = (_d = document.getElementById('userRole')) === null || _d === void 0 ? void 0 : _d.value;
-        if (!username || !firstName || !lastName || !role) {
+        const password = (_e = document.getElementById('userPassword')) === null || _e === void 0 ? void 0 : _e.value;
+        const isAdding = !editingRow;
+        if (!username || !firstName || !lastName || !role || (isAdding && !password)) {
             alert('Please fill all required fields and select a role.');
             return;
         }
@@ -380,34 +384,210 @@ document.addEventListener('DOMContentLoaded', () => {
     const dashboardView = document.getElementById('dashboardView');
     const usersView = document.getElementById('usersView');
     const inventoryView = document.getElementById('inventoryView');
+    const settingsView = document.getElementById('settingsView');
+    const reportsView = document.getElementById('reportsView');
     function switchView(target) {
+        var _a, _b, _c, _d;
         // Clear active state from all sidebar items
         document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
         // Hide all views
+        (_a = document.getElementById('menuSettings')) === null || _a === void 0 ? void 0 : _a.classList.remove('active');
+        (_b = document.getElementById('menuReports')) === null || _b === void 0 ? void 0 : _b.classList.remove('active');
         if (dashboardView)
             dashboardView.style.display = 'none';
         if (usersView)
             usersView.style.display = 'none';
         if (inventoryView)
             inventoryView.style.display = 'none';
+        if (settingsView)
+            settingsView.style.display = 'none';
+        if (reportsView)
+            reportsView.style.display = 'none';
         if (target === 'dashboard') {
             menuDashboard === null || menuDashboard === void 0 ? void 0 : menuDashboard.classList.add('active');
             if (dashboardView)
                 dashboardView.style.display = 'block';
+            updateTopTitle('Dashboard');
         }
         else if (target === 'users') {
             menuUsers === null || menuUsers === void 0 ? void 0 : menuUsers.classList.add('active');
             if (usersView)
                 usersView.style.display = 'block';
+            updateTopTitle('Manage Users');
         }
         else if (target === 'inventory') {
             menuInventory === null || menuInventory === void 0 ? void 0 : menuInventory.classList.add('active');
             if (inventoryView)
                 inventoryView.style.display = 'block';
+            updateTopTitle('Inventory Management');
         }
+        else if (target === 'settings') {
+            (_c = document.getElementById('menuSettings')) === null || _c === void 0 ? void 0 : _c.classList.add('active');
+            if (settingsView)
+                settingsView.style.display = 'block';
+            updateTopTitle('System Settings');
+        }
+        else if (target === 'reports') {
+            (_d = document.getElementById('menuReports')) === null || _d === void 0 ? void 0 : _d.classList.add('active');
+            if (reportsView)
+                reportsView.style.display = 'block';
+            updateTopTitle('User Reports');
+        }
+    }
+    function updateTopTitle(title) {
+        const topTitle = document.getElementById('currentViewTitle');
+        if (topTitle)
+            topTitle.textContent = title;
     }
     menuDashboard === null || menuDashboard === void 0 ? void 0 : menuDashboard.addEventListener('click', (e) => { e.preventDefault(); switchView('dashboard'); });
     menuUsers === null || menuUsers === void 0 ? void 0 : menuUsers.addEventListener('click', (e) => { e.preventDefault(); switchView('users'); });
     menuInventory === null || menuInventory === void 0 ? void 0 : menuInventory.addEventListener('click', (e) => { e.preventDefault(); switchView('inventory'); });
+    (_a = document.getElementById('menuSettings')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', (e) => { e.preventDefault(); switchView('settings'); });
+    (_b = document.getElementById('menuReports')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', (e) => { e.preventDefault(); switchView('reports'); });
+    // ── Inventory Sort & Filter Logic ─────────────────────────────────────────
+    const sortBtn = document.getElementById('sortBtn');
+    const filterBtn = document.getElementById('filterBtn');
+    const sortDropdown = document.getElementById('sortDropdown');
+    const filterDropdown = document.getElementById('filterDropdown');
+    const toggleDropdown = (dropdown) => {
+        if (!dropdown)
+            return;
+        const isActive = dropdown.classList.contains('active');
+        // Close others first
+        document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('active'));
+        if (!isActive)
+            dropdown.classList.add('active');
+    };
+    sortBtn === null || sortBtn === void 0 ? void 0 : sortBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown(sortDropdown); });
+    filterBtn === null || filterBtn === void 0 ? void 0 : filterBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown(filterDropdown); });
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('active'));
+    });
+    const parsePrice = (priceStr) => {
+        return parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 0;
+    };
+    const parseDate = (dateStr) => {
+        return new Date(dateStr).getTime() || 0;
+    };
+    const inventoryTable = document.getElementById('inventoryTableBody');
+    // Sorting Logic
+    sortDropdown === null || sortDropdown === void 0 ? void 0 : sortDropdown.addEventListener('click', (e) => {
+        const target = e.target;
+        const sortType = target.getAttribute('data-sort');
+        if (!sortType || !inventoryTable)
+            return;
+        const rows = Array.from(inventoryTable.querySelectorAll('tr'));
+        rows.sort((a, b) => {
+            var _a, _b;
+            const valA_name = ((_a = a.cells[0].textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
+            const valB_name = ((_b = b.cells[0].textContent) === null || _b === void 0 ? void 0 : _b.toLowerCase()) || '';
+            const valA_price = parsePrice(a.cells[3].textContent || '');
+            const valB_price = parsePrice(b.cells[3].textContent || '');
+            const valA_date = parseDate(a.cells[2].textContent || '');
+            const valB_date = parseDate(b.cells[2].textContent || '');
+            switch (sortType) {
+                case 'name-az': return valA_name.localeCompare(valB_name);
+                case 'price-high': return valB_price - valA_price;
+                case 'price-low': return valA_price - valB_price;
+                case 'date-new': return valB_date - valA_date;
+                case 'date-old': return valA_date - valB_date;
+                default: return 0;
+            }
+        });
+        rows.forEach(row => inventoryTable.appendChild(row));
+        if (sortBtn)
+            sortBtn.childNodes[0].textContent = `Sort by: ${target.textContent} `;
+    });
+    // Filtering Logic
+    filterDropdown === null || filterDropdown === void 0 ? void 0 : filterDropdown.addEventListener('click', (e) => {
+        const target = e.target;
+        const filterStatus = target.getAttribute('data-filter');
+        if (!filterStatus || !inventoryTable)
+            return;
+        const rows = Array.from(inventoryTable.querySelectorAll('tr'));
+        rows.forEach(row => {
+            var _a;
+            const statusLabel = ((_a = row.cells[4].textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase().trim()) || '';
+            if (filterStatus === 'all' || statusLabel.replace(/\s+/g, '-') === filterStatus) {
+                row.style.display = '';
+            }
+            else {
+                row.style.display = 'none';
+            }
+        });
+        if (filterBtn)
+            filterBtn.childNodes[0].textContent = `Filter: ${target.textContent} `;
+    });
+    // ── Universal Search Logic ────────────────────────────────────────────────
+    const setupSearch = (inputId, tableId) => {
+        const input = document.getElementById(inputId);
+        const tableBody = document.getElementById(tableId);
+        input === null || input === void 0 ? void 0 : input.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const rows = tableBody === null || tableBody === void 0 ? void 0 : tableBody.querySelectorAll('tr');
+            rows === null || rows === void 0 ? void 0 : rows.forEach(row => {
+                var _a;
+                const text = ((_a = row.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+    };
+    // Special case for dashboard search which has multiple tables or a different structure
+    const dashboardSearchInput = document.getElementById('dashboardSearch');
+    dashboardSearchInput === null || dashboardSearchInput === void 0 ? void 0 : dashboardSearchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const dashboardTable = document.querySelector('#dashboardView .inventory-table tbody');
+        dashboardTable === null || dashboardTable === void 0 ? void 0 : dashboardTable.querySelectorAll('tr').forEach(row => {
+            var _a;
+            const text = ((_a = row.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
+            row.style.display = text.includes(query) ? '' : 'none';
+        });
+    });
+    setupSearch('inventorySearch', 'inventoryTableBody');
+    setupSearch('userSearch', 'staffTableBody');
+    setupSearch('reportSearch', 'reportsTableBody');
+    // ── Settings Functionality ──────────────────────────────────────────────
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    saveSettingsBtn === null || saveSettingsBtn === void 0 ? void 0 : saveSettingsBtn.addEventListener('click', () => {
+        // Simulate saving
+        saveSettingsBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        saveSettingsBtn.setAttribute('disabled', 'true');
+        setTimeout(() => {
+            saveSettingsBtn.innerHTML = '<i class="fa-solid fa-check"></i> Saved!';
+            saveSettingsBtn.style.background = '#27ae60';
+            setTimeout(() => {
+                saveSettingsBtn.innerHTML = '<i class="fa-solid fa-check"></i> Save Changes';
+                saveSettingsBtn.style.background = '';
+                saveSettingsBtn.removeAttribute('disabled');
+                alert('Settings saved successfully!');
+            }, 1500);
+        }, 1000);
+    });
+    const togglePasswordBtn = document.querySelector('.toggle-password');
+    togglePasswordBtn === null || togglePasswordBtn === void 0 ? void 0 : togglePasswordBtn.addEventListener('click', () => {
+        const passInput = document.getElementById('settingAdminPassword');
+        const icon = togglePasswordBtn.querySelector('i');
+        if (passInput.type === 'password') {
+            passInput.type = 'text';
+            icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-eye', 'fa-eye-slash');
+        }
+        else {
+            passInput.type = 'password';
+            icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    });
+    const toggleUserPass = document.getElementById('toggleUserPass');
+    toggleUserPass === null || toggleUserPass === void 0 ? void 0 : toggleUserPass.addEventListener('click', () => {
+        const passInput = document.getElementById('userPassword');
+        const icon = toggleUserPass.querySelector('i');
+        if (passInput.type === 'password') {
+            passInput.type = 'text';
+            icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-eye', 'fa-eye-slash');
+        }
+        else {
+            passInput.type = 'password';
+            icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    });
 });
 export {};

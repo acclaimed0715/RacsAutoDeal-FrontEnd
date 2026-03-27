@@ -44,7 +44,7 @@ const carData: CarDataDictionary = {
         name: 'Ford Escape',
         model: '2012',
         fuel: 'Gasoline',
-        price: 'Starts at P750,000',
+        price: '₱750,000',
         brand: 'Ford',
         transmission: '5-Speed Manual / 6-Speed Automatic (varies by unit)',
         description: 'Front-Wheel Drive (FWD). AM/FM Radio, CD Player, AUX Input. Air Conditioning, Power Windows, Power Door Locks.',
@@ -63,7 +63,7 @@ const carData: CarDataDictionary = {
         name: 'Ford Escape Titanium',
         model: '2012',
         fuel: 'Gasoline',
-        price: 'Starts at P800,000',
+        price: '₱800,000',
         brand: 'Ford',
         transmission: '6-Speed Automatic',
         description: 'Front-Wheel Drive (FWD) / Optional AWD. Bluetooth, Premium Audio, Keyless Entry. Dual-zone Climate Control, Leather Seats, Power Liftgate.',
@@ -82,7 +82,7 @@ const carData: CarDataDictionary = {
         name: 'Nissan Livina',
         model: '2023',
         fuel: 'Gasoline',
-        price: 'Starts at P1,100,000',
+        price: '₱1,100,000',
         brand: 'Nissan',
         transmission: '4-Speed Automatic',
         description: 'Front-Wheel Drive (FWD). 7-inch Touchscreen Display, Apple CarPlay, Android Auto. Rear AC Vents, Leather Upholstery, Push Button Start.',
@@ -101,7 +101,7 @@ const carData: CarDataDictionary = {
         name: 'Honda Civic RS',
         model: '2024',
         fuel: 'Gasoline',
-        price: 'Starts at P1,775,000',
+        price: '₱1,775,000',
         brand: 'Honda',
         transmission: 'CVT',
         description: 'Front-Wheel Drive. Honda SENSING, 9-inch Display Audio, Bose Sound. Dual Zone AC, Leather Seats, Smart Key.',
@@ -120,7 +120,7 @@ const carData: CarDataDictionary = {
         name: 'Mazda 3',
         model: '2023',
         fuel: 'Mild Hybrid',
-        price: 'Starts at P1,500,000',
+        price: '₱1,500,000',
         brand: 'Mazda',
         transmission: '6-Speed Automatic',
         description: 'Front-Wheel Drive. 360° View Monitor, Signature KODO Design, HUD. Burgundy Leather, Premium Bose Audio.',
@@ -139,7 +139,7 @@ const carData: CarDataDictionary = {
         name: 'Toyota Innova',
         model: '2022',
         fuel: 'Diesel',
-        price: 'Starts at P1,750,000',
+        price: '₱1,750,000',
         brand: 'Toyota',
         transmission: '6-Speed Automatic',
         description: 'Rear-Wheel Drive. Captain Seats, Ambient Lighting, Touchscreen. Spacious Cabin, Rear AC, Push Start.',
@@ -158,7 +158,7 @@ const carData: CarDataDictionary = {
         name: 'Ford Mustang',
         model: '2024',
         fuel: 'Gasoline (V8)',
-        price: 'Starts at P3,500,000',
+        price: '₱3,500,000',
         brand: 'Ford',
         transmission: '10-Speed Automatic',
         description: 'Rear-Wheel Drive (RWD). Track Apps, MagneRide Damping, SYNC 4. Recaro Leather Seats, Dual-Zone AC.',
@@ -257,7 +257,7 @@ window.openPreview = (carId: CarId): void => {
     const eleName = document.getElementById('carName');
     const eleModel = document.getElementById('carModel');
     const eleFuel = document.getElementById('carFuel');
-    const elePrice = document.getElementById('carPrice');
+    const elePrice = document.getElementById('modalCarPrice');
     const eleBrand = document.getElementById('carBrand');
     const eleTrans = document.getElementById('carTransmission');
     const eleDesc = document.getElementById('carDescription');
@@ -282,7 +282,7 @@ window.openPreview = (carId: CarId): void => {
     if (eleName) eleName.innerHTML = `<strong>Car Name:</strong> <span>${entry.name}</span>`;
     if (eleModel) eleModel.innerHTML = `<strong>Car Model:</strong> <span>${entry.model}</span>`;
     if (eleFuel) eleFuel.innerHTML = `<strong>Fuel Type:</strong> <span>${entry.fuel}</span>`;
-    if (elePrice) elePrice.innerHTML = `<strong>Price:</strong> <span>${entry.price}</span>`;
+    if (elePrice) elePrice.innerHTML = entry.price;
     if (eleBrand) eleBrand.innerHTML = `<strong>Brand:</strong> <span>${entry.brand}</span>`;
     if (eleTrans) eleTrans.innerHTML = `<strong>Transmission:</strong> <span>${entry.transmission}</span>`;
     if (eleDesc) eleDesc.innerHTML = `<strong>Description:</strong> <span>${entry.description}</span>`;
@@ -401,10 +401,126 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Generate duplicates to reach 16 cars so pagination is testable
+    const baseKeys = Object.keys(carData) as CarId[];
+    baseKeys.forEach((key, idx) => {
+        carData[`${key}_v2` as CarId] = { ...carData[key], title: `${carData[key].title} (v2)` };
+        if (idx < 2) {
+            carData[`${key}_v3` as CarId] = { ...carData[key], title: `${carData[key].title} (v3)` };
+        }
+    });
+
+    let carKeys: CarId[] = Object.keys(carData) as CarId[];
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 10;
+    let currentView: 'grid' | 'list' | 'garage' = 'grid';
+
+    function renderCars(page: number): void {
+        const carGrid = document.getElementById('carGrid');
+        const gridTitleP = document.getElementById('dynamicCategoryTitle');
+        if (!carGrid) return;
+
+        carGrid.innerHTML = '';
+
+        let displayKeys = carKeys;
+        if (currentView === 'garage') {
+            displayKeys = carKeys.filter(id => carData[id].isFavorited);
+            if (gridTitleP) gridTitleP.textContent = 'My Garage (Favorites)';
+        }
+
+        if (displayKeys.length === 0 && currentView === 'garage') {
+            carGrid.innerHTML = '<div class="empty-fav-message" style="grid-column: 1/-1; text-align: center; padding: 4rem; color: #666; font-style: italic; font-size: 1.2rem;">You haven\'t favorited any cars yet.</div>';
+            renderPagination(0);
+            return;
+        }
+
+        const startIndex = (page - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        const pageKeys = displayKeys.slice(startIndex, endIndex);
+
+        pageKeys.forEach(id => {
+            const entry = carData[id];
+            const badgeHTML = typeof getBadgeHtml === 'function' ? getBadgeHtml(id.replace('_v2', '').replace('_v3', '') as CarId) : '';
+            
+            const cardHTML = `
+                <div class="car-card" data-id="${id}">
+                    <div class="car-image-wrapper">
+                        ${badgeHTML}
+                        <img src="${entry.images[0]}" alt="${entry.name}" class="car-image">
+                    </div>
+                    <div class="car-card-middle">
+                        <h3 class="card-name">${entry.title}</h3>
+                        <p class="card-description clamped-desc">${entry.description}</p>
+                        <div class="card-features-row">
+                            <div class="card-feat-compact"><span>Year</span><b>${entry.model}</b></div>
+                            <div class="card-feat-compact"><span>Mileage</span><b>${entry.mileage || 'N/A'}</b></div>
+                            <div class="card-feat-compact"><span>Fuel</span><b>${entry.fuel.split(' ')[0]}</b></div>
+                            <div class="card-feat-compact"><span>Trans</span><b>${entry.transmission.toLowerCase().includes('auto') || entry.transmission.toLowerCase().includes('cvt') ? 'Auto' : 'Manual'}</b></div>
+                        </div>
+                    </div>
+                    <div class="car-card-right">
+                        <div class="card-price">${entry.price}</div>
+                        <div class="card-action-icon fav-card-btn ${entry.isFavorited ? 'favorited' : ''}" data-id="${id}"><i class="fa-solid fa-key"></i></div>
+                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> ${entry.posted}</div>
+                    </div>
+                </div>
+            `;
+            carGrid.insertAdjacentHTML('beforeend', cardHTML);
+        });
+
+        renderPagination(displayKeys.length);
+    }
+
+    function renderPagination(totalItems: number): void {
+        const pageNumbersContainer = document.getElementById('pageNumbers');
+        const prevBtn = document.getElementById('prevPageBtn') as HTMLButtonElement | null;
+        const nextBtn = document.getElementById('nextPageBtn') as HTMLButtonElement | null;
+
+        if (!pageNumbersContainer) return;
+
+        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+        pageNumbersContainer.innerHTML = '';
+
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('div');
+            btn.className = `page-num ${i === currentPage ? 'active' : ''}`;
+            btn.textContent = i.toString();
+            btn.onclick = () => {
+                currentPage = i;
+                renderCars(currentPage);
+                document.querySelector('.inventory-section')?.scrollIntoView({ behavior: 'smooth' });
+            };
+            pageNumbersContainer.appendChild(btn);
+        }
+
+        if (prevBtn) {
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderCars(currentPage);
+                    window.scrollTo({ top: (document.querySelector('.inventory-section') as HTMLElement).offsetTop - 100, behavior: 'smooth' });
+                }
+            };
+        }
+
+        if (nextBtn) {
+            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderCars(currentPage);
+                    window.scrollTo({ top: (document.querySelector('.inventory-section') as HTMLElement).offsetTop - 100, behavior: 'smooth' });
+                }
+            };
+        }
+    }
+
     function applyFilters(): void {
         const activeVehicleTypes: string[] = [];
         const activeCategories: string[] = [];
-        const brandSearch = brandSearchInput?.value.toLowerCase().trim() || '';
+        const topSearchInput = document.querySelector('.nav-search input') as HTMLInputElement | null;
+        const brandSearch = brandSearchInput?.value.toLowerCase().trim() || topSearchInput?.value.toLowerCase().trim() || '';
         const minPrice = parseInt(minPriceInput?.value) || 0;
         const maxPrice = parseInt(maxPriceInput?.value) || Infinity;
 
@@ -420,41 +536,47 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        carCards.forEach(card => {
-            const carId = card.getAttribute('data-id') as CarId;
-            const entry = carData[carId];
-            if (!entry) return;
+        const allKeys = Object.keys(carData) as CarId[];
+        carKeys = allKeys.filter(id => {
+            const entry = carData[id];
+            
+            // Search
+            const matchesSearch = !brandSearch || 
+                entry.brand.toLowerCase().includes(brandSearch) || 
+                entry.name.toLowerCase().includes(brandSearch) ||
+                entry.title.toLowerCase().includes(brandSearch);
 
-            // 1. Vehicle Type
-            let showType = true;
+            // Vehicle Type
+            let matchesType = true;
             if (activeVehicleTypes.length > 0) {
-                const type = card.getAttribute('data-category')?.toLowerCase();
-                showType = !!(type && activeVehicleTypes.includes(type));
+                matchesType = activeVehicleTypes.some(vt => 
+                    (entry as any).type?.toLowerCase().includes(vt) ||
+                    entry.brand.toLowerCase().includes(vt) ||
+                    entry.name.toLowerCase().includes(vt)
+                );
             }
 
-            // 2. Category (Badges)
-            let showCat = true;
+            // Category (Badges)
+            let matchesCat = true;
             if (activeCategories.length > 0) {
-                const badgeText = card.querySelector('.car-badge')?.textContent?.toLowerCase() || '';
-                showCat = activeCategories.some(cat => badgeText.includes(cat));
+                const badge = getBadgeHtml(id.replace('_v2', '').replace('_v3', '') as CarId).toLowerCase();
+                matchesCat = activeCategories.some(cat => badge.includes(cat));
             }
 
-            // 3. Brand Search
-            const showBrand = brandSearch === '' || 
-                             entry.brand.toLowerCase().includes(brandSearch) || 
-                             entry.name.toLowerCase().includes(brandSearch);
-
-            // 4. Price Filter
+            // Price
             const numericPrice = parseInt(entry.price.replace(/[^0-9]/g, '')) || 0;
-            const showPrice = numericPrice >= minPrice && numericPrice <= maxPrice;
+            const matchesPrice = numericPrice >= minPrice && numericPrice <= maxPrice;
 
-            card.style.display = (showType && showCat && showBrand && showPrice) ? 'flex' : 'none';
+            return matchesSearch && matchesType && matchesCat && matchesPrice;
         });
+
+        currentPage = 1;
+        renderCars(1);
 
         const gridTitle = document.getElementById('dynamicCategoryTitle');
         if (gridTitle) {
             gridTitle.textContent = activeVehicleTypes.length === 0
-                ? 'All Vehicles'
+                ? (brandSearch ? `Search: "${brandSearch}"` : 'All Vehicles')
                 : activeVehicleTypes.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(', ');
         }
     }
@@ -463,6 +585,39 @@ document.addEventListener('DOMContentLoaded', () => {
     brandSearchInput?.addEventListener('input', applyFilters);
     minPriceInput?.addEventListener('input', applyFilters);
     maxPriceInput?.addEventListener('input', applyFilters);
+
+    const topSearch = document.querySelector('.nav-search input') as HTMLInputElement | null;
+    const navSearchBar = document.querySelector('.search-bar.nav-search');
+    const clearIcon = navSearchBar?.querySelector('.clear-icon');
+    let hasScrolledOnSearch = false;
+
+    if (topSearch && navSearchBar) {
+        topSearch.addEventListener('input', () => {
+            navSearchBar.classList.toggle('has-value', topSearch.value.length > 0);
+            
+            if (topSearch.value.length > 0 && !hasScrolledOnSearch) {
+                hasScrolledOnSearch = true;
+                const inventorySection = document.querySelector('.inventory-section');
+                if (inventorySection) {
+                    setTimeout(() => inventorySection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+                }
+            } else if (topSearch.value.length === 0) {
+                hasScrolledOnSearch = false;
+            }
+
+            applyFilters();
+        });
+    }
+
+    if (clearIcon && topSearch && navSearchBar) {
+        clearIcon.addEventListener('click', () => {
+            topSearch.value = '';
+            navSearchBar.classList.remove('has-value');
+            hasScrolledOnSearch = false;
+            topSearch.focus();
+            applyFilters();
+        });
+    }
 
     filterLists.forEach(list => {
         list.querySelectorAll<HTMLElement>('li').forEach(li => {
@@ -477,95 +632,159 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector<HTMLElement>('.filter-reset-btn')?.addEventListener('click', () => {
         filterLists.forEach(list => list.querySelectorAll('li').forEach(li => li.classList.remove('active')));
         if (brandSearchInput) brandSearchInput.value = '';
+        if (topSearch) { topSearch.value = ''; navSearchBar?.classList.remove('has-value'); }
         if (minPriceInput) minPriceInput.value = '';
         if (maxPriceInput) maxPriceInput.value = '';
+        hasScrolledOnSearch = false;
         applyFilters();
     });
 
-    // ── Favorites Logic ───────────────────────────────────────────
-    const navFavBtn = document.getElementById('navFavBtn');
-    const favCount = document.getElementById('favCount');
-    const favModal = document.getElementById('favModal');
-    const favOverlay = document.getElementById('favOverlay');
-    const closeFavBtn = document.getElementById('closeFavBtn');
-    const favModalBody = document.getElementById('favModalBody');
 
-    const openFavorites = (): void => { favModal?.classList.add('active'); favOverlay?.classList.add('active'); document.body.style.overflow = 'hidden'; };
-    const closeFavorites = (): void => { favModal?.classList.remove('active'); favOverlay?.classList.remove('active'); document.body.style.overflow = 'auto'; };
 
-    function updateFavoritesUI(): void {
-        if (!favModalBody || !favCount) return;
-        favModalBody.innerHTML = '';
-        let count = 0;
+    // View Toggling Logic
+    const carGrid = document.getElementById('carGrid');
+    const gridViewBtn = document.getElementById('gridViewBtn');
+    const listViewBtn = document.getElementById('listViewBtn');
+    const garageViewBtn = document.getElementById('garageViewBtn');
 
-        for (const carId in carData) {
-            const entry = carData[carId as CarId];
-            if (entry?.isFavorited) {
-                count++;
-                const item = document.createElement('div');
-                item.className = 'fav-item';
-                const priceMatch = entry.price.match(/₱[0-9,]+/);
-                const displayPrice = priceMatch ? priceMatch[0] : entry.price;
+    if (listViewBtn && gridViewBtn && garageViewBtn && carGrid) {
+        gridViewBtn.addEventListener('click', () => {
+            currentView = 'grid';
+            carGrid.classList.add('grid-view');
+            gridViewBtn.classList.add('active');
+            listViewBtn.classList.remove('active');
+            garageViewBtn.classList.remove('active');
+            renderCars(1);
+        });
+        
+        listViewBtn.addEventListener('click', () => {
+            currentView = 'list';
+            carGrid.classList.remove('grid-view');
+            listViewBtn.classList.add('active');
+            gridViewBtn.classList.remove('active');
+            garageViewBtn.classList.remove('active');
+            renderCars(1);
+        });
 
-                item.innerHTML = `
-                    <div class="fav-item-img"><img src="${entry.images[0]}" alt="${entry.title}"></div>
-                    <div class="fav-item-info">
-                        <span class="fav-item-title">${entry.title}</span>
-                        <div class="dealer-action">
-                            <button class="message-dealer-btn inquire-fav-btn" data-id="${carId}">Inquire</button>
-                        </div>
-                        <span class="fav-item-price">${displayPrice}</span>
-                    </div>
-                    <i class="fa-solid fa-trash remove-fav-btn" data-id="${carId}"></i>
-                `;
-                item.addEventListener('click', (e) => {
-                    if (!(e.target as HTMLElement).classList.contains('remove-fav-btn') && !(e.target as HTMLElement).classList.contains('inquire-fav-btn')) {
-                        closeFavorites();
-                        window.openPreview(carId as CarId);
-                    }
-                });
-                favModalBody.appendChild(item);
-            }
-        }
-        favCount.textContent = count.toString();
-        favCount.classList.toggle('active', count > 0);
-        if (count === 0) favModalBody.innerHTML = '<div class="empty-fav-message">You haven\'t favorited any cars yet.</div>';
-
-        favModalBody.querySelectorAll('.remove-fav-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = btn.getAttribute('data-id') as CarId;
-                if (carData[id]) {
-                    carData[id].isFavorited = false;
-                    updateFavoritesUI();
-                    document.querySelectorAll(`.fav-card-btn[data-id="${id}"]`).forEach(b => b.classList.remove('favorited'));
-                    if (window.currentCarId === id) document.getElementById('favoriteBtn')?.classList.remove('favorited');
-                }
-            });
+        garageViewBtn.addEventListener('click', () => {
+            currentView = 'garage';
+            carGrid.classList.add('grid-view');
+            garageViewBtn.classList.add('active');
+            gridViewBtn.classList.remove('active');
+            listViewBtn.classList.remove('active');
+            renderCars(1);
         });
     }
 
-    navFavBtn?.addEventListener('click', openFavorites);
-    closeFavBtn?.addEventListener('click', closeFavorites);
-    favOverlay?.addEventListener('click', closeFavorites);
+    if (carGrid) {
+        carGrid.addEventListener('click', (e) => {
+            const target = e.target as HTMLElement;
+            const favBtn = target.closest('.fav-card-btn');
+            const carCard = target.closest('.car-card');
 
-    // Initial Sync
-    const favCardBtns = document.querySelectorAll<HTMLElement>('.fav-card-btn');
-    favCardBtns.forEach(btn => {
-        const carId = btn.getAttribute('data-id') as CarId;
-        if (carId && carData[carId]?.isFavorited) btn.classList.add('favorited');
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (!carId || !carData[carId]) return;
-            const entry = carData[carId];
-            entry.isFavorited = !entry.isFavorited;
-            btn.classList.toggle('favorited', entry.isFavorited);
-            if (window.currentCarId === carId) document.getElementById('favoriteBtn')?.classList.toggle('favorited', entry.isFavorited);
-            updateFavoritesUI();
+            if (favBtn) {
+                e.stopPropagation();
+                const carId = favBtn.getAttribute('data-id') as CarId;
+                if (carId && carData[carId]) {
+                    const entry = carData[carId];
+                    entry.isFavorited = !entry.isFavorited;
+                    favBtn.classList.toggle('favorited', entry.isFavorited);
+                    updateFavoritesBadge();
+                    
+                    if (currentView === 'garage') renderCars(currentPage);
+
+                    if (window.currentCarId === carId) {
+                        const modalFavBtn = document.getElementById('favoriteBtn');
+                        if (modalFavBtn) modalFavBtn.classList.toggle('favorited', entry.isFavorited);
+                    }
+                }
+                return;
+            }
+
+            if (carCard) {
+                const carId = carCard.getAttribute('data-id') as CarId;
+                if (carId && typeof window.openPreview === 'function') {
+                    window.openPreview(carId);
+                }
+            }
         });
-    });
+    }
 
-    updateFavoritesUI();
+
+    // ── Favorites Logic ───────────────────────────────────────────
+    const inventoryFavCount = document.getElementById('inventoryFavCount');
+
+    function updateFavoritesBadge(): void {
+        if (!inventoryFavCount) return;
+        let count = 0;
+        for (const carId in carData) {
+            if (carData[carId as CarId]?.isFavorited) count++;
+        }
+        inventoryFavCount.textContent = count.toString();
+    }
+
+    updateFavoritesBadge();
+
+    // ── Notification Logic ─────────────────────────────────────────
+    const mockNotifsArray = [
+        { title: 'Price Drop Alert', desc: 'Ford Mustang GT price dropped by ₱50k!', time: '1 hr ago', unread: true },
+        { title: 'New Arrival', desc: 'A brand new 2024 Honda Civic RS was just added to our inventory.', time: '3 hrs ago', unread: true },
+        { title: 'Report Status', desc: 'Your report #1029 has been reviewed by our support team.', time: '1 day ago', unread: true },
+        { title: 'Welcome!', desc: 'Thanks for joining Racs Auto Deal!', time: '2 days ago', unread: false }
+    ];
+
+    const navNotifButton = document.getElementById('navNotifBtn');
+    const notificationModal = document.getElementById('notifModal');
+    const notificationOverlay = document.getElementById('notifOverlay');
+    const closeNotificationBtn = document.getElementById('closeNotifBtn');
+    const notificationList = document.getElementById('notifList');
+    const notificationBadge = document.getElementById('notifBadge');
+    const notificationCountPill = document.getElementById('notifCountPill');
+
+    function renderNotifs(): void {
+        if (!notificationList) return;
+        notificationList.innerHTML = '';
+        let unreadCount = 0;
+
+        mockNotifsArray.forEach((notif) => {
+            if (notif.unread) unreadCount++;
+
+            const li = document.createElement('li');
+            li.className = `notif-item ${notif.unread ? 'unread' : ''}`;
+
+            let iconClass = 'fa-bell';
+            if (notif.title.includes('Drop')) iconClass = 'fa-arrow-trend-down';
+            else if (notif.title.includes('Arrival')) iconClass = 'fa-car-side';
+            else if (notif.title.includes('Report')) iconClass = 'fa-clipboard-check';
+
+            li.innerHTML = `
+                <div class="notif-icon"><i class="fa-solid ${iconClass}"></i></div>
+                <div class="notif-content">
+                    <h4>${notif.title}</h4>
+                    <p>${notif.desc}</p>
+                    <span class="notif-time">${notif.time}</span>
+                </div>
+            `;
+            notificationList.appendChild(li);
+        });
+
+        if (notificationBadge) {
+            notificationBadge.textContent = unreadCount.toString();
+            notificationBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+        }
+        if (notificationCountPill) {
+            notificationCountPill.textContent = unreadCount.toString();
+        }
+    }
+
+    renderNotifs();
+
+    const openNotifs = (): void => { notificationModal?.classList.add('active'); notificationOverlay?.classList.add('active'); document.body.style.overflow = 'hidden'; };
+    const closeNotifs = (): void => { notificationModal?.classList.remove('active'); notificationOverlay?.classList.remove('active'); document.body.style.overflow = 'auto'; };
+
+    navNotifButton?.addEventListener('click', openNotifs);
+    closeNotificationBtn?.addEventListener('click', closeNotifs);
+    notificationOverlay?.addEventListener('click', closeNotifs);
 
     // ── Preview & Reporting Logic ───────────────────────────────────
     const previewOverlay = document.getElementById('previewOverlay');
@@ -613,7 +832,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Sync back to inventory card
         document.querySelectorAll(`.fav-card-btn[data-id="${carId}"]`).forEach(btn => btn.classList.toggle('favorited', entry.isFavorited));
-        updateFavoritesUI();
+        updateFavoritesBadge();
+        if (currentView === 'garage') renderCars(currentPage);
     });
 
     // ── Email Composer Global Logic ────────────────────────────────
@@ -657,4 +877,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!wasActive) item.classList.add('active');
         });
     });
+
+    // Initial render
+    applyFilters();
 });

@@ -305,8 +305,10 @@ body {
 .status {
     padding: 0.4rem 0.8rem;
     border-radius: 20px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 600;
+    cursor: pointer;
+    user-select: none;
 }
 
 .status.available {
@@ -814,8 +816,11 @@ body {
 .badge {
     padding: 0.4rem 1rem;
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    user-select: none;
     display: inline-block;
 }
 

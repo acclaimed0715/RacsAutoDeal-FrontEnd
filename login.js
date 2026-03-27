@@ -24,16 +24,31 @@ document.addEventListener('DOMContentLoaded', () => {
         // Simple Dummy Auth (admin / admin123)
         // In a real app, this would be an API call
         if (user === 'admin' && pass === 'admin123') {
-            errorMsg.textContent = '';
-            // Store session (simulated)
+            if (errorMsg)
+                errorMsg.textContent = '';
             localStorage.setItem('adminLoggedIn', 'true');
-            // Redirect to dashboard
+            localStorage.setItem('currentUserRole', 'Super Admin');
             window.location.href = 'admin.html';
         }
         else {
-            errorMsg.textContent = 'Invalid username or password. Please try again.';
-            errorMsg.style.display = 'block';
-            // Shake effect (optional)
+            const storedUsersStr = localStorage.getItem('racs_staff_users');
+            let matchedUser = null;
+            if (storedUsersStr) {
+                const users = JSON.parse(storedUsersStr);
+                matchedUser = users.find((u) => u.username === user && u.password === pass);
+            }
+            if (matchedUser) {
+                if (errorMsg)
+                    errorMsg.textContent = '';
+                localStorage.setItem('adminLoggedIn', 'true');
+                localStorage.setItem('currentUserRole', matchedUser.role);
+                window.location.href = 'admin.html';
+                return;
+            }
+            if (errorMsg) {
+                errorMsg.textContent = 'Invalid username or password. Please try again.';
+                errorMsg.style.display = 'block';
+            }
             loginForm.classList.add('shake');
             setTimeout(() => loginForm.classList.remove('shake'), 500);
         }

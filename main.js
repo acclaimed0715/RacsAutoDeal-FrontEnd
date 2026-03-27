@@ -181,6 +181,41 @@ const carData = {
         type: 'Sports Car'
     },
 };
+// ─── Merge Admin-Added Cars from localStorage ─────────────────────────────────
+(function mergeAdminCars() {
+    try {
+        const stored = localStorage.getItem('racs_car_inventory');
+        if (!stored)
+            return;
+        const adminCars = JSON.parse(stored);
+        adminCars.forEach((car) => {
+            const id = car.id;
+            carData[id] = {
+                title: `${car.name} ${car.model || ''}`.trim(),
+                images: car.images && car.images.length ? car.images : ['assets/suv_silver.png'],
+                name: car.name,
+                model: car.model || 'N/A',
+                fuel: car.fuel || 'N/A',
+                price: car.price,
+                brand: car.brand || 'N/A',
+                transmission: car.transmission || 'N/A',
+                description: car.description || '',
+                isFavorited: false,
+                mileage: car.mileage || 'N/A',
+                engine: car.engine || 'N/A',
+                hp: car.hp || 'N/A',
+                torque: car.torque || 'N/A',
+                safety: car.safety || 'N/A',
+                seating: car.seating || 'N/A',
+                posted: car.posted || 'Just Added',
+                type: 'Admin Added'
+            };
+        });
+    }
+    catch (e) {
+        console.warn('Could not merge admin cars:', e);
+    }
+})();
 // ─── Badge helper ─────────────────────────────────────────────────────────────
 function getBadgeHtml(carId) {
     if (carId === 'escape2012')
@@ -350,10 +385,10 @@ window.openPreview = (carId) => {
             composerSubject.value = `Inquiry for ${entry.title}`;
             composerMessage.value =
                 `Hi Racs Auto Deal,\n\nI am interested in inquiring about the following unit:\n\n` +
-                `Unit: ${entry.title}\n` +
-                `Year: ${entry.model}\n` +
-                `Price: ${entry.price}\n\n` +
-                `Please send me more details. Thank you!`;
+                    `Unit: ${entry.title}\n` +
+                    `Year: ${entry.model}\n` +
+                    `Price: ${entry.price}\n\n` +
+                    `Please send me more details. Thank you!`;
             emailComposer.classList.add('active');
         };
     }
@@ -443,14 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
             (_a = header.parentElement) === null || _a === void 0 ? void 0 : _a.classList.toggle('collapsed');
         });
     });
-    // Generate duplicates to reach 16 cars so pagination is testable
-    const baseKeys = Object.keys(carData);
-    baseKeys.forEach((key, idx) => {
-        carData[`${key}_v2`] = Object.assign(Object.assign({}, carData[key]), { title: `${carData[key].title} (v2)` });
-        if (idx < 2) {
-            carData[`${key}_v3`] = Object.assign(Object.assign({}, carData[key]), { title: `${carData[key].title} (v3)` });
-        }
-    });
+    // Car keys populated from carData (includes admin-added cars from localStorage)\n
     let carKeys = Object.keys(carData);
     let currentPage = 1;
     const ITEMS_PER_PAGE = 10;
@@ -742,8 +770,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Notification Logic ─────────────────────────────────────────
     const mockNotifsArray = [
         { title: 'Price Drop Alert', desc: 'Ford Mustang GT price dropped by ₱50k!', time: '1 hr ago', unread: true },
-        { title: 'New Arrival', desc: 'A brand new 2026 Honda Civic RS was just added to our inventory.', time: '3 hrs ago', unread: true },
-        { title: 'Welcome!', desc: 'Thanks for visiting Racs Auto Deal Website!', time: '2 days ago', unread: false }
+        { title: 'New Arrival', desc: 'A brand new 2024 Honda Civic RS was just added to our inventory.', time: '3 hrs ago', unread: true },
+        { title: 'Report Status', desc: 'Your report #1029 has been reviewed by our support team.', time: '1 day ago', unread: true },
+        { title: 'Welcome!', desc: 'Thanks for joining Racs Auto Deal!', time: '2 days ago', unread: false }
     ];
     const navNotifButton = document.getElementById('navNotifBtn');
     const notificationModal = document.getElementById('notifModal');
@@ -897,4 +926,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial render
     applyFilters();
 });
-export { };
+export {};

@@ -221,6 +221,41 @@ const carData: CarDataDictionary = {
     },
 };
 
+// ─── Merge Admin-Added Cars from localStorage ─────────────────────────────────
+
+(function mergeAdminCars() {
+    try {
+        const stored = localStorage.getItem('racs_car_inventory');
+        if (!stored) return;
+        const adminCars = JSON.parse(stored);
+        adminCars.forEach((car: any) => {
+            const id = car.id as CarId;
+            carData[id] = {
+                title: `${car.name} ${car.model || ''}`.trim(),
+                images: car.images && car.images.length ? car.images : ['assets/suv_silver.png'],
+                name: car.name,
+                model: car.model || 'N/A',
+                fuel: car.fuel || 'N/A',
+                price: car.price,
+                brand: car.brand || 'N/A',
+                transmission: car.transmission || 'N/A',
+                description: car.description || '',
+                isFavorited: false,
+                mileage: car.mileage || 'N/A',
+                engine: car.engine || 'N/A',
+                hp: car.hp || 'N/A',
+                torque: car.torque || 'N/A',
+                safety: car.safety || 'N/A',
+                seating: car.seating || 'N/A',
+                posted: car.posted || 'Just Added',
+                type: 'Admin Added'
+            };
+        });
+    } catch (e) {
+        console.warn('Could not merge admin cars:', e);
+    }
+})();
+
 // ─── Badge helper ─────────────────────────────────────────────────────────────
 
 function getBadgeHtml(carId: CarId): string {
@@ -500,15 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Generate duplicates to reach 16 cars so pagination is testable
-    const baseKeys = Object.keys(carData) as CarId[];
-    baseKeys.forEach((key, idx) => {
-        carData[`${key}_v2` as CarId] = { ...carData[key], title: `${carData[key].title} (v2)` };
-        if (idx < 2) {
-            carData[`${key}_v3` as CarId] = { ...carData[key], title: `${carData[key].title} (v3)` };
-        }
-    });
-
+    // Car keys populated from carData (includes admin-added cars from localStorage)\n
     let carKeys: CarId[] = Object.keys(carData) as CarId[];
     let currentPage = 1;
     const ITEMS_PER_PAGE = 10;

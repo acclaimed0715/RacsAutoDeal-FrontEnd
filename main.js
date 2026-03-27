@@ -18,6 +18,47 @@ const carData = {
         safety: 'Front Airbags, ABS, ESC',
         seating: '5 Seater',
         posted: '1 Day Ago',
+        type: 'SUV'
+    },
+    tesla_plaid: {
+        title: 'Tesla Model S Plaid 2024',
+        images: ['assets/tesla_plaid.png'],
+        name: 'Tesla Model S',
+        model: '2024',
+        fuel: 'Electric',
+        price: '₱6,500,000',
+        brand: 'Tesla',
+        transmission: 'Single-Speed Fixed Gear',
+        description: 'All-Wheel Drive (AWD). 1,020 hp, 0-60 mph in 1.99s. 17-inch Cinematic Display, Autopilot, Premium Audio.',
+        isFavorited: false,
+        mileage: '0 KM',
+        engine: 'Tri-Motor Electric',
+        hp: '1,020 hp',
+        torque: '1,050 lb-ft',
+        safety: 'Autopilot, 8 Cameras, 12 Ultrasonic Sensors',
+        seating: '5 Seater',
+        posted: 'New Arrival',
+        type: 'Electric Car'
+    },
+    porsche_taycan: {
+        title: 'Porsche Taycan Turbo S 2024',
+        images: ['assets/porsche_taycan.png'],
+        name: 'Porsche Taycan',
+        model: '2024',
+        fuel: 'Electric',
+        price: '₱12,500,000',
+        brand: 'Porsche',
+        transmission: '2-Speed Automatic (Rear), 1-Speed (Front)',
+        description: 'All-Wheel Drive (AWD). 800V Architecture, Taycan Soul, Matrix LED Headlights. Performance Battery Plus, Sport Chrono Package.',
+        isFavorited: false,
+        mileage: '0 KM',
+        engine: 'Dual-Motor Electric',
+        hp: '750 hp (Overboost)',
+        torque: '774 lb-ft',
+        safety: 'Porsche InnoDrive, Night View Assist',
+        seating: '4 Seater',
+        posted: 'New Arrival',
+        type: 'Electric Car'
     },
     escape2012_titanium: {
         title: 'Ford Escape Titanium 2012',
@@ -37,6 +78,7 @@ const carData = {
         safety: 'Front/Side Airbags, ABS, Blind Spot Monitor',
         seating: '5 Seater',
         posted: '1 Day Ago',
+        type: 'SUV'
     },
     livina2023: {
         title: 'Nissan Livina VL 2023',
@@ -56,6 +98,7 @@ const carData = {
         safety: 'Dual Airbags, ABS with EBD',
         seating: '7 Seater',
         posted: '2 Days Ago',
+        type: 'SUV'
     },
     civic_rs: {
         title: 'Honda Civic RS 2024',
@@ -75,6 +118,7 @@ const carData = {
         safety: 'Honda SENSING, 6 Airbags, ABS',
         seating: '5 Seater',
         posted: '3 Days Ago',
+        type: 'Sedan'
     },
     mazda3_sport: {
         title: 'Mazda 3 Sport 2023',
@@ -94,6 +138,7 @@ const carData = {
         safety: 'i-ACTIVSENSE, 7 Airbags, ABS',
         seating: '5 Seater',
         posted: '4 Days Ago',
+        type: 'Hatchback'
     },
     innova_v: {
         title: 'Toyota Innova V 2022',
@@ -113,6 +158,7 @@ const carData = {
         safety: 'Dual Airbags, ABS, VSC',
         seating: '7 Seater',
         posted: '5 Days Ago',
+        type: 'Van'
     },
     mustang_gt: {
         title: 'Ford Mustang GT 2024',
@@ -132,6 +178,7 @@ const carData = {
         safety: 'Ford Co-Pilot360, 8 Airbags, ABS',
         seating: '4 Seater',
         posted: '1 Day Ago',
+        type: 'Sports Car'
     },
 };
 // ─── Badge helper ─────────────────────────────────────────────────────────────
@@ -142,6 +189,8 @@ function getBadgeHtml(carId) {
         return `<span class="car-badge badge-most-clicked"><i class="fa-solid fa-hand-pointer"></i> Most Clicked</span>`;
     if (carId === 'livina2023')
         return `<span class="car-badge badge-new"><i class="fa-solid fa-arrow-trend-up"></i> New</span>`;
+    if (carId === 'tesla_plaid' || carId === 'porsche_taycan')
+        return `<span class="car-badge badge-electric" style="background:#00d2ff; color:#000;"><i class="fa-solid fa-bolt"></i> EV</span>`;
     return '';
 }
 // ─── Global State & Functions ──────────────────────────────────────────────────
@@ -301,10 +350,10 @@ window.openPreview = (carId) => {
             composerSubject.value = `Inquiry for ${entry.title}`;
             composerMessage.value =
                 `Hi Racs Auto Deal,\n\nI am interested in inquiring about the following unit:\n\n` +
-                    `Unit: ${entry.title}\n` +
-                    `Year: ${entry.model}\n` +
-                    `Price: ${entry.price}\n\n` +
-                    `Please send me more details. Thank you!`;
+                `Unit: ${entry.title}\n` +
+                `Year: ${entry.model}\n` +
+                `Price: ${entry.price}\n\n` +
+                `Please send me more details. Thank you!`;
             emailComposer.classList.add('active');
         };
     }
@@ -320,6 +369,49 @@ window.openPreview = (carId) => {
 // ─── DOM Ready ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     var _a;
+    // ── Reveal Animations ───────────────────────────────────────────────────
+    const revealElements = document.querySelectorAll('.reveal-up');
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, { threshold: 0.1 });
+    revealElements.forEach(el => revealObserver.observe(el));
+    // ── Promo Carousel Logic ────────────────────────────────────────────────
+    const promoTrack = document.getElementById('promoTrack');
+    const promoSlides = document.querySelectorAll('.promo-slide');
+    const promoDots = document.querySelectorAll('.promo-dot-wrapper');
+    const promoPrev = document.getElementById('promoPrev');
+    const promoNext = document.getElementById('promoNext');
+    let currentPromo = 0;
+    let promoInterval;
+    const updatePromo = (index) => {
+        var _a, _b;
+        promoSlides.forEach(s => s.classList.remove('active'));
+        promoDots.forEach(d => d.classList.remove('active'));
+        currentPromo = (index + promoSlides.length) % promoSlides.length;
+        if (promoTrack) {
+            promoTrack.style.transform = `translateX(-${currentPromo * 100}%)`;
+        }
+        (_a = promoSlides[currentPromo]) === null || _a === void 0 ? void 0 : _a.classList.add('active');
+        (_b = promoDots[currentPromo]) === null || _b === void 0 ? void 0 : _b.classList.add('active');
+    };
+    const nextPromo = () => updatePromo(currentPromo + 1);
+    const prevPromo = () => updatePromo(currentPromo - 1);
+    const startPromoAutoPlay = () => {
+        clearInterval(promoInterval);
+        promoInterval = setInterval(nextPromo, 5000);
+    };
+    if (promoSlides.length > 0) {
+        promoPrev === null || promoPrev === void 0 ? void 0 : promoPrev.addEventListener('click', () => { prevPromo(); startPromoAutoPlay(); });
+        promoNext === null || promoNext === void 0 ? void 0 : promoNext.addEventListener('click', () => { nextPromo(); startPromoAutoPlay(); });
+        promoDots.forEach((dot, idx) => {
+            dot.addEventListener('click', () => { updatePromo(idx); startPromoAutoPlay(); });
+        });
+        startPromoAutoPlay();
+    }
     // ── Elements & State ──────────────────────────────────────────────────────────
     const filterBtn = document.querySelector('.filter-btn');
     const filterSidebar = document.getElementById('filterSidebar');
@@ -583,7 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gridViewBtn.classList.add('active');
             listViewBtn.classList.remove('active');
             garageViewBtn.classList.remove('active');
-            renderCars(1);
+            applyFilters();
         });
         listViewBtn.addEventListener('click', () => {
             currentView = 'list';
@@ -591,7 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
             listViewBtn.classList.add('active');
             gridViewBtn.classList.remove('active');
             garageViewBtn.classList.remove('active');
-            renderCars(1);
+            applyFilters();
         });
         garageViewBtn.addEventListener('click', () => {
             currentView = 'garage';
@@ -650,9 +742,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Notification Logic ─────────────────────────────────────────
     const mockNotifsArray = [
         { title: 'Price Drop Alert', desc: 'Ford Mustang GT price dropped by ₱50k!', time: '1 hr ago', unread: true },
-        { title: 'New Arrival', desc: 'A brand new 2024 Honda Civic RS was just added to our inventory.', time: '3 hrs ago', unread: true },
-        { title: 'Report Status', desc: 'Your report #1029 has been reviewed by our support team.', time: '1 day ago', unread: true },
-        { title: 'Welcome!', desc: 'Thanks for joining Racs Auto Deal!', time: '2 days ago', unread: false }
+        { title: 'New Arrival', desc: 'A brand new 2026 Honda Civic RS was just added to our inventory.', time: '3 hrs ago', unread: true },
+        { title: 'Welcome!', desc: 'Thanks for visiting Racs Auto Deal Website!', time: '2 days ago', unread: false }
     ];
     const navNotifButton = document.getElementById('navNotifBtn');
     const notificationModal = document.getElementById('notifModal');
@@ -697,11 +788,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     renderNotifs();
-    const openNotifs = () => { notificationModal === null || notificationModal === void 0 ? void 0 : notificationModal.classList.add('active'); notificationOverlay === null || notificationOverlay === void 0 ? void 0 : notificationOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; };
-    const closeNotifs = () => { notificationModal === null || notificationModal === void 0 ? void 0 : notificationModal.classList.remove('active'); notificationOverlay === null || notificationOverlay === void 0 ? void 0 : notificationOverlay.classList.remove('active'); document.body.style.overflow = 'auto'; };
-    navNotifButton === null || navNotifButton === void 0 ? void 0 : navNotifButton.addEventListener('click', openNotifs);
-    closeNotificationBtn === null || closeNotificationBtn === void 0 ? void 0 : closeNotificationBtn.addEventListener('click', closeNotifs);
-    notificationOverlay === null || notificationOverlay === void 0 ? void 0 : notificationOverlay.addEventListener('click', closeNotifs);
+    const toggleNotifs = (e) => {
+        if (e)
+            e.stopPropagation();
+        notificationModal === null || notificationModal === void 0 ? void 0 : notificationModal.classList.toggle('active');
+    };
+    const closeNotifs = () => {
+        notificationModal === null || notificationModal === void 0 ? void 0 : notificationModal.classList.remove('active');
+    };
+    navNotifButton === null || navNotifButton === void 0 ? void 0 : navNotifButton.addEventListener('click', toggleNotifs);
+    closeNotificationBtn === null || closeNotificationBtn === void 0 ? void 0 : closeNotificationBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeNotifs();
+    });
+    document.addEventListener('click', (e) => {
+        if (notificationModal === null || notificationModal === void 0 ? void 0 : notificationModal.classList.contains('active')) {
+            const target = e.target;
+            if (!notificationModal.contains(target) && !(navNotifButton === null || navNotifButton === void 0 ? void 0 : navNotifButton.contains(target))) {
+                closeNotifs();
+            }
+        }
+    });
     // ── Preview & Reporting Logic ───────────────────────────────────
     const previewOverlay = document.getElementById('previewOverlay');
     const closePreviewBtn = document.getElementById('closePreviewBtn');
@@ -790,4 +897,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial render
     applyFilters();
 });
-export {};
+export { };

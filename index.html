@@ -9,7 +9,9 @@
     <link rel="stylesheet" href="preview.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Montserrat:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
@@ -25,14 +27,34 @@
                     <input type="text" placeholder="Search vehicles...">
                     <i class="fa-solid fa-xmark clear-icon"></i>
                 </div>
+            </div>
+            <div class="nav-right-actions">
                 <div class="nav-notif-container" style="position: relative;">
                     <button class="nav-btn nav-notif-btn" id="navNotifBtn" title="Notifications">
                         <i class="fa-solid fa-bell"></i>
                         <span class="notif-badge" id="notifBadge">3</span>
                     </button>
+
+                    <!-- Notification Popup -->
+                    <div class="notif-modal" id="notifModal">
+                        <div class="notif-modal-header">
+                            <div class="notif-modal-title">
+                                <h3><i class="fa-solid fa-bell"></i> Notifications</h3>
+                                <span class="notif-badge-pill" id="notifCountPill">0</span>
+                            </div>
+                            <div class="notif-modal-actions">
+                                <span class="close-notif-modal" id="closeNotifBtn"><i
+                                        class="fa-solid fa-xmark"></i></span>
+                            </div>
+                        </div>
+                        <div class="notif-modal-body" id="notifModalBody">
+                            <ul class="notif-list-modal" id="notifList">
+                                <!-- Populated by JS -->
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div></div><!-- right spacer for 3-col grid -->
         </div>
     </header>
 
@@ -42,15 +64,21 @@
 
         <div class="hero-container">
             <div class="hero-content">
-                <h2 class="subtitle">Racs Auto Deal</h2>
-                <h1 class="title">Your Next Journey<br>Starts Here.</h1>
-                <p class="description">
+                <h2 class="subtitle reveal-up" data-delay="0.2">Racs Auto Deal</h2>
+                <h1 class="title reveal-up" data-delay="0.4">Your Next Journey<br>Starts Here.</h1>
+                <p class="description reveal-up" data-delay="0.6">
                     Welcome to <strong>Racs Auto Deal</strong>, your premier destination for quality
                     vehicles where we offer a curated selection of cars designed to
                     fit every lifestyle. Explore our inventory and discover the
                     exceptional service and unbeatable value that make us stand
                     out from the rest!
                 </p>
+                <div class="hero-actions reveal-up" data-delay="0.8">
+                    <a href="#carGrid" class="cta-btn primary-cta">
+                        <span>Explore Inventory</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -61,6 +89,64 @@
             </div>
         </div>
     </main>
+
+    <!-- Promo Carousel -->
+    <section class="promo-section">
+        <div class="promo-container">
+            <div class="promo-carousel" id="promoCarousel">
+                <div class="promo-track" id="promoTrack">
+                    <!-- Slide 1: Showcase -->
+                    <div class="promo-slide active">
+                        <img src="assets/promo_showcase.png" alt="Car Showcase">
+                        <div class="promo-content">
+                            <span class="promo-tag rev-item" data-delay="0.1">Showcase</span>
+                            <h2 class="rev-item" data-delay="0.3">Porsche 911 GT3</h2>
+                            <p class="rev-item" data-delay="0.5">Experience the pinnacle of performance and precision
+                                engineering.</p>
+                            <a href="#carGrid" class="promo-btn rev-item" data-delay="0.7">View Details</a>
+                        </div>
+                    </div>
+                    <!-- Slide 2: Deals -->
+                    <div class="promo-slide">
+                        <img src="assets/promo_deals.png" alt="Special Deals">
+                        <div class="promo-content">
+                            <span class="promo-tag orange rev-item" data-delay="0.1">Hot Deal</span>
+                            <h2 class="rev-item" data-delay="0.3">Seasonal Savings</h2>
+                            <p class="rev-item" data-delay="0.5">Get up to ₱100,000 off on selected premium SUVs this
+                                month.</p>
+                            <a href="#carGrid" class="promo-btn rev-item" data-delay="0.7">Explore Deals</a>
+                        </div>
+                    </div>
+                    <!-- Slide 3: New Arrivals -->
+                    <div class="promo-slide">
+                        <img src="assets/promo_new.png" alt="New Arrival">
+                        <div class="promo-content">
+                            <span class="promo-tag blue rev-item" data-delay="0.1">New Arrival</span>
+                            <h2 class="rev-item" data-delay="0.3">The Future Is Here</h2>
+                            <p class="rev-item" data-delay="0.5">Discover our latest collection of 2024 luxury electric
+                                vehicles.</p>
+                            <a href="#carGrid" class="promo-btn rev-item" data-delay="0.7">See What's New</a>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="promo-nav prev" id="promoPrev"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="promo-nav next" id="promoNext"><i class="fa-solid fa-chevron-right"></i></button>
+
+                <div class="promo-dots" id="promoDots">
+                    <div class="promo-dot-wrapper active"><span class="dot">
+                            <div class="dot-progress"></div>
+                        </span></div>
+                    <div class="promo-dot-wrapper"><span class="dot">
+                            <div class="dot-progress"></div>
+                        </span></div>
+                    <div class="promo-dot-wrapper"><span class="dot">
+                            <div class="dot-progress"></div>
+                        </span></div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <section class="inventory-section">
         <!-- Search and Filter moved to Navbar -->
@@ -103,6 +189,7 @@
                             <li>Sports Car</li>
                             <li>Van</li>
                             <li>Hatchback</li>
+                            <li>Electric Car</li>
                             <li>Sedan</li>
                             <li>Coupe</li>
                             <li>SUV</li>
@@ -169,13 +256,15 @@
                 <div class="car-grid grid-view" id="carGrid">
                     <!-- Cars dynamically injected here based on pagination -->
                 </div>
-                
+
                 <div class="pagination-container" id="paginationContainer">
-                    <button class="page-btn prev-page" id="prevPageBtn" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="page-btn prev-page" id="prevPageBtn" disabled><i
+                            class="fa-solid fa-chevron-left"></i></button>
                     <div class="page-numbers" id="pageNumbers">
                         <!-- Page numbers injected here -->
                     </div>
-                    <button class="page-btn next-page" id="nextPageBtn"><i class="fa-solid fa-chevron-right"></i></button>
+                    <button class="page-btn next-page" id="nextPageBtn"><i
+                            class="fa-solid fa-chevron-right"></i></button>
                 </div>
             </div>
         </div>
@@ -198,7 +287,8 @@
                             <i class="fa-solid fa-plus"></i>
                         </div>
                         <div class="faq-answer">
-                            <p>You can book a test drive by clicking the "Inquire" button on any vehicle page or calling us directly at 0917 110 6548. Our team will coordinate with you for a schedule.</p>
+                            <p>You can book a test drive by clicking the "Inquire" button on any vehicle page or calling
+                                us directly at 0917 110 6548. Our team will coordinate with you for a schedule.</p>
                         </div>
                     </div>
                     <div class="faq-item">
@@ -207,7 +297,8 @@
                             <i class="fa-solid fa-plus"></i>
                         </div>
                         <div class="faq-answer">
-                            <p>Yes! We partner with various banks to provide competitive financing options tailored to your budget. Visit our showroom for a quick computation.</p>
+                            <p>Yes! We partner with various banks to provide competitive financing options tailored to
+                                your budget. Visit our showroom for a quick computation.</p>
                         </div>
                     </div>
                     <div class="faq-item">
@@ -216,7 +307,8 @@
                             <i class="fa-solid fa-plus"></i>
                         </div>
                         <div class="faq-answer">
-                            <p>To sell your car, you'll need the Original OR/CR, valid IDs, and a duly signed Deed of Sale. We can handle the appraisal and offer a fair market price.</p>
+                            <p>To sell your car, you'll need the Original OR/CR, valid IDs, and a duly signed Deed of
+                                Sale. We can handle the appraisal and offer a fair market price.</p>
                         </div>
                     </div>
                     <div class="faq-item">
@@ -225,7 +317,8 @@
                             <i class="fa-solid fa-plus"></i>
                         </div>
                         <div class="faq-answer">
-                            <p>Absolutely. Every vehicle undergoes a thorough multi-point inspection and detailed reconditioning before being listed to ensure your peace of mind.</p>
+                            <p>Absolutely. Every vehicle undergoes a thorough multi-point inspection and detailed
+                                reconditioning before being listed to ensure your peace of mind.</p>
                         </div>
                     </div>
                 </div>
@@ -252,15 +345,20 @@
         <div class="report-modal-content">
             <span class="close-report-btn" id="closeReportBtn"><i class="fa-solid fa-xmark"></i></span>
             <h2>Send Report</h2>
-            
+
             <form id="reportForm">
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" id="reportEmail" placeholder="Enter your email" required>
+                </div>
+
                 <div class="form-group">
                     <label>Reason *</label>
                     <div class="select-wrapper">
                         <select id="reportReason" required>
                             <option value="" disabled selected>Select Reason</option>
                             <option value="inquiry">Inquiry Not Responding</option>
-                            <option value="listing">Fake / Duplicate Listing</option>
+                            <option value="listing">Duplicate Listing</option>
                             <option value="sold">Sold Vehicle Still Listed</option>
                             <option value="price">Price Discrepancy</option>
                             <option value="technical">Technical Issue</option>
@@ -268,6 +366,11 @@
                         </select>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
+                </div>
+
+                <div class="form-group" id="otherReasonGroup" style="display: none;">
+                    <label>Please specify *</label>
+                    <input type="text" id="otherReason" placeholder="Enter specific reason">
                 </div>
 
                 <div class="form-group">
@@ -287,7 +390,7 @@
                 </div>
 
                 <p class="report-form-note">Send Report if you have any issues.</p>
-                
+
                 <button type="submit" class="report-submit-btn">Submit</button>
             </form>
         </div>
@@ -361,9 +464,11 @@
                 <div class="preview-left">
                     <div class="preview-image-wrapper">
                         <div class="carousel-container">
-                            <button class="carousel-btn prev-btn" id="prevImgBtn"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button class="carousel-btn prev-btn" id="prevImgBtn"><i
+                                    class="fa-solid fa-chevron-left"></i></button>
                             <img id="carImg" src="" alt="Car Image">
-                            <button class="carousel-btn next-btn" id="nextImgBtn"><i class="fa-solid fa-chevron-right"></i></button>
+                            <button class="carousel-btn next-btn" id="nextImgBtn"><i
+                                    class="fa-solid fa-chevron-right"></i></button>
                         </div>
                         <div class="carousel-dots" id="carouselDots"></div>
                         <div class="star-badge" id="favoriteBtn" title="Favorite">
@@ -400,8 +505,11 @@
                     </div>
 
                     <div class="tabs-header">
-                        <div class="tab-item active" data-tab="description">Description <div class="tab-underline"></div></div>
-                        <div class="tab-item" data-tab="otherFeatures">Other Features <div class="tab-underline"></div></div>
+                        <div class="tab-item active" data-tab="description">Description <div class="tab-underline">
+                            </div>
+                        </div>
+                        <div class="tab-item" data-tab="otherFeatures">Other Features <div class="tab-underline"></div>
+                        </div>
                     </div>
 
                     <div class="tab-content active" id="description-tab">
@@ -467,25 +575,6 @@
             <i class="fa-solid fa-trash-can composer-delete"></i>
         </div>
     </div>
-
-    <!-- Notification Modal -->
-    <div class="notif-modal" id="notifModal">
-        <div class="notif-modal-header">
-            <div class="notif-modal-title">
-                <h3><i class="fa-solid fa-bell"></i> Notifications</h3>
-                <span class="notif-badge-pill" id="notifCountPill">0</span>
-            </div>
-            <div class="notif-modal-actions">
-                <span class="close-notif-modal" id="closeNotifBtn"><i class="fa-solid fa-xmark"></i></span>
-            </div>
-        </div>
-        <div class="notif-modal-body" id="notifModalBody">
-            <ul class="notif-list-modal" id="notifList">
-                <!-- Populated by JS -->
-            </ul>
-        </div>
-    </div>
-    <div class="modal-overlay" id="notifOverlay"></div>
 
     <script type="module" src="main.js"></script>
 </body>

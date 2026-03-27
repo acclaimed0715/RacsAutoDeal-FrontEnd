@@ -31,6 +31,7 @@ interface CarEntry {
     safety?: string;
     seating?: string;
     posted: string;
+    type?: string;
 }
 
 type CarDataDictionary = Record<CarId, CarEntry>;
@@ -56,6 +57,47 @@ const carData: CarDataDictionary = {
         safety: 'Front Airbags, ABS, ESC',
         seating: '5 Seater',
         posted: '1 Day Ago',
+        type: 'SUV'
+    },
+    tesla_plaid: {
+        title: 'Tesla Model S Plaid 2024',
+        images: ['assets/tesla_plaid.png'],
+        name: 'Tesla Model S',
+        model: '2024',
+        fuel: 'Electric',
+        price: '₱6,500,000',
+        brand: 'Tesla',
+        transmission: 'Single-Speed Fixed Gear',
+        description: 'All-Wheel Drive (AWD). 1,020 hp, 0-60 mph in 1.99s. 17-inch Cinematic Display, Autopilot, Premium Audio.',
+        isFavorited: false,
+        mileage: '0 KM',
+        engine: 'Tri-Motor Electric',
+        hp: '1,020 hp',
+        torque: '1,050 lb-ft',
+        safety: 'Autopilot, 8 Cameras, 12 Ultrasonic Sensors',
+        seating: '5 Seater',
+        posted: 'New Arrival',
+        type: 'Electric Car'
+    },
+    porsche_taycan: {
+        title: 'Porsche Taycan Turbo S 2024',
+        images: ['assets/porsche_taycan.png'],
+        name: 'Porsche Taycan',
+        model: '2024',
+        fuel: 'Electric',
+        price: '₱12,500,000',
+        brand: 'Porsche',
+        transmission: '2-Speed Automatic (Rear), 1-Speed (Front)',
+        description: 'All-Wheel Drive (AWD). 800V Architecture, Taycan Soul, Matrix LED Headlights. Performance Battery Plus, Sport Chrono Package.',
+        isFavorited: false,
+        mileage: '0 KM',
+        engine: 'Dual-Motor Electric',
+        hp: '750 hp (Overboost)',
+        torque: '774 lb-ft',
+        safety: 'Porsche InnoDrive, Night View Assist',
+        seating: '4 Seater',
+        posted: 'New Arrival',
+        type: 'Electric Car'
     },
     escape2012_titanium: {
         title: 'Ford Escape Titanium 2012',
@@ -75,6 +117,7 @@ const carData: CarDataDictionary = {
         safety: 'Front/Side Airbags, ABS, Blind Spot Monitor',
         seating: '5 Seater',
         posted: '1 Day Ago',
+        type: 'SUV'
     },
     livina2023: {
         title: 'Nissan Livina VL 2023',
@@ -94,6 +137,7 @@ const carData: CarDataDictionary = {
         safety: 'Dual Airbags, ABS with EBD',
         seating: '7 Seater',
         posted: '2 Days Ago',
+        type: 'SUV'
     },
     civic_rs: {
         title: 'Honda Civic RS 2024',
@@ -113,6 +157,7 @@ const carData: CarDataDictionary = {
         safety: 'Honda SENSING, 6 Airbags, ABS',
         seating: '5 Seater',
         posted: '3 Days Ago',
+        type: 'Sedan'
     },
     mazda3_sport: {
         title: 'Mazda 3 Sport 2023',
@@ -132,6 +177,7 @@ const carData: CarDataDictionary = {
         safety: 'i-ACTIVSENSE, 7 Airbags, ABS',
         seating: '5 Seater',
         posted: '4 Days Ago',
+        type: 'Hatchback'
     },
     innova_v: {
         title: 'Toyota Innova V 2022',
@@ -151,6 +197,7 @@ const carData: CarDataDictionary = {
         safety: 'Dual Airbags, ABS, VSC',
         seating: '7 Seater',
         posted: '5 Days Ago',
+        type: 'Van'
     },
     mustang_gt: {
         title: 'Ford Mustang GT 2024',
@@ -170,6 +217,7 @@ const carData: CarDataDictionary = {
         safety: 'Ford Co-Pilot360, 8 Airbags, ABS',
         seating: '4 Seater',
         posted: '1 Day Ago',
+        type: 'Sports Car'
     },
 };
 
@@ -182,6 +230,8 @@ function getBadgeHtml(carId: CarId): string {
         return `<span class="car-badge badge-most-clicked"><i class="fa-solid fa-hand-pointer"></i> Most Clicked</span>`;
     if (carId === 'livina2023')
         return `<span class="car-badge badge-new"><i class="fa-solid fa-arrow-trend-up"></i> New</span>`;
+    if (carId === 'tesla_plaid' || carId === 'porsche_taycan')
+        return `<span class="car-badge badge-electric" style="background:#00d2ff; color:#000;"><i class="fa-solid fa-bolt"></i> EV</span>`;
     return '';
 }
 
@@ -364,6 +414,55 @@ window.openPreview = (carId: CarId): void => {
 // ─── DOM Ready ────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
+    // ── Reveal Animations ───────────────────────────────────────────────────
+    const revealElements = document.querySelectorAll('.reveal-up');
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, { threshold: 0.1 });
+    revealElements.forEach(el => revealObserver.observe(el));
+
+    // ── Promo Carousel Logic ────────────────────────────────────────────────
+    const promoTrack = document.getElementById('promoTrack');
+    const promoSlides = document.querySelectorAll('.promo-slide');
+    const promoDots = document.querySelectorAll('.promo-dot-wrapper');
+    const promoPrev = document.getElementById('promoPrev');
+    const promoNext = document.getElementById('promoNext');
+    let currentPromo = 0;
+    let promoInterval: ReturnType<typeof setInterval>;
+
+    const updatePromo = (index: number) => {
+        promoSlides.forEach(s => s.classList.remove('active'));
+        promoDots.forEach(d => d.classList.remove('active'));
+        currentPromo = (index + promoSlides.length) % promoSlides.length;
+        
+        if (promoTrack) {
+            promoTrack.style.transform = `translateX(-${currentPromo * 100}%)`;
+        }
+        
+        promoSlides[currentPromo]?.classList.add('active');
+        promoDots[currentPromo]?.classList.add('active');
+    };
+
+    const nextPromo = () => updatePromo(currentPromo + 1);
+    const prevPromo = () => updatePromo(currentPromo - 1);
+
+    const startPromoAutoPlay = () => {
+        clearInterval(promoInterval);
+        promoInterval = setInterval(nextPromo, 5000);
+    };
+
+    if (promoSlides.length > 0) {
+        promoPrev?.addEventListener('click', () => { prevPromo(); startPromoAutoPlay(); });
+        promoNext?.addEventListener('click', () => { nextPromo(); startPromoAutoPlay(); });
+        promoDots.forEach((dot, idx) => {
+            dot.addEventListener('click', () => { updatePromo(idx); startPromoAutoPlay(); });
+        });
+        startPromoAutoPlay();
+    }
 
     // ── Elements & State ──────────────────────────────────────────────────────────
     const filterBtn = document.querySelector<HTMLElement>('.filter-btn');
@@ -654,7 +753,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gridViewBtn.classList.add('active');
             listViewBtn.classList.remove('active');
             garageViewBtn.classList.remove('active');
-            renderCars(1);
+            applyFilters();
         });
         
         listViewBtn.addEventListener('click', () => {
@@ -663,7 +762,7 @@ document.addEventListener('DOMContentLoaded', () => {
             listViewBtn.classList.add('active');
             gridViewBtn.classList.remove('active');
             garageViewBtn.classList.remove('active');
-            renderCars(1);
+            applyFilters();
         });
 
         garageViewBtn.addEventListener('click', () => {
@@ -779,12 +878,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderNotifs();
 
-    const openNotifs = (): void => { notificationModal?.classList.add('active'); notificationOverlay?.classList.add('active'); document.body.style.overflow = 'hidden'; };
-    const closeNotifs = (): void => { notificationModal?.classList.remove('active'); notificationOverlay?.classList.remove('active'); document.body.style.overflow = 'auto'; };
+    const toggleNotifs = (e: Event): void => {
+        if (e) e.stopPropagation();
+        notificationModal?.classList.toggle('active');
+    };
+    const closeNotifs = (): void => {
+        notificationModal?.classList.remove('active');
+    };
 
-    navNotifButton?.addEventListener('click', openNotifs);
-    closeNotificationBtn?.addEventListener('click', closeNotifs);
-    notificationOverlay?.addEventListener('click', closeNotifs);
+    navNotifButton?.addEventListener('click', toggleNotifs);
+    closeNotificationBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeNotifs();
+    });
+
+    document.addEventListener('click', (e: MouseEvent) => {
+        if (notificationModal?.classList.contains('active')) {
+            const target = e.target as Node;
+            if (!notificationModal.contains(target) && !navNotifButton?.contains(target)) {
+                closeNotifs();
+            }
+        }
+    });
 
     // ── Preview & Reporting Logic ───────────────────────────────────
     const previewOverlay = document.getElementById('previewOverlay');

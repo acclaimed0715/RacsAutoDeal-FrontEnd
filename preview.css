@@ -225,7 +225,7 @@
 .modal-price {
     font-size: 1.5rem;
     font-weight: 800;
-    color: var(--primary, #8B291D);
+    color: #fff;
     background: rgba(139,41,29,0.08);
     padding: 0.4rem 1rem;
     border-radius: 8px;

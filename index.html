@@ -25,15 +25,12 @@
                     <input type="text" placeholder="Search vehicles...">
                     <i class="fa-solid fa-xmark clear-icon"></i>
                 </div>
-                <span class="nav-search-divider"></span>
-                <button class="filter-btn nav-filter" title="Open Filters">
-                    <i class="fa-solid fa-filter"></i>
-                    <span>Filters</span>
-                </button>
-                <button class="nav-fav-btn" id="navFavBtn" title="View Favorites">
-                    <i class="fa-solid fa-key"></i>
-                    <span class="fav-count" id="favCount">0</span>
-                </button>
+                <div class="nav-notif-container" style="position: relative;">
+                    <button class="nav-btn nav-notif-btn" id="navNotifBtn" title="Notifications">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="notif-badge" id="notifBadge">3</span>
+                    </button>
+                </div>
             </div>
             <div></div><!-- right spacer for 3-col grid -->
         </div>
@@ -69,149 +66,116 @@
         <!-- Search and Filter moved to Navbar -->
 
         <div class="inventory-content">
-            <h2 class="category-title" id="dynamicCategoryTitle">All Vehicles</h2>
-            <div class="car-grid">
-                <div class="car-card" data-id="escape2012" onclick="openPreview('escape2012')">
-                    <div class="car-image-wrapper">
-                        <span class="car-badge">BEST DEAL</span>
-                        <img src="assets/suv_silver.png" alt="Ford Escape" class="car-image">
-                    </div>
-                    <div class="car-card-middle">
-                        <h3 class="card-name">Ford Escape XLs 2012</h3>
-                        <div class="card-features-row">
-                            <div class="card-feat-compact"><span>Year</span><b>2012</b></div>
-                            <div class="card-feat-compact"><span>Mileage</span><b>45,000 KM</b></div>
-                            <div class="card-feat-compact"><span>Fuel</span><b>Gasoline</b></div>
-                            <div class="card-feat-compact"><span>Trans</span><b>Auto</b></div>
-                        </div>
-                    </div>
-                    <div class="car-card-right">
-                        <div class="card-price">₱750,000</div>
-                        <div class="card-action-icon fav-card-btn" data-id="escape2012"><i class="fa-solid fa-key"></i></div>
-                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> 1 Day Ago</div>
+            <!-- Persistent Sidebar -->
+            <aside class="filter-sidebar persistent-sidebar" id="filterSidebar">
+                <div class="filter-header">
+                    <div class="filter-title">
+                        <i class="fa-solid fa-filter"></i>
+                        <h2>Filters</h2>
                     </div>
                 </div>
 
-                <div class="car-card" data-id="escape2012_titanium" onclick="openPreview('escape2012_titanium')">
-                    <div class="car-image-wrapper">
-                        <span class="car-badge">MOST CLICKED</span>
-                        <img src="assets/suv_gray.png" alt="Ford Escape" class="car-image">
+                <div class="filter-content">
+                    <!-- Category -->
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <div class="filter-group-title">
+                                <i class="fa-solid fa-layer-group"></i> CATEGORY
+                            </div>
+                            <i class="fa-solid fa-chevron-down section-toggle"></i>
+                        </div>
+                        <ul class="filter-list">
+                            <li><i class="fa-solid fa-arrow-trend-up"></i> New</li>
+                            <li><i class="fa-regular fa-star"></i> Best Deal</li>
+                            <li><i class="fa-solid fa-hand-pointer"></i> Most Clicked</li>
+                        </ul>
                     </div>
-                    <div class="car-card-middle">
-                        <h3 class="card-name">Ford Escape Titanium 2012</h3>
-                        <div class="card-features-row">
-                            <div class="card-feat-compact"><span>Year</span><b>2012</b></div>
-                            <div class="card-feat-compact"><span>Mileage</span><b>38,000 KM</b></div>
-                            <div class="card-feat-compact"><span>Fuel</span><b>Gasoline</b></div>
-                            <div class="card-feat-compact"><span>Trans</span><b>Auto</b></div>
+
+                    <!-- Vehicle Type -->
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <div class="filter-group-title">
+                                <i class="fa-solid fa-car"></i> VEHICLE TYPE
+                            </div>
+                            <i class="fa-solid fa-chevron-down section-toggle"></i>
+                        </div>
+                        <ul class="filter-list text-only">
+                            <li>Sports Car</li>
+                            <li>Van</li>
+                            <li>Hatchback</li>
+                            <li>Sedan</li>
+                            <li>Coupe</li>
+                            <li>SUV</li>
+                        </ul>
+                    </div>
+
+                    <!-- Search Brand -->
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <div class="filter-group-title">
+                                <i class="fa-solid fa-car"></i> SEARCH BRAND
+                            </div>
+                            <i class="fa-solid fa-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="filter-search-input">
+                            <input type="text" id="brandSearchInput" placeholder="Search Here...">
                         </div>
                     </div>
-                    <div class="car-card-right">
-                        <div class="card-price">₱800,000</div>
-                        <div class="card-action-icon fav-card-btn" data-id="escape2012_titanium"><i class="fa-solid fa-key"></i></div>
-                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> 1 Day Ago</div>
+
+                    <!-- Price -->
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <div class="filter-group-title">
+                                <i class="fa-solid fa-tag"></i> PRICE RANGE
+                            </div>
+                            <i class="fa-solid fa-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="price-range-inputs">
+                            <div class="price-input-wrapper">
+                                <span>MIN</span>
+                                <input type="number" id="minPriceInput" placeholder="Min Price">
+                            </div>
+                            <div class="price-input-wrapper">
+                                <span>MAX</span>
+                                <input type="number" id="maxPriceInput" placeholder="Max Price">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="car-card" data-id="livina2023" onclick="openPreview('livina2023')">
-                    <div class="car-image-wrapper">
-                        <span class="car-badge">NEW</span>
-                        <img src="assets/suv_white.png" alt="Nissan Livina" class="car-image">
-                    </div>
-                    <div class="car-card-middle">
-                        <h3 class="card-name">Nissan Livina VL 2023</h3>
-                        <div class="card-features-row">
-                            <div class="card-feat-compact"><span>Year</span><b>2023</b></div>
-                            <div class="card-feat-compact"><span>Mileage</span><b>15,000 KM</b></div>
-                            <div class="card-feat-compact"><span>Fuel</span><b>Gasoline</b></div>
-                            <div class="card-feat-compact"><span>Trans</span><b>Auto</b></div>
-                        </div>
-                    </div>
-                    <div class="car-card-right">
-                        <div class="card-price">₱1,100,000</div>
-                        <div class="card-action-icon fav-card-btn" data-id="livina2023"><i class="fa-solid fa-key"></i></div>
-                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> 2 Days Ago</div>
+                <div class="filter-footer">
+                    <button class="filter-reset-btn"><i class="fa-solid fa-rotate-left"></i> Reset Filters</button>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div class="inventory-main">
+                <div class="inventory-header">
+                    <h2 class="category-title" id="dynamicCategoryTitle">All Vehicles</h2>
+                    <div class="view-toggles">
+                        <button class="view-btn active" id="gridViewBtn" title="Grid View">
+                            <i class="fa-solid fa-grip"></i>
+                        </button>
+                        <button class="view-btn" id="listViewBtn" title="List View">
+                            <i class="fa-solid fa-list"></i>
+                        </button>
+                        <button class="view-btn" id="garageViewBtn" title="Garage (Favorites)">
+                            <i class="fa-solid fa-key"></i>
+                            <span class="fav-count-badge" id="inventoryFavCount">0</span>
+                        </button>
                     </div>
                 </div>
 
-                <div class="car-card" data-id="civic_rs" onclick="openPreview('civic_rs')">
-                    <div class="car-image-wrapper">
-                        <img src="assets/sedan_black.png" alt="Honda Civic" class="car-image">
-                    </div>
-                    <div class="car-card-middle">
-                        <h3 class="card-name">Honda Civic RS 2024</h3>
-                        <div class="card-features-row">
-                            <div class="card-feat-compact"><span>Year</span><b>2024</b></div>
-                            <div class="card-feat-compact"><span>Mileage</span><b>5,000 KM</b></div>
-                            <div class="card-feat-compact"><span>Fuel</span><b>Gasoline</b></div>
-                            <div class="card-feat-compact"><span>Trans</span><b>CVT</b></div>
-                        </div>
-                    </div>
-                    <div class="car-card-right">
-                        <div class="card-price">₱1,775,000</div>
-                        <div class="card-action-icon fav-card-btn" data-id="civic_rs"><i class="fa-solid fa-key"></i></div>
-                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> 3 Days Ago</div>
-                    </div>
+                <div class="car-grid grid-view" id="carGrid">
+                    <!-- Cars dynamically injected here based on pagination -->
                 </div>
-
-                <div class="car-card" data-id="mazda3_sport" onclick="openPreview('mazda3_sport')">
-                    <div class="car-image-wrapper">
-                        <img src="assets/hatchback_red.png" alt="Mazda 3" class="car-image">
+                
+                <div class="pagination-container" id="paginationContainer">
+                    <button class="page-btn prev-page" id="prevPageBtn" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                    <div class="page-numbers" id="pageNumbers">
+                        <!-- Page numbers injected here -->
                     </div>
-                    <div class="car-card-middle">
-                        <h3 class="card-name">Mazda 3 Sport 2023</h3>
-                        <div class="card-features-row">
-                            <div class="card-feat-compact"><span>Year</span><b>2023</b></div>
-                            <div class="card-feat-compact"><span>Mileage</span><b>12,000 KM</b></div>
-                            <div class="card-feat-compact"><span>Fuel</span><b>Hybrid</b></div>
-                            <div class="card-feat-compact"><span>Trans</span><b>Auto</b></div>
-                        </div>
-                    </div>
-                    <div class="car-card-right">
-                        <div class="card-price">₱1,500,000</div>
-                        <div class="card-action-icon fav-card-btn" data-id="mazda3_sport"><i class="fa-solid fa-key"></i></div>
-                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> 4 Days Ago</div>
-                    </div>
-                </div>
-
-                <div class="car-card" data-id="innova_v" onclick="openPreview('innova_v')">
-                    <div class="car-image-wrapper">
-                        <img src="assets/suv_gray.png" alt="Toyota Innova" class="car-image">
-                    </div>
-                    <div class="car-card-middle">
-                        <h3 class="card-name">Toyota Innova V 2022</h3>
-                        <div class="card-features-row">
-                            <div class="card-feat-compact"><span>Year</span><b>2022</b></div>
-                            <div class="card-feat-compact"><span>Mileage</span><b>28,000 KM</b></div>
-                            <div class="card-feat-compact"><span>Fuel</span><b>Diesel</b></div>
-                            <div class="card-feat-compact"><span>Trans</span><b>Auto</b></div>
-                        </div>
-                    </div>
-                    <div class="car-card-right">
-                        <div class="card-price">₱1,750,000</div>
-                        <div class="card-action-icon fav-card-btn" data-id="innova_v"><i class="fa-solid fa-key"></i></div>
-                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> 5 Days Ago</div>
-                    </div>
-                </div>
-
-                <div class="car-card" data-id="mustang_gt" data-category="Coupe" onclick="openPreview('mustang_gt')">
-                    <div class="car-image-wrapper">
-                        <img src="assets/sedan_black.png" alt="Mustang GT" class="car-image">
-                    </div>
-                    <div class="car-card-middle">
-                        <h3 class="card-name">Ford Mustang GT 2024</h3>
-                        <div class="card-features-row">
-                            <div class="card-feat-compact"><span>Year</span><b>2024</b></div>
-                            <div class="card-feat-compact"><span>Mileage</span><b>2,000 KM</b></div>
-                            <div class="card-feat-compact"><span>Fuel</span><b>Gas V8</b></div>
-                            <div class="card-feat-compact"><span>Trans</span><b>Auto</b></div>
-                        </div>
-                    </div>
-                    <div class="car-card-right">
-                        <div class="card-price">₱3,500,000</div>
-                        <div class="card-action-icon fav-card-btn" data-id="mustang_gt"><i class="fa-solid fa-key"></i></div>
-                        <div class="card-posted-compact"><i class="fa-regular fa-clock"></i> 1 Day Ago</div>
-                    </div>
+                    <button class="page-btn next-page" id="nextPageBtn"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
             </div>
         </div>
@@ -391,10 +355,7 @@
         <div class="preview-modal-content">
             <span class="close-preview-btn" id="closePreviewBtn"><i class="fa-solid fa-xmark"></i></span>
 
-            <div class="preview-car-info">
-                <h1 id="carTitle">Title</h1>
-                <span id="carPostedTime">Posted 1 hr ago</span>
-            </div>
+
 
             <div class="preview-container">
                 <div class="preview-left">
@@ -408,6 +369,13 @@
                         <div class="star-badge" id="favoriteBtn" title="Favorite">
                             <i class="fa-solid fa-key" id="favoriteIcon"></i>
                         </div>
+                    </div>
+                    <div class="preview-car-info">
+                        <div class="title-price-row">
+                            <h1 id="carTitle">Title</h1>
+                            <span id="modalCarPrice" class="modal-price">Price</span>
+                        </div>
+                        <span id="carPostedTime">Posted 1 hr ago</span>
                     </div>
                 </div>
 
@@ -437,15 +405,10 @@
                     </div>
 
                     <div class="tab-content active" id="description-tab">
-                        <ul class="car-specs-list">
-                            <li id="carName"></li>
-                            <li id="carModel"></li>
-                            <li id="carFuel"></li>
-                            <li id="carPrice"></li>
-                            <li id="carBrand"></li>
-                            <li id="carTransmission"></li>
-                            <li id="carDescription"></li>
-                        </ul>
+                        <div class="description-wrapper">
+                            <p class="modal-description clamped" id="carDescription"></p>
+                            <span class="read-more-toggle hidden" id="readMoreToggle">Read more</span>
+                        </div>
                     </div>
 
                     <div class="tab-content" id="other-features-tab">
@@ -465,91 +428,6 @@
             </div>
         </div>
     </div>
-    <div class="filter-overlay" id="filterOverlay"></div>
-    <aside class="filter-sidebar" id="filterSidebar">
-        <div class="filter-header">
-            <div class="filter-title">
-                <h2>Filters</h2>
-                <span class="filter-count">2</span>
-            </div>
-            <i class="fa-solid fa-xmark close-filter-btn" id="closeFilterBtn"></i>
-        </div>
-
-        <div class="filter-content">
-            <!-- Category -->
-            <div class="filter-group">
-                <div class="filter-group-header">
-                    <div class="filter-group-title">
-                        <i class="fa-solid fa-layer-group"></i> CATEGORY
-                    </div>
-                    <i class="fa-solid fa-chevron-down section-toggle"></i>
-                </div>
-                <ul class="filter-list">
-                    <li><i class="fa-solid fa-arrow-trend-up"></i> New</li>
-                    <li><i class="fa-regular fa-star"></i> Best Deal</li>
-                    <li><i class="fa-solid fa-hand-pointer"></i> Most Clicked</li>
-                </ul>
-            </div>
-
-            <!-- Vehicle Type -->
-            <div class="filter-group">
-                <div class="filter-group-header">
-                    <div class="filter-group-title">
-                        <i class="fa-solid fa-car"></i> VEHICLE TYPE
-                    </div>
-                    <i class="fa-solid fa-chevron-down section-toggle"></i>
-                </div>
-                <ul class="filter-list text-only">
-                    <li>Sports Car</li>
-                    <li>Van</li>
-                    <li>Hatchback</li>
-                    <li>Sedan</li>
-                    <li>Coupe</li>
-                    <li class="active">SUV</li>
-                </ul>
-            </div>
-
-            <!-- Search Brand -->
-            <div class="filter-group">
-                <div class="filter-group-header">
-                    <div class="filter-group-title">
-                        <i class="fa-solid fa-car"></i> SEARCH BRAND
-                    </div>
-                    <i class="fa-solid fa-chevron-down section-toggle"></i>
-                </div>
-                <div class="filter-search-input">
-                    <input type="text" id="brandSearchInput" placeholder="Search Here...">
-                </div>
-            </div>
-
-            <!-- Price -->
-            <div class="filter-group">
-                <div class="filter-group-header">
-                    <div class="filter-group-title">
-                        <i class="fa-solid fa-tag"></i> PRICE RANGE
-                    </div>
-                    <i class="fa-solid fa-chevron-down section-toggle"></i>
-                </div>
-                <div class="price-range-inputs">
-                    <div class="price-input-wrapper">
-                        <span>MIN</span>
-                        <input type="number" id="minPriceInput" placeholder="Min Price">
-                    </div>
-                    <div class="price-input-wrapper">
-                        <span>MAX</span>
-                        <input type="number" id="maxPriceInput" placeholder="Max Price">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="filter-footer">
-            <div class="filter-actions-pill">
-                <button class="filter-reset-btn">Reset</button>
-                <button class="filter-done-btn" id="applyFilterBtn">Done</button>
-            </div>
-        </div>
-    </aside>
 
     <!-- Gmail Style Composer -->
     <div class="email-composer" id="emailComposer">
@@ -590,18 +468,24 @@
         </div>
     </div>
 
-    <!-- Favorites Modal -->
-    <div class="fav-modal" id="favModal">
-        <div class="fav-modal-header">
-            <h3><i class="fa-solid fa-key"></i> Your Favorite Cars</h3>
-            <span class="close-fav-modal" id="closeFavBtn"><i class="fa-solid fa-xmark"></i></span>
+    <!-- Notification Modal -->
+    <div class="notif-modal" id="notifModal">
+        <div class="notif-modal-header">
+            <div class="notif-modal-title">
+                <h3><i class="fa-solid fa-bell"></i> Notifications</h3>
+                <span class="notif-badge-pill" id="notifCountPill">0</span>
+            </div>
+            <div class="notif-modal-actions">
+                <span class="close-notif-modal" id="closeNotifBtn"><i class="fa-solid fa-xmark"></i></span>
+            </div>
         </div>
-        <div class="fav-modal-body" id="favModalBody">
-            <!-- Dynamically populated Favorites content -->
-            <div class="empty-fav-message">You haven't favorited any cars yet.</div>
+        <div class="notif-modal-body" id="notifModalBody">
+            <ul class="notif-list-modal" id="notifList">
+                <!-- Populated by JS -->
+            </ul>
         </div>
     </div>
-    <div class="modal-overlay" id="favOverlay"></div>
+    <div class="modal-overlay" id="notifOverlay"></div>
 
     <script type="module" src="main.js"></script>
 </body>

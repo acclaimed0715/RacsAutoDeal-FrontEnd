@@ -37,7 +37,7 @@ function createNotification(title, message, type = 'info') {
 }
 // ─── DOM Ready ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g;
     // ── Notification Rendering ────────────────────────────────────────────────
     const notifBadge = document.getElementById('notifBadge');
     const notifList = document.getElementById('notifList');
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 'rep2', userName: 'Alex Lee', userEmail: 'alex.lee@gmail.com', reason: 'Sold Vehicle Still Listed', description: 'I saw the Ford Escape 2012 marked as sold on Facebook but it is still open here.', date: 'Mar 27, 2026', status: 'PENDING' },
             { id: 'rep3', userName: 'Guest User', userEmail: 'guest@web.com', reason: 'Incorrect Listing', description: 'The specs for the Tesla Model S seem to be for the older version.', date: 'Mar 25, 2026', status: 'RESOLVED' }
         ]);
-        if (!localStorage.getItem(REPORTS_KEY))
+        if (!localStorage.getItem(REPORTS_KEY) || (JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]').length === 0))
             saveToStorage(REPORTS_KEY, reports);
         reportsTableBody.innerHTML = '';
         reports.forEach(report => {
@@ -402,6 +402,40 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 1500);
         }, 800);
     });
+    // Data Export/Import
+    (_b = document.getElementById('exportDataBtn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', () => {
+        const fullData = {
+            inventory: loadFromStorage(INVENTORY_KEY, []),
+            settings: loadFromStorage(SETTINGS_KEY, {}),
+            staff: loadFromStorage(STAFF_KEY, [])
+        };
+        const blob = new Blob([JSON.stringify(fullData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `racs_backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        alert('Data exported as JSON file. You can import this file on another computer.');
+    });
+    (_c = document.getElementById('importDataBtn')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', () => {
+        const input = prompt('Paste your exported JSON data here:');
+        if (!input)
+            return;
+        try {
+            const data = JSON.parse(input);
+            if (data.inventory)
+                saveToStorage(INVENTORY_KEY, data.inventory);
+            if (data.settings)
+                saveToStorage(SETTINGS_KEY, data.settings);
+            if (data.staff)
+                saveToStorage(STAFF_KEY, data.staff);
+            alert('Data imported successfully! The page will now reload.');
+            window.location.reload();
+        }
+        catch (e) {
+            alert('Invalid JSON data. Please make sure you copied the correct text.');
+        }
+    });
     // ── Staff Logic ───────────────────────────────────────────────────────────
     let editingStaffId = null;
     function renderStaff() {
@@ -485,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderStaff();
     renderInventory();
     // Chart Type Selector
-    (_b = document.getElementById('chartTypeSelect')) === null || _b === void 0 ? void 0 : _b.addEventListener('change', renderDashboardChart);
+    (_d = document.getElementById('chartTypeSelect')) === null || _d === void 0 ? void 0 : _d.addEventListener('change', renderDashboardChart);
     // ── Navigation Logic ──────────────────────────────────────────────────────
     const userModal = document.getElementById('userModal');
     const userOverlay = document.getElementById('userModalOverlay');
@@ -682,7 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
             addImgBtn.textContent = '';
         }
     }
-    (_c = document.getElementById('inventoryTableBody')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', (e) => {
+    (_e = document.getElementById('inventoryTableBody')) === null || _e === void 0 ? void 0 : _e.addEventListener('click', (e) => {
         const target = e.target;
         const row = target.closest('tr');
         const carId = row === null || row === void 0 ? void 0 : row.getAttribute('data-id');
@@ -692,7 +726,7 @@ document.addEventListener('DOMContentLoaded', () => {
             openEditCarModal(carId);
         }
     });
-    (_d = document.getElementById('dashboardInventoryBody')) === null || _d === void 0 ? void 0 : _d.addEventListener('click', (e) => {
+    (_f = document.getElementById('dashboardInventoryBody')) === null || _f === void 0 ? void 0 : _f.addEventListener('click', (e) => {
         const target = e.target;
         const row = target.closest('tr');
         const carId = row === null || row === void 0 ? void 0 : row.getAttribute('data-id');
@@ -736,7 +770,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     closeUserModal === null || closeUserModal === void 0 ? void 0 : closeUserModal.addEventListener('click', closeUserModalFn);
     userOverlay === null || userOverlay === void 0 ? void 0 : userOverlay.addEventListener('click', closeUserModalFn);
-    (_e = document.getElementById('staffTableBody')) === null || _e === void 0 ? void 0 : _e.addEventListener('click', (e) => {
+    (_g = document.getElementById('staffTableBody')) === null || _g === void 0 ? void 0 : _g.addEventListener('click', (e) => {
         const target = e.target;
         if (target.closest('.edit-staff')) {
             const row = target.closest('tr');
@@ -792,8 +826,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // ── Data Seeding Logic ───────────────────────────────────────────────────
     function seedDefaultInventory() {
-        if (localStorage.getItem(INVENTORY_KEY))
-            return; // Already seeded
+        const stored = localStorage.getItem(INVENTORY_KEY);
+        if (stored && stored !== '[]')
+            return; // Only seed if missing or literally empty
         const defaultCars = [
             {
                 id: 'escape2012',

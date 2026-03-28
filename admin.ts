@@ -388,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 'rep3', userName: 'Guest User', userEmail: 'guest@web.com', reason: 'Incorrect Listing', description: 'The specs for the Tesla Model S seem to be for the older version.', date: 'Mar 25, 2026', status: 'RESOLVED' }
         ]);
 
-        if (!localStorage.getItem(REPORTS_KEY)) saveToStorage(REPORTS_KEY, reports);
+        if (!localStorage.getItem(REPORTS_KEY) || (JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]').length === 0)) saveToStorage(REPORTS_KEY, reports);
 
         reportsTableBody.innerHTML = '';
         reports.forEach(report => {
@@ -508,6 +508,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveSettingsBtn.innerHTML = '<i class="fa-solid fa-check"></i> Save Changes';
             }, 1500);
         }, 800);
+    });
+
+    // Data Export/Import
+    document.getElementById('exportDataBtn')?.addEventListener('click', () => {
+        const fullData = {
+            inventory: loadFromStorage(INVENTORY_KEY, []),
+            settings: loadFromStorage(SETTINGS_KEY, {}),
+            staff: loadFromStorage(STAFF_KEY, [])
+        };
+        const blob = new Blob([JSON.stringify(fullData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `racs_backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        alert('Data exported as JSON file. You can import this file on another computer.');
+    });
+
+    document.getElementById('importDataBtn')?.addEventListener('click', () => {
+        const input = prompt('Paste your exported JSON data here:');
+        if (!input) return;
+        try {
+            const data = JSON.parse(input);
+            if (data.inventory) saveToStorage(INVENTORY_KEY, data.inventory);
+            if (data.settings) saveToStorage(SETTINGS_KEY, data.settings);
+            if (data.staff) saveToStorage(STAFF_KEY, data.staff);
+            alert('Data imported successfully! The page will now reload.');
+            window.location.reload();
+        } catch (e) {
+            alert('Invalid JSON data. Please make sure you copied the correct text.');
+        }
     });
 
     // ── Staff Logic ───────────────────────────────────────────────────────────
@@ -921,7 +952,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Data Seeding Logic ───────────────────────────────────────────────────
     function seedDefaultInventory() {
-        if (localStorage.getItem(INVENTORY_KEY)) return; // Already seeded
+        const stored = localStorage.getItem(INVENTORY_KEY);
+        if (stored && stored !== '[]') return; // Only seed if missing or literally empty
 
         const defaultCars: Vehicle[] = [
             {

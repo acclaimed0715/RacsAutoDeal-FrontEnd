@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Racs Auto Deal</title>
     <link rel="stylesheet" href="admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -30,8 +31,8 @@
                 <li id="menuUsers"><a href="#"><i class="fa-solid fa-users"></i> Manage Users</a></li>
                 <li id="menuReports"><a href="#"><i class="fa-solid fa-flag"></i> Manage Reports</a></li>
                 <li id="menuSettings"><a href="#"><i class="fa-solid fa-gear"></i> Settings</a></li>
-                <li class="logout-link"><a href="index.html"><i class="fa-solid fa-arrow-right-from-bracket"></i> Back
-                        to Site</a></li>
+                <li class="logout-link"><a href="index.html"><i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        Logout</a></li>
             </ul>
         </aside>
 
@@ -42,7 +43,20 @@
                     <h2 id="currentViewTitle">Dashboard</h2>
                 </div>
                 <div class="topbar-right">
-                    <div class="notifications"><i class="fa-regular fa-bell"></i></div>
+                    <div class="notifications" id="notifBtn">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="notif-badge" id="notifBadge">0</span>
+                        <div class="notif-dropdown" id="notifDropdown">
+                            <div class="notif-dropdown-header">
+                                <h3>Notifications</h3>
+                                <button id="clearNotifs">Clear All</button>
+                            </div>
+                            <div class="notif-list" id="notifList">
+                                <!-- Notifications injected here -->
+                                <div class="notif-empty">No new notifications</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="admin-profile">
                         <div class="avatar"><i class="fa-solid fa-user"></i></div>
                         <span>Admin</span>
@@ -50,7 +64,7 @@
                 </div>
             </header>
 
-            <div class="dashboard-content" id="dashboardView">
+            <div class="dashboard-content active" id="dashboardView">
                 <div class="page-header">
                     <h1>Dashboard Overview</h1>
                     <button class="add-btn" id="addVehicleBtn"><i class="fa-solid fa-plus"></i> Add Vehicle</button>
@@ -67,99 +81,62 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon" style="background: rgba(243, 156, 18, 0.2); color: #f39c12;"><i
-                                class="fa-solid fa-eye"></i></div>
+                                class="fa-solid fa-money-bill-trend-up"></i></div>
                         <div class="stat-info">
-                            <h3>Page Views</h3>
-                            <p>8,204</p>
+                            <h3>Total Inventory Value</h3>
+                            <p id="statStockValue">₱0</p>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon" style="background: rgba(139, 41, 29, 0.2); color: #8B291D;"><i
-                                class="fa-solid fa-envelope"></i></div>
+                                class="fa-solid fa-clipboard-list"></i></div>
                         <div class="stat-info">
-                            <h3>Total Leads</h3>
-                            <p>156</p>
+                            <h3>Pending Inquiries</h3>
+                            <p id="statPendingInquiries">0</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="table-container">
+                <div class="dashboard-table-card" id="dashboardRecentSection">
                     <div class="table-header">
-                        <h2>Recent Inventory</h2>
-                        <div class="section-search">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" id="dashboardSearch" placeholder="Search recent items...">
+                        <h2>Analytics Dashboard</h2>
+                        <div class="chart-controls">
+                            <select id="chartTypeSelect" class="chart-dropdown">
+                                <option value="category">Value by Type</option>
+                                <option value="brand">Value by Brand</option>
+                                <option value="status">Stock Status</option>
+                            </select>
                         </div>
-                        <a href="#" class="view-all">View All</a>
                     </div>
-                    <table class="inventory-table">
+
+                    <div class="chart-container-row">
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="inventoryChart"></canvas>
+                        </div>
+                        <div class="chart-stats-mini" id="chartStatsMini">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Hidden table for lower roles / fallback -->
+                    <table class="inventory-table" id="dashboardInventoryTable" style="display: none;">
                         <thead>
                             <tr>
                                 <th>Vehicle</th>
-                                <th>Category</th>
+                                <th>Type</th>
                                 <th>Price</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <div class="table-vehicle">
-                                        <img src="assets/sedan_black.png" alt="Car">
-                                        <span>Ford Mustang GT 2024</span>
-                                    </div>
-                                </td>
-                                <td>Ford</td>
-                                <td>P3,500,000</td>
-                                <td><span class="status available">Available</span></td>
-                                <td>
-                                    <button class="action-btn edit" title="Edit"><i
-                                            class="fa-solid fa-pen"></i></button>
-                                    <button class="action-btn delete" title="Delete"><i
-                                            class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="table-vehicle">
-                                        <img src="assets/suv_gray.png" alt="Car">
-                                        <span>Toyota Innova V 2022</span>
-                                    </div>
-                                </td>
-                                <td>Toyota</td>
-                                <td>P1,750,000</td>
-                                <td><span class="status sold">Sold</span></td>
-                                <td>
-                                    <button class="action-btn edit" title="Edit"><i
-                                            class="fa-solid fa-pen"></i></button>
-                                    <button class="action-btn delete" title="Delete"><i
-                                            class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="table-vehicle">
-                                        <img src="assets/sedan_black.png" alt="Car">
-                                        <span>Honda Civic RS 2024</span>
-                                    </div>
-                                </td>
-                                <td>Honda</td>
-                                <td>P1,775,000</td>
-                                <td><span class="status available">Available</span></td>
-                                <td>
-                                    <button class="action-btn edit" title="Edit"><i
-                                            class="fa-solid fa-pen"></i></button>
-                                    <button class="action-btn delete" title="Delete"><i
-                                            class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
+                        <tbody id="dashboardInventoryBody">
+                            <!-- Populated dynamically via JS -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="dashboard-content" id="inventoryView" style="display: none;">
+            <div class="dashboard-content" id="inventoryView">
                 <div class="page-header">
                     <div class="header-left">
                         <h1>Car Inventory</h1>
@@ -202,7 +179,7 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Category</th>
+                                <th>Type</th>
                                 <th>Appointment Date</th>
                                 <th>Price</th>
                                 <th>Status</th>
@@ -219,7 +196,7 @@
                 </div>
             </div>
 
-            <div class="dashboard-content" id="usersView" style="display: none;">
+            <div class="dashboard-content" id="usersView">
                 <div class="page-header">
                     <h1>Manage Staff Users</h1>
                     <button class="add-btn" id="addStaffBtn"><i class="fa-solid fa-user-plus"></i> Add Staff</button>
@@ -282,7 +259,7 @@
                 </div>
             </div>
 
-            <div class="dashboard-content" id="reportsView" style="display: none;">
+            <div class="dashboard-content" id="reportsView">
                 <div class="page-header">
                     <div class="header-left">
                         <h1>User Reports</h1>
@@ -300,7 +277,7 @@
                     <table class="inventory-table">
                         <thead>
                             <tr>
-                                <th>User</th>
+                                <th>Email</th>
                                 <th>Reason</th>
                                 <th>Date Submitted</th>
                                 <th>Status</th>
@@ -308,57 +285,13 @@
                             </tr>
                         </thead>
                         <tbody id="reportsTableBody">
-                            <tr>
-                                <td>
-                                    <div class="table-vehicle">
-                                        <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem; background: #3498db;">UK</div>
-                                        <span>Unknown User</span>
-                                    </div>
-                                </td>
-                                <td>Technical Issue</td>
-                                <td>Mar 26, 2026</td>
-                                <td><span class="badge in-progress">PENDING</span></td>
-                                <td>
-                                    <button class="action-btn edit" title="View"><i class="fa-solid fa-eye"></i></button>
-                                    <button class="action-btn delete" title="Resolve"><i class="fa-solid fa-check"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="table-vehicle">
-                                        <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem; background: #9b59b6;">AL</div>
-                                        <span>Alex Lee</span>
-                                    </div>
-                                </td>
-                                <td>Sold Vehicle Still Listed</td>
-                                <td>Mar 27, 2026</td>
-                                <td><span class="badge in-progress">PENDING</span></td>
-                                <td>
-                                    <button class="action-btn edit" title="View"><i class="fa-solid fa-eye"></i></button>
-                                    <button class="action-btn delete" title="Resolve"><i class="fa-solid fa-check"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="table-vehicle">
-                                        <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem; background: #e67e22;">GU</div>
-                                        <span>Guest User</span>
-                                    </div>
-                                </td>
-                                <td>Incorrect Listing</td>
-                                <td>Mar 25, 2026</td>
-                                <td><span class="badge closed">RESOLVED</span></td>
-                                <td>
-                                    <button class="action-btn edit" title="View"><i class="fa-solid fa-eye"></i></button>
-                                    <button class="action-btn delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
+                            <!-- Populated dynamically via JS -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="dashboard-content" id="settingsView" style="display: none;">
+            <div class="dashboard-content" id="settingsView">
                 <div class="page-header">
                     <h1>System Settings</h1>
                     <button class="save-btn" id="saveSettingsBtn"><i class="fa-solid fa-check"></i> Save
@@ -395,16 +328,9 @@
                             <div class="form-group">
                                 <label>Admin Password</label>
                                 <div class="password-input-wrapper">
-                                    <input type="password" id="settingAdminPassword" value="********">
-                                    <button class="toggle-password"><i class="fa-solid fa-eye"></i></button>
+                                    <input type="password" id="settingAdminPassword" placeholder="Admin Password">
+                                    <button class="toggle-password" id="toggleAdminPass"><i class="fa-solid fa-eye"></i></button>
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Two-Factor Authentication</label>
-                                <label class="switch-toggle">
-                                    <input type="checkbox" id="setting2FA">
-                                    <span class="slider"></span>
-                                </label>
                             </div>
                             <div class="form-group">
                                 <label>Session Timeout (Minutes)</label>
@@ -491,13 +417,25 @@
                 </div>
                 <div class="deal-form-row">
                     <div class="deal-form-group">
-                        <input type="text" id="carPricePromo" placeholder="Price" class="deal-input">
-                    </div>
-                    <div class="deal-form-group">
                         <input type="text" id="carModelYear" placeholder="Model/Year" class="deal-input">
                     </div>
+                </div>
+                <div class="deal-form-row">
                     <div class="deal-form-group">
                         <input type="text" id="carMileage" placeholder="Mileage" class="deal-input">
+                    </div>
+                    <div class="deal-form-group">
+                        <select id="carCategory" class="deal-input"
+                            style="color: var(--text-primary); background: var(--input-bg); border: 1px solid var(--border); border-radius: 12px; height: 50px;">
+                            <option value="" disabled selected>Select Category</option>
+                            <option value="SUV">SUV</option>
+                            <option value="Sedan">Sedan</option>
+                            <option value="Electric Car">Electric Car</option>
+                            <option value="Hatchback">Hatchback</option>
+                            <option value="Van">Van</option>
+                            <option value="Sports Car">Sports Car</option>
+                            <option value="Coupe">Coupe</option>
+                        </select>
                     </div>
                 </div>
                 <div class="deal-form-row">
@@ -615,8 +553,7 @@
             <div class="user-form-group">
                 <label>Password</label>
                 <div class="password-input-wrapper">
-                    <input type="password" class="user-input" id="userPassword"
-                        placeholder="Create a temporary password">
+                    <input type="password" class="user-input" id="userPassword" placeholder="Create a password">
                     <button class="toggle-password user-modal-toggle" id="toggleUserPass"><i
                             class="fa-solid fa-eye"></i></button>
                 </div>
@@ -626,6 +563,63 @@
                 <button class="user-cancel-btn" id="cancelUserBtn">Cancel</button>
                 <button class="user-add-btn" id="confirmAddUserBtn">Add User</button>
             </div>
+        </div>
+    </div>
+
+    <!-- View Report Modal -->
+    <div class="user-modal-overlay" id="reportViewOverlay"></div>
+    <div class="user-modal" id="reportViewModal" style="max-width: 500px;">
+        <div class="user-modal-header">
+            <h3>Report Details</h3>
+            <i class="fa-solid fa-circle-xmark close-user-modal" id="closeReportView"></i>
+        </div>
+        <div class="user-modal-body">
+            <div class="user-form-group">
+                <label
+                    style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">User
+                    Name</label>
+                <div id="viewReportUser" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Unknown User
+                </div>
+            </div>
+            <div class="user-form-group">
+                <label
+                    style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Email
+                    Address</label>
+                <div id="viewReportEmail"
+                    style="font-size: 1.1rem; font-weight: 600; color: var(--primary); margin-bottom: 1rem;">
+                    unknown@example.com</div>
+            </div>
+            <div class="user-form-row">
+                <div class="user-form-group">
+                    <label
+                        style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Reason</label>
+                    <div id="viewReportReason" style="font-weight: 600;">Technical Issue</div>
+                </div>
+                <div class="user-form-group">
+                    <label
+                        style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Date
+                        Submitted</label>
+                    <div id="viewReportDate" style="color: var(--text-secondary);">Mar 26, 2026</div>
+                </div>
+            </div>
+            <div class="user-form-group">
+                <label
+                    style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Status</label>
+                <div style="margin-top: 0.5rem;"><span class="badge in-progress" id="viewReportStatus">PENDING</span>
+                </div>
+            </div>
+            <div class="user-form-group" style="margin-top: 1.5rem;">
+                <label
+                    style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Description</label>
+                <div id="viewReportDesc"
+                    style="background: rgba(0,0,0,0.2); padding: 1.2rem; border-radius: 10px; border: 1px solid var(--border); margin-top: 0.5rem; line-height: 1.6; color: var(--text-primary);">
+                    No description provided.
+                </div>
+            </div>
+        </div>
+        <div class="user-modal-footer">
+            <button class="user-add-btn"
+                onclick="document.getElementById('reportViewModal').classList.remove('active'); document.getElementById('reportViewOverlay').classList.remove('active');">Close</button>
         </div>
     </div>
 

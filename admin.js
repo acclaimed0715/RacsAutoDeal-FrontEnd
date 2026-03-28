@@ -2,165 +2,544 @@
 if (localStorage.getItem('adminLoggedIn') !== 'true') {
     window.location.href = 'login.html';
 }
+// ─── Constants ────────────────────────────────────────────────────────────────
+const INVENTORY_KEY = 'racs_car_inventory';
+const STAFF_KEY = 'racs_staff_users';
+const REPORTS_KEY = 'racs_reports';
+const SETTINGS_KEY = 'racs_settings';
+const NOTIF_KEY = 'racs_admin_notifications';
+// ─── Persistence Helpers ──────────────────────────────────────────────────────
+function loadFromStorage(key, defaultValue) {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : defaultValue;
+}
+function saveToStorage(key, data) {
+    localStorage.setItem(key, JSON.stringify(data));
+}
+// ─── Notification Helper ──────────────────────────────────────────────────────
+function createNotification(title, message, type = 'info') {
+    const notifs = loadFromStorage(NOTIF_KEY, []);
+    const userRole = localStorage.getItem('currentUserRole') || 'Admin';
+    const newNotif = {
+        id: 'notif_' + Date.now(),
+        title,
+        message,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type,
+        isRead: false,
+        sender: userRole
+    };
+    notifs.unshift(newNotif);
+    saveToStorage(NOTIF_KEY, notifs.slice(0, 20)); // Keep last 20
+    const renderFn = window.refreshNotifs;
+    if (typeof renderFn === 'function')
+        renderFn();
+}
 // ─── DOM Ready ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    var _a, _b;
+    var _a, _b, _c, _d, _e;
+    // ── Notification Rendering ────────────────────────────────────────────────
+    const notifBadge = document.getElementById('notifBadge');
+    const notifList = document.getElementById('notifList');
+    const notifBtn = document.getElementById('notifBtn');
+    const notifDropdown = document.getElementById('notifDropdown');
+    const clearNotifs = document.getElementById('clearNotifs');
+    function renderNotifications() {
+        const notifs = loadFromStorage(NOTIF_KEY, []);
+        const unreadCount = notifs.filter(n => !n.isRead).length;
+        if (notifBadge) {
+            notifBadge.textContent = unreadCount.toString();
+            notifBadge.classList.toggle('active', unreadCount > 0);
+        }
+        if (notifList) {
+            if (notifs.length === 0) {
+                notifList.innerHTML = '<div class="notif-empty">No new notifications</div>';
+            }
+            else {
+                notifList.innerHTML = notifs.map(n => `
+                    <div class="notif-item ${n.isRead ? '' : 'unread'}" data-id="${n.id}">
+                        <div class="notif-icon" style="background: var(--primary-glow); color: var(--primary);">
+                            <i class="fa-solid ${n.type === 'success' ? 'fa-check' : 'fa-info-circle'}"></i>
+                        </div>
+                        <div class="notif-content">
+                            <h4>${n.title}</h4>
+                            <p>${n.message}</p>
+                            <span class="notif-time">${n.time} • ${n.sender}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+    }
+    window.refreshNotifs = renderNotifications;
+    notifBtn === null || notifBtn === void 0 ? void 0 : notifBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown === null || notifDropdown === void 0 ? void 0 : notifDropdown.classList.toggle('active');
+        // Mark as read
+        const notifs = loadFromStorage(NOTIF_KEY, []);
+        notifs.forEach(n => n.isRead = true);
+        saveToStorage(NOTIF_KEY, notifs);
+        setTimeout(renderNotifications, 300);
+    });
+    document.addEventListener('click', () => notifDropdown === null || notifDropdown === void 0 ? void 0 : notifDropdown.classList.remove('active'));
+    notifDropdown === null || notifDropdown === void 0 ? void 0 : notifDropdown.addEventListener('click', (e) => e.stopPropagation());
+    clearNotifs === null || clearNotifs === void 0 ? void 0 : clearNotifs.addEventListener('click', () => {
+        saveToStorage(NOTIF_KEY, []);
+        renderNotifications();
+    });
+    // Initial render
+    renderNotifications();
+    // ... rest of the logic ...
+    // ── Theme Initialization ──────────────────────────────────────────────────
+    const settings = loadFromStorage(SETTINGS_KEY, {
+        businessName: 'Racs Auto Deal',
+        contactEmail: 'contact@racsautodeal.com',
+        phone: '+63 912 345 6789',
+        address: '123 Auto Avenue, Quezon City, Metro Manila',
+        adminPassword: 'admin123',
+        sessionTimeout: 60,
+        emailNotif: true,
+        stockNotif: true,
+        theme: 'dark',
+        currency: 'P'
+    });
+    // Migration: If password is '********', replace with default
+    if (settings.adminPassword === '********') {
+        settings.adminPassword = 'admin123';
+        saveToStorage(SETTINGS_KEY, settings);
+    }
+    document.body.setAttribute('data-theme', settings.theme);
     // ── RBAC Logic ────────────────────────────────────────────────────────────
-    const currentUserRole = localStorage.getItem('currentUserRole');
-    // Default fallback to prevent crash
-    if (!currentUserRole) {
-        localStorage.setItem('currentUserRole', 'Super Admin');
+    // ── Auto-Repair Missing Categories ────────────────────────────────────────
+    const inventory = loadFromStorage(INVENTORY_KEY, []);
+    let needsUpdate = false;
+    inventory.forEach(car => {
+        if (!car.type) {
+            needsUpdate = true;
+            if (car.name.includes('Escape') || car.name.includes('Livina'))
+                car.type = 'SUV';
+            else if (car.name.includes('Tesla') || car.name.includes('Taycan'))
+                car.type = 'Electric Car';
+            else if (car.name.includes('Mustang'))
+                car.type = 'Sports Car';
+            else if (car.name.includes('Innova'))
+                car.type = 'Van';
+            else if (car.name.includes('Mazda'))
+                car.type = 'Hatchback';
+            else
+                car.type = 'Sedan';
+        }
+    });
+    // Check if Ford Escape Titanium is missing and add it if we have 8 cars
+    if (inventory.length === 8 && !inventory.find(c => c.id === 'escape2012_titanium')) {
+        needsUpdate = true;
+        inventory.push({
+            id: 'escape2012_titanium',
+            name: 'Ford Escape Titanium',
+            price: '₱800,000',
+            promoPrice: '',
+            modelYear: '2012',
+            mileage: '38,000 KM',
+            brand: 'Ford',
+            transmission: '6-Speed Automatic',
+            fuelType: 'Gasoline',
+            engine: '2.0L I4',
+            hp: '240 hp',
+            torque: '270 lb-ft',
+            safety: 'Front/Side Airbags, ABS',
+            seating: '5 Seater',
+            description: 'Front-Wheel Drive (FWD) / Optional AWD. Bluetooth, Premium Audio.',
+            status: 'open',
+            type: 'SUV',
+            images: ['assets/suv_gray.png'],
+            date: new Date().toLocaleDateString()
+        });
     }
+    if (needsUpdate)
+        saveToStorage(INVENTORY_KEY, inventory);
+    const currentUserRole = localStorage.getItem('currentUserRole') || 'Super Admin';
+    const profileSpan = document.querySelector('.admin-profile span');
+    if (profileSpan)
+        profileSpan.textContent = currentUserRole;
     if (currentUserRole === 'Inventory Manager' || currentUserRole === 'Inventory Staff') {
-        const menuUsers = document.getElementById('menuUsers');
-        const menuReports = document.getElementById('menuReports');
-        const menuSettings = document.getElementById('menuSettings');
-        if (menuUsers)
-            menuUsers.style.display = 'none';
-        if (menuReports)
-            menuReports.style.display = 'none';
-        if (menuSettings)
-            menuSettings.style.display = 'none';
-        // Update profile span
-        const profileSpan = document.querySelector('.admin-profile span');
-        if (profileSpan)
-            profileSpan.textContent = 'Inventory Staff';
+        const restricted = ['menuUsers', 'menuReports', 'menuSettings'];
+        restricted.forEach(id => {
+            const el = document.getElementById(id);
+            if (el)
+                el.style.display = 'none';
+        });
     }
-    else {
-        const profileSpan = document.querySelector('.admin-profile span');
-        if (profileSpan)
-            profileSpan.textContent = 'Super Admin';
+    // ── Dashboard Logic ───────────────────────────────────────────────────────
+    let currentChart = null;
+    function renderDashboardChart() {
+        var _a;
+        const ctx = document.getElementById('inventoryChart');
+        if (!ctx)
+            return;
+        const inventory = loadFromStorage(INVENTORY_KEY, []);
+        const chartType = ((_a = document.getElementById('chartTypeSelect')) === null || _a === void 0 ? void 0 : _a.value) || 'category';
+        const dataMap = {};
+        inventory.forEach(car => {
+            let key = '';
+            if (chartType === 'category')
+                key = car.type || 'N/A';
+            else if (chartType === 'brand')
+                key = car.brand || 'N/A';
+            else if (chartType === 'status')
+                key = car.status.toUpperCase();
+            const priceNum = parseInt(car.price.replace(/[^0-9]/g, '')) || 0;
+            dataMap[key] = (dataMap[key] || 0) + (chartType === 'status' ? 1 : priceNum);
+        });
+        const labels = Object.keys(dataMap);
+        const dataValues = Object.values(dataMap);
+        if (currentChart) {
+            currentChart.destroy();
+        }
+        const isStatus = chartType === 'status';
+        currentChart = new window.Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                        label: isStatus ? 'Number of Vehicles' : 'Total Value (₱)',
+                        data: dataValues,
+                        backgroundColor: [
+                            'rgba(231, 76, 60, 0.7)',
+                            'rgba(52, 152, 219, 0.7)',
+                            'rgba(46, 204, 113, 0.7)',
+                            'rgba(241, 196, 15, 0.7)',
+                            'rgba(155, 89, 182, 0.7)'
+                        ],
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: 'rgba(255,255,255,0.5)' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: 'rgba(255,255,255,0.8)' }
+                    }
+                }
+            }
+        });
+        // Update Mini Stats
+        const statsMini = document.getElementById('chartStatsMini');
+        if (statsMini) {
+            statsMini.innerHTML = labels.map((label, i) => `
+                <div class="mini-stat-item">
+                    <span class="dot" style="background: ${currentChart.data.datasets[0].backgroundColor[i % 5]}"></span>
+                    <span class="label">${label}</span>
+                    <span class="value">${isStatus ? dataValues[i] : '₱' + dataValues[i].toLocaleString()}</span>
+                </div>
+            `).join('');
+        }
     }
-    // ── Load Custom Staff Users ───────────────────────────────────────────────
-    const staffTableBody = document.getElementById('staffTableBody');
-    const storedUsersStr = localStorage.getItem('racs_staff_users');
-    if (storedUsersStr && staffTableBody) {
-        const storedUsers = JSON.parse(storedUsersStr);
-        storedUsers.forEach((u) => {
-            const initials = (u.firstName.charAt(0) + u.lastName.charAt(0)).toUpperCase();
-            const rowHTML = `
+    function renderDashboardRecent() {
+        const dashboardBody = document.getElementById('dashboardInventoryBody');
+        const dashboardTable = document.getElementById('dashboardInventoryTable');
+        const chartRow = document.querySelector('.chart-container-row');
+        const chartControls = document.querySelector('.chart-controls');
+        if (!dashboardBody)
+            return;
+        const inventory = loadFromStorage(INVENTORY_KEY, []);
+        // Show chart for all admins
+        if (chartRow)
+            chartRow.style.display = 'flex';
+        if (chartControls)
+            chartControls.style.display = 'block';
+        if (dashboardTable)
+            dashboardTable.style.display = 'none';
+        renderDashboardChart();
+        // Update Stats
+        const statValues = document.querySelectorAll('.stat-info p');
+        if (statValues[0])
+            statValues[0].textContent = inventory.length.toString();
+        // Calculate Total Inventory Value
+        const totalValue = inventory.reduce((sum, car) => {
+            const priceNum = parseInt(car.price.replace(/[^0-9]/g, '')) || 0;
+            return sum + priceNum;
+        }, 0);
+        const statStockValue = document.getElementById('statStockValue');
+        if (statStockValue)
+            statStockValue.textContent = '₱' + totalValue.toLocaleString();
+        // Calculate Pending Inquiries
+        const reports = loadFromStorage(REPORTS_KEY, []);
+        const pendingCount = reports.filter(r => r.status === 'PENDING').length;
+        const statPendingInquiries = document.getElementById('statPendingInquiries');
+        if (statPendingInquiries)
+            statPendingInquiries.textContent = pendingCount.toString();
+    }
+    // ── Reports Logic ─────────────────────────────────────────────────────────
+    function renderReports() {
+        const reportsTableBody = document.getElementById('reportsTableBody');
+        if (!reportsTableBody)
+            return;
+        let reports = loadFromStorage(REPORTS_KEY, [
+            { id: 'rep1', userName: 'Unknown User', userEmail: 'unknown@example.com', reason: 'Technical Issue', description: 'The homepage takes too long to load on my mobile device.', date: 'Mar 26, 2026', status: 'PENDING' },
+            { id: 'rep2', userName: 'Alex Lee', userEmail: 'alex.lee@gmail.com', reason: 'Sold Vehicle Still Listed', description: 'I saw the Ford Escape 2012 marked as sold on Facebook but it is still open here.', date: 'Mar 27, 2026', status: 'PENDING' },
+            { id: 'rep3', userName: 'Guest User', userEmail: 'guest@web.com', reason: 'Incorrect Listing', description: 'The specs for the Tesla Model S seem to be for the older version.', date: 'Mar 25, 2026', status: 'RESOLVED' }
+        ]);
+        if (!localStorage.getItem(REPORTS_KEY))
+            saveToStorage(REPORTS_KEY, reports);
+        reportsTableBody.innerHTML = '';
+        reports.forEach(report => {
+            var _a, _b;
+            const statusClass = report.status === 'PENDING' ? 'in-progress' : 'closed';
+            const actionIcon = report.status === 'PENDING' ? 'fa-check' : 'fa-trash';
+            const actionTitle = report.status === 'PENDING' ? 'Resolve' : 'Delete';
+            const row = document.createElement('tr');
+            row.innerHTML = `
                 <td>
                     <div class="table-vehicle">
-                        <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                            ${initials}
-                        </div>
+                        <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem; background: var(--primary);">${report.userName.charAt(0)}</div>
+                        <span>${report.userName}</span>
+                    </div>
+                </td>
+                <td>${report.reason}</td>
+                <td>${report.date}</td>
+                <td><span class="badge ${statusClass}">${report.status}</span></td>
+                <td>
+                    <button class="action-btn view-report" title="View"><i class="fa-solid fa-eye"></i></button>
+                    <button class="action-btn resolve-report" title="${actionTitle}"><i class="fa-solid ${actionIcon}"></i></button>
+                </td>
+            `;
+            (_a = row.querySelector('.view-report')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', () => {
+                const modal = document.getElementById('reportViewModal');
+                const overlay = document.getElementById('reportViewOverlay');
+                if (modal && overlay) {
+                    document.getElementById('viewReportUser').textContent = report.userName;
+                    document.getElementById('viewReportEmail').textContent = report.userEmail;
+                    document.getElementById('viewReportReason').textContent = report.reason;
+                    document.getElementById('viewReportDate').textContent = report.date;
+                    document.getElementById('viewReportStatus').textContent = report.status;
+                    document.getElementById('viewReportDesc').textContent = report.description || 'No description provided.';
+                    const statusBadge = document.getElementById('viewReportStatus');
+                    if (statusBadge) {
+                        statusBadge.className = 'badge ' + (report.status === 'PENDING' ? 'in-progress' : 'closed');
+                    }
+                    modal.classList.add('active');
+                    overlay.classList.add('active');
+                }
+            });
+            (_b = row.querySelector('.resolve-report')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', () => {
+                if (report.status === 'PENDING') {
+                    if (confirm(`Mark report from ${report.userName} as RESOLVED?`)) {
+                        saveToStorage(REPORTS_KEY, reports);
+                        renderReports();
+                        renderDashboardRecent();
+                    }
+                }
+                else {
+                    if (confirm(`Delete this resolved report?`)) {
+                        reports = reports.filter(r => r.id !== report.id);
+                        saveToStorage(REPORTS_KEY, reports);
+                        renderReports();
+                        renderDashboardRecent();
+                    }
+                }
+            });
+            reportsTableBody.appendChild(row);
+        });
+    }
+    // ── Settings Logic ────────────────────────────────────────────────────────
+    function initSettings() {
+        const s = loadFromStorage(SETTINGS_KEY, settings);
+        document.getElementById('settingBusinessName').value = s.businessName;
+        document.getElementById('settingContactEmail').value = s.contactEmail;
+        document.getElementById('settingPhone').value = s.phone;
+        document.getElementById('settingAddress').value = s.address;
+        document.getElementById('settingAdminPassword').value = s.adminPassword || '';
+        document.getElementById('settingTimeout').value = s.sessionTimeout.toString();
+        document.getElementById('settingNotifEmail').checked = s.emailNotif;
+        document.getElementById('settingNotifStock').checked = s.stockNotif;
+        document.getElementById('settingTheme').value = s.theme;
+        document.getElementById('settingCurrency').value = s.currency;
+    }
+    // Toggle Admin Password Visibility
+    (_a = document.getElementById('toggleAdminPass')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', (e) => {
+        const input = document.getElementById('settingAdminPassword');
+        const icon = e.currentTarget.querySelector('i');
+        if (input && icon) {
+            const isPass = input.type === 'password';
+            input.type = isPass ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !isPass);
+            icon.classList.toggle('fa-eye-slash', isPass);
+        }
+    });
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    saveSettingsBtn === null || saveSettingsBtn === void 0 ? void 0 : saveSettingsBtn.addEventListener('click', () => {
+        const updated = {
+            businessName: document.getElementById('settingBusinessName').value,
+            contactEmail: document.getElementById('settingContactEmail').value,
+            phone: document.getElementById('settingPhone').value,
+            address: document.getElementById('settingAddress').value,
+            adminPassword: document.getElementById('settingAdminPassword').value,
+            sessionTimeout: parseInt(document.getElementById('settingTimeout').value),
+            emailNotif: document.getElementById('settingNotifEmail').checked,
+            stockNotif: document.getElementById('settingNotifStock').checked,
+            theme: document.getElementById('settingTheme').value,
+            currency: document.getElementById('settingCurrency').value
+        };
+        saveToStorage(SETTINGS_KEY, updated);
+        document.body.setAttribute('data-theme', updated.theme);
+        saveSettingsBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        setTimeout(() => {
+            saveSettingsBtn.innerHTML = '<i class="fa-solid fa-check"></i> Saved!';
+            setTimeout(() => {
+                saveSettingsBtn.innerHTML = '<i class="fa-solid fa-check"></i> Save Changes';
+            }, 1500);
+        }, 800);
+    });
+    // ── Staff Logic ───────────────────────────────────────────────────────────
+    let editingStaffId = null;
+    function renderStaff() {
+        const staffTableBody = document.getElementById('staffTableBody');
+        if (!staffTableBody)
+            return;
+        const staff = loadFromStorage(STAFF_KEY, []);
+        staffTableBody.innerHTML = '';
+        staff.forEach((u) => {
+            var _a, _b;
+            const initials = (u.firstName.charAt(0) + (((_a = u.lastName) === null || _a === void 0 ? void 0 : _a.charAt(0)) || '')).toUpperCase();
+            const row = document.createElement('tr');
+            row.setAttribute('data-id', u.id);
+            row.innerHTML = `
+                <td>
+                    <div class="table-vehicle">
+                        <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem;">${initials}</div>
                         <span>${u.firstName} ${u.lastName}</span>
                     </div>
                 </td>
                 <td>${u.role}</td>
                 <td>Newly Added</td>
                 <td>
-                    <button class="action-btn edit" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                    <button class="action-btn delete" title="Remove"><i class="fa-solid fa-trash"></i></button>
+                    <button class="action-btn edit-staff" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                    <button class="action-btn delete-staff" title="Remove"><i class="fa-solid fa-trash"></i></button>
                 </td>
             `;
-            const row = document.createElement('tr');
-            row.innerHTML = rowHTML;
+            (_b = row.querySelector('.delete-staff')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', () => {
+                if (confirm('Are you sure you want to remove this staff member?')) {
+                    const updated = loadFromStorage(STAFF_KEY, []).filter(s => s.id !== u.id);
+                    saveToStorage(STAFF_KEY, updated);
+                    renderStaff();
+                }
+            });
             staffTableBody.appendChild(row);
         });
     }
-    // ── Logout Functionality ──────────────────────────────────────────────────
-    const logoutLink = document.querySelector('.logout-link a');
-    logoutLink === null || logoutLink === void 0 ? void 0 : logoutLink.addEventListener('click', () => {
-        localStorage.removeItem('adminLoggedIn');
-    });
-    // ── Car Inventory Persistence Helpers ─────────────────────────────────────
-    const INVENTORY_KEY = 'racs_car_inventory';
-    function loadInventory() {
-        return JSON.parse(localStorage.getItem(INVENTORY_KEY) || '[]');
-    }
-    function saveInventory(inv) {
-        localStorage.setItem(INVENTORY_KEY, JSON.stringify(inv));
-    }
-    function updateDashboardStats() {
-        const inv = loadInventory();
-        const statCards = document.querySelectorAll('.stat-card .stat-info p');
-        if (statCards[0])
-            statCards[0].textContent = inv.length.toString();
-    }
-    function buildInventoryRow(car) {
-        const statusBadge = car.status === 'open'
-            ? '<span class="badge in-progress">OPEN</span>'
-            : car.status === 'in-progress'
-                ? '<span class="badge in-progress">IN PROGRESS</span>'
-                : '<span class="badge closed">CLOSED</span>';
-        return `
-            <tr data-car-id="${car.id}" data-mileage="${car.mileage || ''}" data-fuel="${car.fuel || ''}"
-                data-engine="${car.engine || ''}" data-hp="${car.hp || ''}" data-torque="${car.torque || ''}"
-                data-safety="${car.safety || ''}" data-seating="${car.seating || ''}"
-                data-promo-price="${car.promoPrice || ''}" data-model="${car.model || ''}"
-                data-trans="${car.transmission || ''}" data-desc="${car.description || ''}"
-                data-images='${JSON.stringify(car.images || [])}'>
+    // ── Inventory Logic ───────────────────────────────────────────────────────
+    function renderInventory() {
+        const inventoryBody = document.getElementById('inventoryTableBody');
+        if (!inventoryBody)
+            return;
+        const inventory = loadFromStorage(INVENTORY_KEY, []);
+        inventoryBody.innerHTML = '';
+        inventory.forEach((car) => {
+            var _a, _b;
+            const row = document.createElement('tr');
+            row.setAttribute('data-id', car.id);
+            const statusText = car.status.charAt(0).toUpperCase() + car.status.slice(1);
+            const statusBadge = `<span class="badge ${car.status === 'open' ? 'in-progress' : 'closed'}">${statusText.toUpperCase()}</span>`;
+            row.innerHTML = `
                 <td>${car.name}</td>
-                <td>${car.brand || 'N/A'}</td>
-                <td>${car.date}</td>
+                <td>${car.type || 'N/A'}</td>
+                <td>${car.date || 'N/A'}</td>
                 <td>${car.price}</td>
                 <td>${statusBadge}</td>
                 <td>
                     <button class="icon-btn edit-deal-btn"><i class="fa-solid fa-pen"></i></button>
                     <button class="icon-btn delete-deal-btn"><i class="fa-solid fa-trash"></i></button>
                 </td>
-            </tr>
-        `;
-    }
-    // ── Seed Default Cars on First Load ───────────────────────────────────────
-    const inventoryTableBody = document.getElementById('inventoryTableBody');
-    if (!localStorage.getItem(INVENTORY_KEY)) {
-        const defaultCars = [
-            { id: 'escape2012', name: 'Ford Escape XLs 2012', brand: 'Ford', price: '₱750,000', model: '2012', fuel: 'Gasoline', transmission: '5-Speed Manual / 6-Speed Automatic', description: 'Front-Wheel Drive (FWD). AM/FM Radio, CD Player, AUX Input. Air Conditioning, Power Windows, Power Door Locks.', mileage: '45,000 KM', engine: '2.5L I4', hp: '171 hp @ 6000 rpm', torque: '171 lb-ft @ 4500 rpm', safety: 'Front Airbags, ABS, ESC', seating: '5 Seater', images: ['assets/suv_silver.png', 'assets/suv_gray.png', 'assets/suv_white.png'], status: 'open', date: 'Mar 15, 2026 10:30 AM', posted: '1 Day Ago', isFavorited: false, promoPrice: '' },
-            { id: 'escape2012_titanium', name: 'Ford Escape Titanium 2012', brand: 'Ford', price: '₱800,000', model: '2012', fuel: 'Gasoline', transmission: '6-Speed Automatic', description: 'Front-Wheel Drive (FWD). Titanium Premium Package, Sony Audio, Dual Climate.', mileage: '38,000 KM', engine: '2.0L EcoBoost I4 Turbo', hp: '240 hp @ 5500 rpm', torque: '270 lb-ft @ 3000 rpm', safety: 'Blind Spot Monitor, Rear Camera, ABS', seating: '5 Seater', images: ['assets/suv_gray.png'], status: 'in-progress', date: 'Mar 16, 2026 09:15 AM', posted: '2 Days Ago', isFavorited: false, promoPrice: '' },
-            { id: 'livina2023', name: 'Nissan Livina VL 2023', brand: 'Nissan', price: '₱1,100,000', model: '2023', fuel: 'Gasoline', transmission: 'CVT', description: 'Front-Wheel Drive (FWD). 8-inch Touchscreen, Apple CarPlay, Android Auto.', mileage: '12,000 KM', engine: '1.6L HR16DE', hp: '118 hp @ 5600 rpm', torque: '149 Nm @ 4000 rpm', safety: '6 Airbags, VDC, Hill Start Assist', seating: '7 Seater', images: ['assets/suv_white.png'], status: 'closed', date: 'Mar 18, 2026 02:00 PM', posted: '3 Days Ago', isFavorited: false, promoPrice: '' },
-            { id: 'tesla_plaid', name: 'Tesla Model S Plaid 2024', brand: 'Tesla', price: '₱6,500,000', model: '2024', fuel: 'Electric', transmission: 'Single-Speed Fixed Gear', description: 'All-Wheel Drive. 1,020 hp, 0-60 mph in 1.99s. 17-inch Cinematic Display, Autopilot, Premium Audio.', mileage: '0 KM', engine: 'Tri-Motor Electric', hp: '1,020 hp', torque: '1,050 lb-ft', safety: 'Autopilot, 8 Cameras, 12 Ultrasonic Sensors', seating: '5 Seater', images: ['assets/tesla_plaid.png'], status: 'open', date: 'Mar 19, 2026 08:00 AM', posted: 'New Arrival', isFavorited: false, promoPrice: '' },
-            { id: 'porsche_taycan', name: 'Porsche Taycan Turbo S 2024', brand: 'Porsche', price: '₱12,500,000', model: '2024', fuel: 'Electric', transmission: '2-Speed Automatic (Rear), 1-Speed (Front)', description: 'All-Wheel Drive. 800V Architecture, Matrix LED Headlights. Performance Battery Plus, Sport Chrono Package.', mileage: '0 KM', engine: 'Dual-Motor Electric', hp: '750 hp (Overboost)', torque: '774 lb-ft', safety: 'Porsche InnoDrive, Night View Assist', seating: '4 Seater', images: ['assets/porsche_taycan.png'], status: 'open', date: 'Mar 20, 2026 10:00 AM', posted: 'New Arrival', isFavorited: false, promoPrice: '' },
-            { id: 'civic_rs', name: 'Honda Civic RS 2024', brand: 'Honda', price: '₱1,775,000', model: '2024', fuel: 'Gasoline (Turbo)', transmission: 'CVT', description: 'Front-Wheel Drive (FWD). Honda SENSING Suite, Bose 12-Speaker Audio.', mileage: '5,000 KM', engine: '1.5L VTEC Turbo', hp: '178 hp @ 6000 rpm', torque: '240 Nm @ 1700-4500 rpm', safety: 'Honda SENSING, 6 Airbags, LaneWatch', seating: '5 Seater', images: ['assets/sedan_black.png'], status: 'open', date: 'Mar 20, 2026 11:45 AM', posted: '1 Day Ago', isFavorited: false, promoPrice: '' },
-            { id: 'mazda3', name: 'Mazda 3 Speed 2.0 2023', brand: 'Mazda', price: '₱1,500,000', model: '2023', fuel: 'Gasoline', transmission: '6-Speed Automatic', description: 'Front-Wheel Drive. SKYACTIV-G, i-ACTIVSENSE, Bose Sound System.', mileage: '8,000 KM', engine: '2.0L SKYACTIV-G', hp: '153 hp @ 6000 rpm', torque: '200 Nm @ 4000 rpm', safety: 'i-ACTIVSENSE, 6 Airbags, BSM', seating: '5 Seater', images: ['assets/hatchback_red.png'], status: 'in-progress', date: 'Mar 21, 2026 01:30 PM', posted: '4 Days Ago', isFavorited: false, promoPrice: '' },
-            { id: 'mustang_gt', name: 'Ford Mustang GT 2024', brand: 'Ford', price: '₱3,500,000', model: '2024', fuel: 'Gasoline (V8)', transmission: '10-Speed Automatic', description: 'Rear-Wheel Drive (RWD). Track Apps, MagneRide Damping, SYNC 4. Recaro Leather Seats.', mileage: '2,000 KM', engine: '5.0L Ti-VCT V8', hp: '480 hp @ 7150 rpm', torque: '560 Nm @ 4900 rpm', safety: 'Ford Co-Pilot360, 8 Airbags, ABS', seating: '4 Seater', images: ['assets/sedan_black.png', 'assets/hatchback_red.png'], status: 'open', date: 'Mar 24, 2026 03:00 PM', posted: '1 Day Ago', isFavorited: false, promoPrice: '' }
-        ];
-        saveInventory(defaultCars);
-    }
-    // ── Load Inventory into Table on Start ────────────────────────────────────
-    {
-        const initialInv = loadInventory();
-        initialInv.forEach((car) => {
-            inventoryTableBody === null || inventoryTableBody === void 0 ? void 0 : inventoryTableBody.insertAdjacentHTML('beforeend', buildInventoryRow(car));
+            `;
+            (_a = row.querySelector('.edit-deal-btn')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', () => openEditCarModal(car.id));
+            (_b = row.querySelector('.delete-deal-btn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', () => {
+                if (confirm('Delete this vehicle?')) {
+                    const updated = loadFromStorage(INVENTORY_KEY, []).filter(c => c.id !== car.id);
+                    saveToStorage(INVENTORY_KEY, updated);
+                    renderInventory();
+                    renderDashboardRecent();
+                }
+            });
+            inventoryBody.appendChild(row);
         });
-        // Update stats text
         const statsText = document.querySelector('.stats-text');
         if (statsText)
-            statsText.textContent = `Total: ${initialInv.length} deals`;
-        updateDashboardStats();
+            statsText.textContent = `Total: ${inventory.length} deals`;
     }
+    // ── Initial Render ────────────────────────────────────────────────────────
+    renderDashboardRecent();
+    renderReports();
+    initSettings();
+    renderStaff();
+    renderInventory();
+    // Chart Type Selector
+    (_b = document.getElementById('chartTypeSelect')) === null || _b === void 0 ? void 0 : _b.addEventListener('change', renderDashboardChart);
+    // ── Navigation Logic ──────────────────────────────────────────────────────
+    const userModal = document.getElementById('userModal');
+    const userOverlay = document.getElementById('userModalOverlay');
+    const currentViewTitle = document.getElementById('currentViewTitle');
+    function switchView(viewId) {
+        var _a;
+        document.querySelectorAll('.dashboard-content').forEach(v => v.classList.remove('active'));
+        const targetView = document.getElementById(viewId + 'View');
+        if (targetView)
+            targetView.classList.add('active');
+        document.querySelectorAll('.sidebar-menu li').forEach(l => l.classList.remove('active'));
+        const menuId = 'menu' + viewId.charAt(0).toUpperCase() + viewId.slice(1);
+        (_a = document.getElementById(menuId)) === null || _a === void 0 ? void 0 : _a.classList.add('active');
+        if (currentViewTitle) {
+            currentViewTitle.textContent = viewId.charAt(0).toUpperCase() + viewId.slice(1);
+        }
+    }
+    document.querySelectorAll('.sidebar-menu li').forEach(item => {
+        item.addEventListener('click', (e) => {
+            const id = item.id.replace('menu', '').toLowerCase();
+            switchView(id);
+        });
+    });
+    // ── Report View Modal Logic ───────────────────────────────────────────
+    const reportViewModal = document.getElementById('reportViewModal');
+    const reportViewOverlay = document.getElementById('reportViewOverlay');
+    const closeReportView = document.getElementById('closeReportView');
+    const hideReportModal = () => {
+        reportViewModal === null || reportViewModal === void 0 ? void 0 : reportViewModal.classList.remove('active');
+        reportViewOverlay === null || reportViewOverlay === void 0 ? void 0 : reportViewOverlay.classList.remove('active');
+    };
+    closeReportView === null || closeReportView === void 0 ? void 0 : closeReportView.addEventListener('click', hideReportModal);
+    reportViewOverlay === null || reportViewOverlay === void 0 ? void 0 : reportViewOverlay.addEventListener('click', hideReportModal);
     // ── Add Deal Modal Logic ──────────────────────────────────────────────────
     const addVehicleBtn = document.getElementById('addVehicleBtn');
     const modal = document.getElementById('addModal');
     const overlay = document.getElementById('addModalOverlay');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const addCarBtnTop = document.getElementById('addCarBtnTop');
-    // New fields
+    const confirmAddVehicle = document.getElementById('confirmAddVehicle');
     const carImageInput = document.getElementById('carImageInput');
     const addImgBtn = document.querySelector('.add-img-btn');
-    const confirmAddVehicle = document.getElementById('confirmAddVehicle');
     const dealPreviewContainer = document.getElementById('dealImagesPreview');
     let uploadedDealImagesData = [];
-    let editingDealRow = null;
-    const dealModalTitle = document.querySelector('#addModal h3');
-    const openModal = () => { modal === null || modal === void 0 ? void 0 : modal.classList.add('active'); overlay === null || overlay === void 0 ? void 0 : overlay.classList.add('active'); };
+    let editingDealId = null;
+    const openDealModal = () => { modal === null || modal === void 0 ? void 0 : modal.classList.add('active'); overlay === null || overlay === void 0 ? void 0 : overlay.classList.add('active'); };
     const closeModal = () => { modal === null || modal === void 0 ? void 0 : modal.classList.remove('active'); overlay === null || overlay === void 0 ? void 0 : overlay.classList.remove('active'); };
     const resetDealForm = () => {
-        document.getElementById('carName').value = '';
-        document.getElementById('carPrice').value = '';
-        document.getElementById('carPricePromo').value = '';
-        document.getElementById('carModelYear').value = '';
-        document.getElementById('carMileage').value = '';
-        document.getElementById('carBrand').value = '';
-        document.getElementById('carTransmission').value = '';
-        document.getElementById('carFuelType').value = '';
-        document.getElementById('carEngine').value = '';
-        document.getElementById('carHP').value = '';
-        document.getElementById('carTorque').value = '';
-        document.getElementById('carSafety').value = '';
-        document.getElementById('carSeating').value = '';
-        document.getElementById('carDescription').value = '';
+        const fields = ['carName', 'carPrice', 'carModelYear', 'carMileage', 'carBrand', 'carTransmission', 'carFuelType', 'carEngine', 'carHP', 'carTorque', 'carSafety', 'carSeating', 'carDescription'];
+        fields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el)
+                el.value = '';
+        });
         document.getElementById('carStatus').value = 'open';
         if (addImgBtn) {
             addImgBtn.style.backgroundImage = 'none';
@@ -169,57 +548,40 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadedDealImagesData = [];
         if (dealPreviewContainer)
             dealPreviewContainer.innerHTML = '';
-        editingDealRow = null;
-        if (dealModalTitle)
-            dealModalTitle.textContent = 'Add Deal';
+        editingDealId = null;
+        const title = modal === null || modal === void 0 ? void 0 : modal.querySelector('h3');
+        if (title)
+            title.textContent = 'Add Deal';
         if (confirmAddVehicle)
             confirmAddVehicle.textContent = 'Add Deal';
+        document.getElementById('carCategory').value = '';
     };
-    addVehicleBtn === null || addVehicleBtn === void 0 ? void 0 : addVehicleBtn.addEventListener('click', () => { resetDealForm(); openModal(); });
-    addCarBtnTop === null || addCarBtnTop === void 0 ? void 0 : addCarBtnTop.addEventListener('click', () => { resetDealForm(); openModal(); });
+    addVehicleBtn === null || addVehicleBtn === void 0 ? void 0 : addVehicleBtn.addEventListener('click', () => { resetDealForm(); openDealModal(); });
+    addCarBtnTop === null || addCarBtnTop === void 0 ? void 0 : addCarBtnTop.addEventListener('click', () => { resetDealForm(); openDealModal(); });
     closeModalBtn === null || closeModalBtn === void 0 ? void 0 : closeModalBtn.addEventListener('click', closeModal);
     overlay === null || overlay === void 0 ? void 0 : overlay.addEventListener('click', closeModal);
-    // Image Upload for Deal (Multiple)
     addImgBtn === null || addImgBtn === void 0 ? void 0 : addImgBtn.addEventListener('click', () => carImageInput === null || carImageInput === void 0 ? void 0 : carImageInput.click());
     carImageInput === null || carImageInput === void 0 ? void 0 : carImageInput.addEventListener('change', (e) => {
         const files = e.target.files;
         if (files) {
             Array.from(files).forEach(file => {
                 const reader = new FileReader();
-                reader.onload = (event) => {
+                reader.onload = (ev) => {
                     var _a, _b;
-                    const dataUrl = (_a = event.target) === null || _a === void 0 ? void 0 : _a.result;
+                    const dataUrl = (_a = ev.target) === null || _a === void 0 ? void 0 : _a.result;
                     uploadedDealImagesData.push(dataUrl);
-                    // Update main preview if first image
                     if (uploadedDealImagesData.length === 1 && addImgBtn) {
                         addImgBtn.style.backgroundImage = `url(${dataUrl})`;
                         addImgBtn.style.backgroundSize = 'cover';
                         addImgBtn.style.backgroundPosition = 'center';
                         addImgBtn.textContent = '';
                     }
-                    // Add thumbnail
                     const thumb = document.createElement('div');
                     thumb.className = 'deal-preview-thumb';
-                    thumb.innerHTML = `
-                        <img src="${dataUrl}">
-                        <button class="remove-thumb">&times;</button>
-                    `;
+                    thumb.innerHTML = `<img src="${dataUrl}"><button class="remove-thumb">&times;</button>`;
                     (_b = thumb.querySelector('.remove-thumb')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', () => {
-                        const idx = uploadedDealImagesData.indexOf(dataUrl);
-                        if (idx > -1)
-                            uploadedDealImagesData.splice(idx, 1);
+                        uploadedDealImagesData = uploadedDealImagesData.filter(d => d !== dataUrl);
                         thumb.remove();
-                        // Update background if main was removed
-                        if (uploadedDealImagesData.length > 0) {
-                            if (addImgBtn)
-                                addImgBtn.style.backgroundImage = `url(${uploadedDealImagesData[0]})`;
-                        }
-                        else {
-                            if (addImgBtn) {
-                                addImgBtn.style.backgroundImage = 'none';
-                                addImgBtn.textContent = 'ADD';
-                            }
-                        }
                     });
                     dealPreviewContainer === null || dealPreviewContainer === void 0 ? void 0 : dealPreviewContainer.appendChild(thumb);
                 };
@@ -228,621 +590,411 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     confirmAddVehicle === null || confirmAddVehicle === void 0 ? void 0 : confirmAddVehicle.addEventListener('click', () => {
-        const nameInput = document.getElementById('carName');
-        const priceInput = document.getElementById('carPrice');
-        const brandInput = document.getElementById('carBrand');
-        const statusSelect = document.getElementById('carStatus');
-        const name = nameInput.value.trim();
-        const price = priceInput.value.trim();
-        const brand = brandInput.value.trim();
-        const status = statusSelect.value;
-        if (!name || !price) {
-            alert('Please fill at least the car name and price.');
-            return;
-        }
-        const mileage = document.getElementById('carMileage').value;
-        const fuel = document.getElementById('carFuelType').value;
-        const engine = document.getElementById('carEngine').value;
-        const hp = document.getElementById('carHP').value;
-        const torque = document.getElementById('carTorque').value;
-        const safety = document.getElementById('carSafety').value;
-        const seating = document.getElementById('carSeating').value;
-        const promoPrice = document.getElementById('carPricePromo').value;
-        const model = document.getElementById('carModelYear').value;
-        const transmission = document.getElementById('carTransmission').value;
-        const description = document.getElementById('carDescription').value;
-        const statusBadge = status === 'open' ? '<span class="badge in-progress">OPEN</span>'
-            : status === 'in-progress' ? '<span class="badge in-progress">IN PROGRESS</span>'
-                : '<span class="badge closed">CLOSED</span>';
-        const inv = loadInventory();
-        if (editingDealRow) {
-            const carId = editingDealRow.getAttribute('data-car-id') || '';
-            const idx = inv.findIndex((c) => c.id === carId);
-            if (idx !== -1) {
-                inv[idx] = Object.assign(Object.assign({}, inv[idx]), { name, brand, price, status, mileage, fuel, engine, hp, torque, safety, seating, promoPrice, model, transmission, description, images: uploadedDealImagesData.length ? uploadedDealImagesData : inv[idx].images });
-                saveInventory(inv);
-            }
-            editingDealRow.cells[0].textContent = name;
-            editingDealRow.cells[1].textContent = brand || 'N/A';
-            editingDealRow.cells[3].textContent = price;
-            editingDealRow.cells[4].innerHTML = statusBadge;
-            editingDealRow.setAttribute('data-mileage', mileage);
-            editingDealRow.setAttribute('data-fuel', fuel);
-            editingDealRow.setAttribute('data-engine', engine);
-            editingDealRow.setAttribute('data-hp', hp);
-            editingDealRow.setAttribute('data-torque', torque);
-            editingDealRow.setAttribute('data-safety', safety);
-            editingDealRow.setAttribute('data-seating', seating);
-            editingDealRow.setAttribute('data-promo-price', promoPrice);
-            editingDealRow.setAttribute('data-model', model);
-            editingDealRow.setAttribute('data-trans', transmission);
-            editingDealRow.setAttribute('data-desc', description);
-            if (uploadedDealImagesData.length)
-                editingDealRow.setAttribute('data-images', JSON.stringify(uploadedDealImagesData));
+        var _a;
+        const name = document.getElementById('carName').value;
+        const price = document.getElementById('carPrice').value;
+        if (!name || !price)
+            return alert('Name and Price are required');
+        const inventory = loadFromStorage(INVENTORY_KEY, []);
+        const carData = {
+            id: editingDealId || 'car_' + Date.now(),
+            name,
+            price: price.startsWith('₱') ? price : '₱' + price,
+            promoPrice: '',
+            modelYear: document.getElementById('carModelYear').value,
+            mileage: document.getElementById('carMileage').value,
+            brand: document.getElementById('carBrand').value,
+            transmission: document.getElementById('carTransmission').value,
+            fuelType: document.getElementById('carFuelType').value,
+            engine: document.getElementById('carEngine').value,
+            hp: document.getElementById('carHP').value,
+            torque: document.getElementById('carTorque').value,
+            safety: document.getElementById('carSafety').value,
+            seating: document.getElementById('carSeating').value,
+            description: document.getElementById('carDescription').value,
+            status: document.getElementById('carStatus').value,
+            type: document.getElementById('carCategory').value,
+            images: uploadedDealImagesData,
+            date: editingDealId ? (((_a = inventory.find(c => c.id === editingDealId)) === null || _a === void 0 ? void 0 : _a.date) || new Date().toLocaleDateString()) : new Date().toLocaleDateString(),
+        };
+        if (editingDealId) {
+            const idx = inventory.findIndex(c => c.id === editingDealId);
+            if (idx !== -1)
+                inventory[idx] = carData;
+            createNotification('Vehicle Updated', `${name} details were modified.`, 'info');
         }
         else {
-            const carId = 'admin_' + Date.now();
-            const date = new Date().toLocaleString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
-            const newCar = { id: carId, name, brand, price, status, mileage, fuel, engine, hp, torque, safety, seating, promoPrice, model, transmission, description, images: uploadedDealImagesData, date, posted: 'Just Added', isFavorited: false };
-            inv.push(newCar);
-            saveInventory(inv);
-            updateDashboardStats();
-            inventoryTableBody === null || inventoryTableBody === void 0 ? void 0 : inventoryTableBody.insertAdjacentHTML('afterbegin', buildInventoryRow(newCar));
+            inventory.push(carData);
+            createNotification('New Vehicle Added', `${name} has been added to inventory.`, 'success');
         }
+        saveToStorage(INVENTORY_KEY, inventory);
+        renderInventory();
+        renderDashboardRecent();
         closeModal();
-        resetDealForm();
     });
-    // Handle clicks on the Inventory Table (Edit/Delete)
-    inventoryTableBody === null || inventoryTableBody === void 0 ? void 0 : inventoryTableBody.addEventListener('click', (e) => {
-        var _a;
+    function openEditCarModal(carId) {
+        editingDealId = carId;
+        const inventory = loadFromStorage(INVENTORY_KEY, []);
+        const car = inventory.find(c => c.id === carId);
+        if (!car)
+            return;
+        openDealModal();
+        const title = modal === null || modal === void 0 ? void 0 : modal.querySelector('h3');
+        if (title)
+            title.textContent = 'Edit Deal';
+        if (confirmAddVehicle)
+            confirmAddVehicle.textContent = 'Update Deal';
+        document.getElementById('carName').value = car.name || '';
+        document.getElementById('carPrice').value = (car.price || '').replace(/[₱,]/g, '');
+        // Promo price removed from UI
+        document.getElementById('carModelYear').value = car.modelYear || '';
+        document.getElementById('carMileage').value = car.mileage || '';
+        document.getElementById('carBrand').value = car.brand || '';
+        document.getElementById('carTransmission').value = car.transmission || '';
+        document.getElementById('carFuelType').value = car.fuelType || '';
+        document.getElementById('carEngine').value = car.engine || '';
+        document.getElementById('carHP').value = car.hp || '';
+        document.getElementById('carTorque').value = car.torque || '';
+        document.getElementById('carSafety').value = car.safety || '';
+        document.getElementById('carSeating').value = car.seating || '';
+        document.getElementById('carDescription').value = car.description || '';
+        document.getElementById('carCategory').value = car.type || '';
+        document.getElementById('carStatus').value = car.status || 'open';
+        uploadedDealImagesData = car.images || [];
+        if (dealPreviewContainer) {
+            dealPreviewContainer.innerHTML = '';
+            uploadedDealImagesData.forEach(img => {
+                var _a;
+                const thumb = document.createElement('div');
+                thumb.className = 'deal-preview-thumb';
+                thumb.innerHTML = `<img src="${img}"><button class="remove-thumb">&times;</button>`;
+                (_a = thumb.querySelector('.remove-thumb')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', () => {
+                    uploadedDealImagesData = uploadedDealImagesData.filter(d => d !== img);
+                    thumb.remove();
+                });
+                dealPreviewContainer.appendChild(thumb);
+            });
+        }
+        if (addImgBtn && uploadedDealImagesData.length > 0) {
+            addImgBtn.style.backgroundImage = `url(${uploadedDealImagesData[0]})`;
+            addImgBtn.style.backgroundSize = 'cover';
+            addImgBtn.style.backgroundPosition = 'center';
+            addImgBtn.textContent = '';
+        }
+    }
+    (_c = document.getElementById('inventoryTableBody')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', (e) => {
         const target = e.target;
-        const editBtn = target.closest('.edit-deal-btn');
-        if (editBtn) {
-            const row = editBtn.closest('tr');
-            editingDealRow = row;
-            if (dealModalTitle)
-                dealModalTitle.textContent = 'Edit Deal';
-            if (confirmAddVehicle)
-                confirmAddVehicle.textContent = 'Update Deal';
-            // Fill form
-            document.getElementById('carName').value = row.cells[0].textContent || '';
-            document.getElementById('carBrand').value = row.cells[1].textContent === 'N/A' ? '' : (row.cells[1].textContent || '');
-            document.getElementById('carPrice').value = row.cells[3].textContent || '';
-            const statusText = ((_a = row.cells[4].textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
-            const statusSelect = document.getElementById('carStatus');
-            if (statusText.includes('open'))
-                statusSelect.value = 'open';
-            else if (statusText.includes('progress'))
-                statusSelect.value = 'in-progress';
-            else if (statusText.includes('closed'))
-                statusSelect.value = 'closed';
-            // Fill new fields (using data attributes since they aren't in the table)
-            document.getElementById('carMileage').value = row.getAttribute('data-mileage') || '';
-            document.getElementById('carFuelType').value = row.getAttribute('data-fuel') || '';
-            document.getElementById('carEngine').value = row.getAttribute('data-engine') || '';
-            document.getElementById('carHP').value = row.getAttribute('data-hp') || '';
-            document.getElementById('carTorque').value = row.getAttribute('data-torque') || '';
-            document.getElementById('carSafety').value = row.getAttribute('data-safety') || '';
-            document.getElementById('carSeating').value = row.getAttribute('data-seating') || '';
-            document.getElementById('carPricePromo').value = row.getAttribute('data-promo-price') || '';
-            document.getElementById('carModelYear').value = row.getAttribute('data-model') || '';
-            document.getElementById('carTransmission').value = row.getAttribute('data-trans') || '';
-            document.getElementById('carDescription').value = row.getAttribute('data-desc') || '';
-            openModal();
+        const row = target.closest('tr');
+        const carId = row === null || row === void 0 ? void 0 : row.getAttribute('data-id');
+        if (!carId)
+            return;
+        if (target.closest('.edit-deal-btn')) {
+            openEditCarModal(carId);
         }
-        const deleteBtn = target.closest('.delete-deal-btn');
-        if (deleteBtn) {
-            if (confirm('Are you sure you want to remove this vehicle from inventory?')) {
-                const row = deleteBtn.closest('tr');
-                const carId = row === null || row === void 0 ? void 0 : row.getAttribute('data-car-id');
-                if (carId) {
-                    const inv = loadInventory();
-                    saveInventory(inv.filter((c) => c.id !== carId));
-                    updateDashboardStats();
-                }
-                row === null || row === void 0 ? void 0 : row.remove();
+    });
+    (_d = document.getElementById('dashboardInventoryBody')) === null || _d === void 0 ? void 0 : _d.addEventListener('click', (e) => {
+        const target = e.target;
+        const row = target.closest('tr');
+        const carId = row === null || row === void 0 ? void 0 : row.getAttribute('data-id');
+        if (!carId)
+            return;
+        const inventory = loadFromStorage(INVENTORY_KEY, []);
+        const car = inventory.find(c => c.id === carId);
+        if (!car)
+            return;
+        if (target.closest('.edit')) {
+            switchView('inventory');
+            openEditCarModal(car.id);
+        }
+        else if (target.closest('.delete')) {
+            if (confirm(`Delete ${car.name}?`)) {
+                const updated = inventory.filter(c => c.id !== car.id);
+                saveToStorage(INVENTORY_KEY, updated);
+                createNotification('Vehicle Deleted', `${car.name} was removed from inventory.`, 'warning');
+                renderInventory();
+                renderDashboardRecent();
             }
         }
     });
-    // Handle Edit and Delete buttons on the Dashboard View
-    document.querySelectorAll('.dashboard-content#dashboardView .action-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            var _a;
-            const target = e.target;
-            const actionBtn = target.closest('.action-btn');
-            if (!actionBtn)
-                return;
-            if (actionBtn.classList.contains('edit')) {
-                alert('This takes you to the Manage Inventory section to edit.');
-                const menuInventory = document.getElementById('menuInventory');
-                if (menuInventory)
-                    menuInventory.click();
-            }
-            else if (actionBtn.classList.contains('delete')) {
-                if (confirm('Are you sure you want to remove this recent vehicle record?')) {
-                    (_a = actionBtn.closest('tr')) === null || _a === void 0 ? void 0 : _a.remove();
-                }
-            }
-        });
-    });
-    // Dashboard View All Link
-    const dashboardViewAll = document.querySelector('.dashboard-content#dashboardView .view-all');
-    dashboardViewAll === null || dashboardViewAll === void 0 ? void 0 : dashboardViewAll.addEventListener('click', (e) => {
-        e.preventDefault();
-        const menuInventory = document.getElementById('menuInventory');
-        if (menuInventory)
-            menuInventory.click();
-    });
-    // Handle Inventory Load More
-    const loadMoreBtn = document.querySelector('.load-more-btn');
-    loadMoreBtn === null || loadMoreBtn === void 0 ? void 0 : loadMoreBtn.addEventListener('click', () => {
-        if (loadMoreBtn) {
-            const originalText = loadMoreBtn.innerHTML;
-            loadMoreBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
-            setTimeout(() => {
-                alert('No more vehicles to load at this moment.');
-                loadMoreBtn.innerHTML = originalText;
-            }, 800);
-        }
-    });
-    // ── Add User Modal ─────────────────────────────────────────────────────────
+    // ── Add Staff Modal Logic ────────────────────────────────────────────────
     const addStaffBtn = document.getElementById('addStaffBtn');
-    const userModal = document.getElementById('userModal');
-    const userOverlay = document.getElementById('userModalOverlay');
     const closeUserModal = document.getElementById('closeUserModal');
-    const cancelUserBtn = document.getElementById('cancelUserBtn');
+    const confirmAddUserBtn = document.getElementById('confirmAddUserBtn');
     const openUserModal = () => { userModal === null || userModal === void 0 ? void 0 : userModal.classList.add('active'); userOverlay === null || userOverlay === void 0 ? void 0 : userOverlay.classList.add('active'); };
     const closeUserModalFn = () => { userModal === null || userModal === void 0 ? void 0 : userModal.classList.remove('active'); userOverlay === null || userOverlay === void 0 ? void 0 : userOverlay.classList.remove('active'); };
-    addStaffBtn === null || addStaffBtn === void 0 ? void 0 : addStaffBtn.addEventListener('click', openUserModal);
-    closeUserModal === null || closeUserModal === void 0 ? void 0 : closeUserModal.addEventListener('click', closeUserModalFn);
-    cancelUserBtn === null || cancelUserBtn === void 0 ? void 0 : cancelUserBtn.addEventListener('click', closeUserModalFn);
-    userOverlay === null || userOverlay === void 0 ? void 0 : userOverlay.addEventListener('click', closeUserModalFn);
-    // ── Handle Confirm Add/Edit User ──────────────────────────────────────────
-    const confirmAddUserBtn = document.getElementById('confirmAddUserBtn');
-    const userModalTitle = document.querySelector('#userModal h3');
-    let editingRow = null;
-    let uploadedAvatarData = null;
-    const resetUserForm = () => {
-        document.getElementById('userUsername').value = '';
-        document.getElementById('userFirstName').value = '';
-        document.getElementById('userLastName').value = '';
-        document.getElementById('userEmail').value = '';
-        document.getElementById('userPhone').value = '';
+    addStaffBtn === null || addStaffBtn === void 0 ? void 0 : addStaffBtn.addEventListener('click', () => {
+        editingStaffId = null;
+        const fields = ['userUsername', 'userFirstName', 'userLastName', 'userEmail', 'userPhone', 'userPassword'];
+        fields.forEach(f => document.getElementById(f).value = '');
         document.getElementById('userRole').value = '';
-        document.getElementById('userPassword').value = '';
-        const avatarBtn = document.getElementById('avatarPreviewBtn');
-        if (avatarBtn) {
-            avatarBtn.style.backgroundImage = 'none';
-            avatarBtn.textContent = 'ADD';
-        }
-        uploadedAvatarData = null;
-        editingRow = null;
-        if (userModalTitle)
-            userModalTitle.textContent = 'Add User';
+        openUserModal();
+        const title = userModal === null || userModal === void 0 ? void 0 : userModal.querySelector('h3');
+        if (title)
+            title.textContent = 'Add User';
         if (confirmAddUserBtn)
             confirmAddUserBtn.textContent = 'Add User';
-    };
-    // ── Avatar Upload Logic ──────────────────────────────────────────────────
-    const avatarInput = document.getElementById('userAvatarInput');
-    const avatarBtn = document.getElementById('avatarPreviewBtn');
-    avatarBtn === null || avatarBtn === void 0 ? void 0 : avatarBtn.addEventListener('click', () => avatarInput === null || avatarInput === void 0 ? void 0 : avatarInput.click());
-    avatarInput === null || avatarInput === void 0 ? void 0 : avatarInput.addEventListener('change', (e) => {
-        var _a;
-        const file = (_a = e.target.files) === null || _a === void 0 ? void 0 : _a[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                var _a;
-                const dataUrl = (_a = event.target) === null || _a === void 0 ? void 0 : _a.result;
-                uploadedAvatarData = dataUrl;
-                if (avatarBtn) {
-                    avatarBtn.style.backgroundImage = `url(${dataUrl})`;
-                    avatarBtn.style.backgroundSize = 'cover';
-                    avatarBtn.style.backgroundPosition = 'center';
-                    avatarBtn.textContent = ''; // Hide "ADD" text
-                }
-            };
-            reader.readAsDataURL(file);
-        }
     });
-    addStaffBtn === null || addStaffBtn === void 0 ? void 0 : addStaffBtn.addEventListener('click', () => {
-        resetUserForm();
-        openUserModal();
+    closeUserModal === null || closeUserModal === void 0 ? void 0 : closeUserModal.addEventListener('click', closeUserModalFn);
+    userOverlay === null || userOverlay === void 0 ? void 0 : userOverlay.addEventListener('click', closeUserModalFn);
+    (_e = document.getElementById('staffTableBody')) === null || _e === void 0 ? void 0 : _e.addEventListener('click', (e) => {
+        const target = e.target;
+        if (target.closest('.edit-staff')) {
+            const row = target.closest('tr');
+            const sid = row === null || row === void 0 ? void 0 : row.getAttribute('data-id');
+            const staff = loadFromStorage(STAFF_KEY, []);
+            const user = staff.find(s => s.id === sid);
+            if (user) {
+                editingStaffId = user.id;
+                document.getElementById('userFirstName').value = user.firstName || '';
+                document.getElementById('userLastName').value = user.lastName || '';
+                document.getElementById('userRole').value = user.role || '';
+                document.getElementById('userUsername').value = user.username || '';
+                document.getElementById('userEmail').value = user.email || '';
+                document.getElementById('userPhone').value = user.phone || '';
+                openUserModal();
+                const title = userModal === null || userModal === void 0 ? void 0 : userModal.querySelector('h3');
+                if (title)
+                    title.textContent = 'Edit User';
+                if (confirmAddUserBtn)
+                    confirmAddUserBtn.textContent = 'Update User';
+            }
+        }
     });
     confirmAddUserBtn === null || confirmAddUserBtn === void 0 ? void 0 : confirmAddUserBtn.addEventListener('click', () => {
-        var _a, _b, _c, _d, _e;
-        const username = (_a = document.getElementById('userUsername')) === null || _a === void 0 ? void 0 : _a.value;
-        const firstName = (_b = document.getElementById('userFirstName')) === null || _b === void 0 ? void 0 : _b.value;
-        const lastName = (_c = document.getElementById('userLastName')) === null || _c === void 0 ? void 0 : _c.value;
-        const role = (_d = document.getElementById('userRole')) === null || _d === void 0 ? void 0 : _d.value;
-        const password = (_e = document.getElementById('userPassword')) === null || _e === void 0 ? void 0 : _e.value;
-        const isAdding = !editingRow;
-        if (!username || !firstName || !lastName || !role || (isAdding && !password)) {
-            alert('Please fill all required fields and select a role.');
-            return;
-        }
-        const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
-        const dateStr = editingRow
-            ? editingRow.cells[2].textContent
-            : new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-        const avatarHTML = uploadedAvatarData
-            ? `<img src="${uploadedAvatarData}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`
-            : initials;
-        const rowHTML = `
-            <td>
-                <div class="table-vehicle">
-                    <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                        ${avatarHTML}
-                    </div>
-                    <span>${firstName} ${lastName}</span>
-                </div>
-            </td>
-
-            <td>${role}</td>
-            <td>${dateStr}</td>
-            <td>
-                <button class="action-btn edit" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                <button class="action-btn delete" title="Remove"><i class="fa-solid fa-trash"></i></button>
-            </td>
-        `;
-        if (editingRow) {
-            editingRow.innerHTML = rowHTML;
+        const firstName = document.getElementById('userFirstName').value;
+        const role = document.getElementById('userRole').value;
+        if (!firstName || !role)
+            return alert('First Name and Role are required');
+        const staff = loadFromStorage(STAFF_KEY, []);
+        const userData = {
+            id: editingStaffId || 'staff_' + Date.now(),
+            firstName,
+            lastName: document.getElementById('userLastName').value,
+            role,
+            username: document.getElementById('userUsername').value,
+            email: document.getElementById('userEmail').value,
+            phone: document.getElementById('userPhone').value,
+            password: document.getElementById('userPassword').value
+        };
+        if (editingStaffId) {
+            const idx = staff.findIndex(s => s.id === editingStaffId);
+            if (idx !== -1)
+                staff[idx] = userData;
+            createNotification('Staff Updated', `${firstName}'s profile was updated.`, 'info');
         }
         else {
-            const row = document.createElement('tr');
-            row.innerHTML = rowHTML;
-            const existingStaffBody = document.getElementById('staffTableBody');
-            existingStaffBody === null || existingStaffBody === void 0 ? void 0 : existingStaffBody.appendChild(row);
-            // Store new user in localStorage for authenticating
-            const storedUsers = JSON.parse(localStorage.getItem('racs_staff_users') || '[]');
-            storedUsers.push({ username, password, role, firstName, lastName });
-            localStorage.setItem('racs_staff_users', JSON.stringify(storedUsers));
+            staff.push(userData);
+            createNotification('New Staff Added', `${firstName} has been added to the team.`, 'success');
         }
-        // Reset and close
+        saveToStorage(STAFF_KEY, staff);
+        renderStaff();
         closeUserModalFn();
-        resetUserForm();
     });
-    // ── Handle Edit/Delete via Delegation ─────────────────────────────────────
-    staffTableBody === null || staffTableBody === void 0 ? void 0 : staffTableBody.addEventListener('click', (e) => {
-        var _a, _b;
-        const target = e.target;
-        const editBtn = target.closest('.edit');
-        const deleteBtn = target.closest('.delete');
-        if (editBtn) {
-            const row = editBtn.closest('tr');
-            const name = ((_a = row.cells[0].querySelector('span')) === null || _a === void 0 ? void 0 : _a.textContent) || '';
-            const role = row.cells[1].textContent || '';
-            const [first, ...lastParts] = name.split(' ');
-            const last = lastParts.join(' ');
-            document.getElementById('userFirstName').value = first;
-            document.getElementById('userLastName').value = last;
-            document.getElementById('userRole').value = role;
-            // Since username/email/phone aren't in the table yet, we'll leave them blank or assume default
-            // In a real app, you'd pull this from a data object
-            editingRow = row;
-            if (userModalTitle)
-                userModalTitle.textContent = 'Edit User';
-            if (confirmAddUserBtn)
-                confirmAddUserBtn.textContent = 'Edit User';
-            openUserModal();
-        }
-        if (deleteBtn) {
-            if (confirm('Are you sure you want to remove this user?')) {
-                (_b = deleteBtn.closest('tr')) === null || _b === void 0 ? void 0 : _b.remove();
+    // ── Data Seeding Logic ───────────────────────────────────────────────────
+    function seedDefaultInventory() {
+        if (localStorage.getItem(INVENTORY_KEY))
+            return; // Already seeded
+        const defaultCars = [
+            {
+                id: 'escape2012',
+                name: 'Ford Escape',
+                price: '₱750,000',
+                promoPrice: '',
+                modelYear: '2012',
+                mileage: '45,000 KM',
+                brand: 'Ford',
+                transmission: '5-Speed Manual',
+                fuelType: 'Gasoline',
+                engine: '2.5L I4',
+                hp: '171 hp',
+                torque: '171 lb-ft',
+                safety: 'Front Airbags, ABS',
+                seating: '5 Seater',
+                description: 'Front-Wheel Drive (FWD). AM/FM Radio, CD Player, AUX Input.',
+                status: 'open',
+                type: 'SUV',
+                images: ['assets/suv_silver.png'],
+                date: new Date().toLocaleDateString()
+            },
+            {
+                id: 'escape2012_titanium',
+                name: 'Ford Escape Titanium',
+                price: '₱800,000',
+                promoPrice: '',
+                modelYear: '2012',
+                mileage: '38,000 KM',
+                brand: 'Ford',
+                transmission: '6-Speed Automatic',
+                fuelType: 'Gasoline',
+                engine: '2.0L I4',
+                hp: '240 hp',
+                torque: '270 lb-ft',
+                safety: 'Front/Side Airbags, ABS',
+                seating: '5 Seater',
+                description: 'Front-Wheel Drive (FWD) / Optional AWD. Bluetooth, Premium Audio.',
+                status: 'open',
+                type: 'SUV',
+                images: ['assets/suv_gray.png'],
+                date: new Date().toLocaleDateString()
+            },
+            {
+                id: 'tesla_plaid',
+                name: 'Tesla Model S Plaid',
+                price: '₱6,500,000',
+                promoPrice: '',
+                modelYear: '2024',
+                mileage: '0 KM',
+                brand: 'Tesla',
+                transmission: 'Single-Speed',
+                fuelType: 'Electric',
+                engine: 'Tri-Motor',
+                hp: '1,020 hp',
+                torque: '1,050 lb-ft',
+                safety: 'Autopilot, 8 Cameras',
+                seating: '5 Seater',
+                description: 'All-Wheel Drive (AWD). 1,020 hp, 0-60 mph in 1.99s.',
+                status: 'open',
+                type: 'Electric Car',
+                images: ['assets/tesla_plaid.png'],
+                date: new Date().toLocaleDateString()
+            },
+            {
+                id: 'porsche_taycan',
+                name: 'Porsche Taycan Turbo S',
+                price: '₱12,500,000',
+                promoPrice: '',
+                modelYear: '2024',
+                mileage: '0 KM',
+                brand: 'Porsche',
+                transmission: '2-Speed Automatic',
+                fuelType: 'Electric',
+                engine: 'Dual-Motor',
+                hp: '750 hp',
+                torque: '774 lb-ft',
+                safety: 'Porsche InnoDrive',
+                seating: '4 Seater',
+                description: 'All-Wheel Drive (AWD). 800V Architecture.',
+                status: 'open',
+                type: 'Electric Car',
+                images: ['assets/porsche_taycan.png'],
+                date: new Date().toLocaleDateString()
+            },
+            {
+                id: 'livina2023',
+                name: 'Nissan Livina VL',
+                price: '₱1,100,000',
+                promoPrice: '',
+                modelYear: '2023',
+                mileage: '15,000 KM',
+                brand: 'Nissan',
+                transmission: '4-Speed Automatic',
+                fuelType: 'Gasoline',
+                engine: '1.5L I4',
+                hp: '103 hp',
+                torque: '141 Nm',
+                safety: 'Dual Airbags, ABS',
+                seating: '7 Seater',
+                description: 'Front-Wheel Drive (FWD). 7-inch Touchscreen.',
+                status: 'open',
+                type: 'SUV',
+                images: ['assets/suv_white.png'],
+                date: new Date().toLocaleDateString()
+            },
+            {
+                id: 'civic_rs',
+                name: 'Honda Civic RS',
+                price: '₱1,775,000',
+                promoPrice: '',
+                modelYear: '2024',
+                mileage: '5,000 KM',
+                brand: 'Honda',
+                transmission: 'CVT',
+                fuelType: 'Gasoline',
+                engine: '1.5L Turbo',
+                hp: '178 hp',
+                torque: '240 Nm',
+                safety: 'Honda SENSING',
+                seating: '5 Seater',
+                description: 'Front-Wheel Drive. Honda SENSING, Premium Sound.',
+                status: 'open',
+                images: ['assets/sedan_black.png'],
+                date: new Date().toLocaleDateString()
+            },
+            {
+                id: 'mazda3_sport',
+                name: 'Mazda 3 Sport',
+                price: '₱1,500,000',
+                promoPrice: '',
+                modelYear: '2023',
+                mileage: '12,000 KM',
+                brand: 'Mazda',
+                transmission: '6-Speed Automatic',
+                fuelType: 'Mild Hybrid',
+                engine: '2.0L e-SKYACTIV-G',
+                hp: '153 hp',
+                torque: '200 Nm',
+                safety: 'i-ACTIVSENSE',
+                seating: '5 Seater',
+                description: 'Front-Wheel Drive. 360 View Monitor.',
+                status: 'open',
+                type: 'Hatchback',
+                images: ['assets/hatchback_red.png'],
+                date: new Date().toLocaleDateString()
+            },
+            {
+                id: 'innova_v',
+                name: 'Toyota Innova V',
+                price: '₱1,750,000',
+                promoPrice: '',
+                modelYear: '2022',
+                mileage: '28,000 KM',
+                brand: 'Toyota',
+                transmission: '6-Speed Automatic',
+                fuelType: 'Diesel',
+                engine: '2.8L Turbo Diesel',
+                hp: '174 hp',
+                torque: '360 Nm',
+                safety: 'Dual Airbags, ABS, VSC',
+                seating: '7 Seater',
+                description: 'Rear-Wheel Drive. Captain Seats, Ambient Lighting.',
+                status: 'open',
+                type: 'Van',
+                images: ['assets/suv_gray.png'],
+                date: new Date().toLocaleDateString()
+            },
+            {
+                id: 'mustang_gt',
+                name: 'Ford Mustang GT',
+                price: '₱3,500,000',
+                promoPrice: '',
+                modelYear: '2024',
+                mileage: '2,000 KM',
+                brand: 'Ford',
+                transmission: '10-Speed Automatic',
+                fuelType: 'Gasoline (V8)',
+                engine: '5.0L V8',
+                hp: '480 hp',
+                torque: '560 Nm',
+                safety: 'Ford Co-Pilot360',
+                seating: '4 Seater',
+                description: 'Rear-Wheel Drive (RWD). Track Apps.',
+                status: 'open',
+                type: 'Sports Car',
+                images: ['assets/sedan_black.png'],
+                date: new Date().toLocaleDateString()
             }
-        }
-    });
-    // ── View Switching (Dashboard / Users) ────────────────────────────────────
-    const menuDashboard = document.getElementById('menuDashboard');
-    const menuUsers = document.getElementById('menuUsers');
-    const menuInventory = document.getElementById('menuInventory');
-    const dashboardView = document.getElementById('dashboardView');
-    const usersView = document.getElementById('usersView');
-    const inventoryView = document.getElementById('inventoryView');
-    const settingsView = document.getElementById('settingsView');
-    const reportsView = document.getElementById('reportsView');
-    function switchView(target) {
-        var _a, _b, _c, _d;
-        // Clear active state from all sidebar items
-        document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
-        // Hide all views
-        (_a = document.getElementById('menuSettings')) === null || _a === void 0 ? void 0 : _a.classList.remove('active');
-        (_b = document.getElementById('menuReports')) === null || _b === void 0 ? void 0 : _b.classList.remove('active');
-        if (dashboardView)
-            dashboardView.style.display = 'none';
-        if (usersView)
-            usersView.style.display = 'none';
-        if (inventoryView)
-            inventoryView.style.display = 'none';
-        if (settingsView)
-            settingsView.style.display = 'none';
-        if (reportsView)
-            reportsView.style.display = 'none';
-        if (target === 'dashboard') {
-            menuDashboard === null || menuDashboard === void 0 ? void 0 : menuDashboard.classList.add('active');
-            if (dashboardView)
-                dashboardView.style.display = 'block';
-            updateTopTitle('Dashboard');
-        }
-        else if (target === 'users') {
-            menuUsers === null || menuUsers === void 0 ? void 0 : menuUsers.classList.add('active');
-            if (usersView)
-                usersView.style.display = 'block';
-            updateTopTitle('Manage Users');
-        }
-        else if (target === 'inventory') {
-            menuInventory === null || menuInventory === void 0 ? void 0 : menuInventory.classList.add('active');
-            if (inventoryView)
-                inventoryView.style.display = 'block';
-            updateTopTitle('Inventory Management');
-        }
-        else if (target === 'settings') {
-            (_c = document.getElementById('menuSettings')) === null || _c === void 0 ? void 0 : _c.classList.add('active');
-            if (settingsView)
-                settingsView.style.display = 'block';
-            updateTopTitle('System Settings');
-        }
-        else if (target === 'reports') {
-            (_d = document.getElementById('menuReports')) === null || _d === void 0 ? void 0 : _d.classList.add('active');
-            if (reportsView)
-                reportsView.style.display = 'block';
-            updateTopTitle('User Reports');
-        }
+        ];
+        saveToStorage(INVENTORY_KEY, defaultCars);
     }
-    function updateTopTitle(title) {
-        const topTitle = document.getElementById('currentViewTitle');
-        if (topTitle)
-            topTitle.textContent = title;
-    }
-    menuDashboard === null || menuDashboard === void 0 ? void 0 : menuDashboard.addEventListener('click', (e) => { e.preventDefault(); switchView('dashboard'); });
-    menuUsers === null || menuUsers === void 0 ? void 0 : menuUsers.addEventListener('click', (e) => { e.preventDefault(); switchView('users'); });
-    menuInventory === null || menuInventory === void 0 ? void 0 : menuInventory.addEventListener('click', (e) => { e.preventDefault(); switchView('inventory'); });
-    (_a = document.getElementById('menuSettings')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', (e) => { e.preventDefault(); switchView('settings'); });
-    (_b = document.getElementById('menuReports')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', (e) => { e.preventDefault(); switchView('reports'); });
-    // ── Inventory Sort & Filter Logic ─────────────────────────────────────────
-    const sortBtn = document.getElementById('sortBtn');
-    const filterBtn = document.getElementById('filterBtn');
-    const sortDropdown = document.getElementById('sortDropdown');
-    const filterDropdown = document.getElementById('filterDropdown');
-    const toggleDropdown = (dropdown) => {
-        if (!dropdown)
-            return;
-        const isActive = dropdown.classList.contains('active');
-        // Close others first
-        document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('active'));
-        if (!isActive)
-            dropdown.classList.add('active');
-    };
-    sortBtn === null || sortBtn === void 0 ? void 0 : sortBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown(sortDropdown); });
-    filterBtn === null || filterBtn === void 0 ? void 0 : filterBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown(filterDropdown); });
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('active'));
+    // ── Logout Logic ──────────────────────────────────────────────────────────
+    const logoutLink = document.querySelector('.logout-link a');
+    logoutLink === null || logoutLink === void 0 ? void 0 : logoutLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('adminLoggedIn');
+        window.location.href = 'login.html';
     });
-    const parsePrice = (priceStr) => {
-        return parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 0;
-    };
-    const parseDate = (dateStr) => {
-        return new Date(dateStr).getTime() || 0;
-    };
-    const inventoryTable = document.getElementById('inventoryTableBody');
-    // Sorting Logic
-    sortDropdown === null || sortDropdown === void 0 ? void 0 : sortDropdown.addEventListener('click', (e) => {
-        const target = e.target;
-        const sortType = target.getAttribute('data-sort');
-        if (!sortType || !inventoryTable)
-            return;
-        const rows = Array.from(inventoryTable.querySelectorAll('tr'));
-        rows.sort((a, b) => {
-            var _a, _b;
-            const valA_name = ((_a = a.cells[0].textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
-            const valB_name = ((_b = b.cells[0].textContent) === null || _b === void 0 ? void 0 : _b.toLowerCase()) || '';
-            const valA_price = parsePrice(a.cells[3].textContent || '');
-            const valB_price = parsePrice(b.cells[3].textContent || '');
-            const valA_date = parseDate(a.cells[2].textContent || '');
-            const valB_date = parseDate(b.cells[2].textContent || '');
-            switch (sortType) {
-                case 'name-az': return valA_name.localeCompare(valB_name);
-                case 'price-high': return valB_price - valA_price;
-                case 'price-low': return valA_price - valB_price;
-                case 'date-new': return valB_date - valA_date;
-                case 'date-old': return valA_date - valB_date;
-                default: return 0;
-            }
-        });
-        rows.forEach(row => inventoryTable.appendChild(row));
-        if (sortBtn)
-            sortBtn.childNodes[0].textContent = `Sort by: ${target.textContent} `;
-    });
-    // Filtering Logic
-    filterDropdown === null || filterDropdown === void 0 ? void 0 : filterDropdown.addEventListener('click', (e) => {
-        const target = e.target;
-        const filterStatus = target.getAttribute('data-filter');
-        if (!filterStatus || !inventoryTable)
-            return;
-        const rows = Array.from(inventoryTable.querySelectorAll('tr'));
-        rows.forEach(row => {
-            var _a;
-            const statusLabel = ((_a = row.cells[4].textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase().trim()) || '';
-            if (filterStatus === 'all' || statusLabel.replace(/\s+/g, '-') === filterStatus) {
-                row.style.display = '';
-            }
-            else {
-                row.style.display = 'none';
-            }
-        });
-        if (filterBtn)
-            filterBtn.childNodes[0].textContent = `Filter: ${target.textContent} `;
-    });
-    // ── Manage Reports Actions ──────────────────────────────────────────────────
-    const reportsTableBody = document.getElementById('reportsTableBody');
-    reportsTableBody === null || reportsTableBody === void 0 ? void 0 : reportsTableBody.addEventListener('click', (e) => {
-        var _a;
-        const target = e.target;
-        const actionBtn = target.closest('.action-btn');
-        if (!actionBtn)
-            return;
-        const row = actionBtn.closest('tr');
-        const userName = ((_a = row.cells[0].querySelector('span')) === null || _a === void 0 ? void 0 : _a.textContent) || 'Unknown';
-        const reason = row.cells[1].textContent || '';
-        if (actionBtn.classList.contains('edit')) {
-            // View button
-            alert(`Report Details\n\nUser: ${userName}\nReason: ${reason}\n\n[Full details would be shown here]`);
-        }
-        else if (actionBtn.classList.contains('delete')) {
-            // 'delete' class is used for both Resolve (check icon) and Delete (trash icon) based on status
-            const statusBadge = row.cells[3].querySelector('.badge');
-            const isResolved = statusBadge === null || statusBadge === void 0 ? void 0 : statusBadge.classList.contains('closed');
-            if (!isResolved) {
-                // Currently Pending -> Resolve it
-                if (confirm(`Mark report from ${userName} as RESOLVED?`)) {
-                    if (statusBadge) {
-                        statusBadge.className = 'badge closed';
-                        statusBadge.textContent = 'RESOLVED';
-                    }
-                    actionBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
-                    actionBtn.setAttribute('title', 'Delete');
-                }
-            }
-            else {
-                // Already Resolved -> Delete it
-                if (confirm(`Are you sure you want to completely remove this resolved report?`)) {
-                    row.remove();
-                }
-            }
-        }
-    });
-    // ── Clickable Status Badges ───────────────────────────────────────────────
-    document.addEventListener('click', (e) => {
-        var _a;
-        const target = e.target;
-        const statusSpan = target.closest('.status, .badge');
-        if (!statusSpan)
-            return;
-        // Ensure it's inside a table cell to avoid accidentally clicking other badges outside
-        if (!statusSpan.closest('td'))
-            return;
-        const text = ((_a = statusSpan.textContent) === null || _a === void 0 ? void 0 : _a.trim().toUpperCase()) || '';
-        // Dashboard Badges
-        if (statusSpan.classList.contains('status')) {
-            if (text === 'AVAILABLE') {
-                statusSpan.className = 'status sold';
-                statusSpan.textContent = 'Sold';
-            }
-            else if (text === 'SOLD') {
-                statusSpan.className = 'status available';
-                statusSpan.textContent = 'Available';
-            }
-        }
-        // Inventory & Reports Badges
-        if (statusSpan.classList.contains('badge')) {
-            // Reports Table
-            if (statusSpan.closest('#reportsTableBody')) {
-                const row = statusSpan.closest('tr');
-                const actionBtn = row === null || row === void 0 ? void 0 : row.querySelector('.action-btn.delete');
-                if (text === 'PENDING') {
-                    statusSpan.className = 'badge closed';
-                    statusSpan.textContent = 'RESOLVED';
-                    if (actionBtn) {
-                        actionBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
-                        actionBtn.setAttribute('title', 'Delete');
-                    }
-                }
-                else if (text === 'RESOLVED') {
-                    statusSpan.className = 'badge in-progress';
-                    statusSpan.textContent = 'PENDING';
-                    if (actionBtn) {
-                        actionBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
-                        actionBtn.setAttribute('title', 'Resolve');
-                    }
-                }
-            }
-            // Inventory Table
-            else if (statusSpan.closest('#inventoryTableBody') || statusSpan.closest('.inventory-table')) {
-                if (text === 'OPEN') {
-                    statusSpan.className = 'badge in-progress';
-                    statusSpan.textContent = 'IN PROGRESS';
-                }
-                else if (text === 'IN PROGRESS') {
-                    statusSpan.className = 'badge closed';
-                    statusSpan.textContent = 'CLOSED';
-                }
-                else if (text === 'CLOSED') {
-                    statusSpan.className = 'badge in-progress';
-                    statusSpan.textContent = 'OPEN';
-                }
-            }
-        }
-    });
-    // ── Universal Search Logic ────────────────────────────────────────────────
-    const setupSearch = (inputId, tableId) => {
-        const input = document.getElementById(inputId);
-        const tableBody = document.getElementById(tableId);
-        input === null || input === void 0 ? void 0 : input.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            const rows = tableBody === null || tableBody === void 0 ? void 0 : tableBody.querySelectorAll('tr');
-            rows === null || rows === void 0 ? void 0 : rows.forEach(row => {
-                var _a;
-                const text = ((_a = row.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
-                row.style.display = text.includes(query) ? '' : 'none';
-            });
-        });
-    };
-    // Special case for dashboard search which has multiple tables or a different structure
-    const dashboardSearchInput = document.getElementById('dashboardSearch');
-    dashboardSearchInput === null || dashboardSearchInput === void 0 ? void 0 : dashboardSearchInput.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        const dashboardTable = document.querySelector('#dashboardView .inventory-table tbody');
-        dashboardTable === null || dashboardTable === void 0 ? void 0 : dashboardTable.querySelectorAll('tr').forEach(row => {
-            var _a;
-            const text = ((_a = row.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
-            row.style.display = text.includes(query) ? '' : 'none';
-        });
-    });
-    setupSearch('inventorySearch', 'inventoryTableBody');
-    setupSearch('userSearch', 'staffTableBody');
-    setupSearch('reportSearch', 'reportsTableBody');
-    // ── Settings Functionality ──────────────────────────────────────────────
-    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-    saveSettingsBtn === null || saveSettingsBtn === void 0 ? void 0 : saveSettingsBtn.addEventListener('click', () => {
-        // Simulate saving
-        saveSettingsBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-        saveSettingsBtn.setAttribute('disabled', 'true');
-        setTimeout(() => {
-            saveSettingsBtn.innerHTML = '<i class="fa-solid fa-check"></i> Saved!';
-            saveSettingsBtn.style.background = '#27ae60';
-            setTimeout(() => {
-                saveSettingsBtn.innerHTML = '<i class="fa-solid fa-check"></i> Save Changes';
-                saveSettingsBtn.style.background = '';
-                saveSettingsBtn.removeAttribute('disabled');
-                alert('Settings saved successfully!');
-            }, 1500);
-        }, 1000);
-    });
-    const togglePasswordBtn = document.querySelector('.toggle-password');
-    togglePasswordBtn === null || togglePasswordBtn === void 0 ? void 0 : togglePasswordBtn.addEventListener('click', () => {
-        const passInput = document.getElementById('settingAdminPassword');
-        const icon = togglePasswordBtn.querySelector('i');
-        if (passInput.type === 'password') {
-            passInput.type = 'text';
-            icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-eye', 'fa-eye-slash');
-        }
-        else {
-            passInput.type = 'password';
-            icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-eye-slash', 'fa-eye');
-        }
-    });
-    const toggleUserPass = document.getElementById('toggleUserPass');
-    toggleUserPass === null || toggleUserPass === void 0 ? void 0 : toggleUserPass.addEventListener('click', () => {
-        const passInput = document.getElementById('userPassword');
-        const icon = toggleUserPass.querySelector('i');
-        if (passInput.type === 'password') {
-            passInput.type = 'text';
-            icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-eye', 'fa-eye-slash');
-        }
-        else {
-            passInput.type = 'password';
-            icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-eye-slash', 'fa-eye');
-        }
-    });
+    seedDefaultInventory();
+    renderDashboardRecent();
+    renderReports();
 });
 export {};

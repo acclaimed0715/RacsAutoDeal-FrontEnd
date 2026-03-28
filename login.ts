@@ -1,6 +1,17 @@
 // login.ts — Admin Login Logic
 export {};
 
+interface StaffMember {
+    id: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    username: string;
+    email: string;
+    phone: string;
+    password?: string;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm') as HTMLFormElement | null;
     const usernameInput = document.getElementById('username') as HTMLInputElement | null;
@@ -27,33 +38,44 @@ document.addEventListener('DOMContentLoaded', () => {
         const user = usernameInput.value.trim();
         const pass = passwordInput.value.trim();
 
-        // Simple Dummy Auth (admin / admin123)
-        // In a real app, this would be an API call
-        if (user === 'admin' && pass === 'admin123') {
-            if(errorMsg) errorMsg.textContent = '';
+        // Check Admin Password from Settings
+        const settingsStr = localStorage.getItem('racs_settings');
+        let adminPass = 'admin123';
+        if (settingsStr) {
+            try {
+                const settings = JSON.parse(settingsStr);
+                if (settings.adminPassword) adminPass = settings.adminPassword;
+            } catch (e) {}
+        }
+
+        // Simple Dummy Auth (admin / dynamic password)
+        if (user === 'admin' && pass === adminPass) {
+            errorMsg.textContent = '';
             localStorage.setItem('adminLoggedIn', 'true');
             localStorage.setItem('currentUserRole', 'Super Admin');
             window.location.href = 'admin.html';
         } else {
             const storedUsersStr = localStorage.getItem('racs_staff_users');
-            let matchedUser = null;
+            let matchedUser: StaffMember | undefined;
             if (storedUsersStr) {
-                const users = JSON.parse(storedUsersStr);
-                matchedUser = users.find((u: any) => u.username === user && u.password === pass);
+                try {
+                    const users = JSON.parse(storedUsersStr) as StaffMember[];
+                    matchedUser = users.find(u => u.username === user && u.password === pass);
+                } catch (e) {
+                    console.error('Failed to parse staff users', e);
+                }
             }
             
             if (matchedUser) {
-                if(errorMsg) errorMsg.textContent = '';
+                errorMsg.textContent = '';
                 localStorage.setItem('adminLoggedIn', 'true');
                 localStorage.setItem('currentUserRole', matchedUser.role);
                 window.location.href = 'admin.html';
                 return;
             }
 
-            if(errorMsg) {
-                errorMsg.textContent = 'Invalid username or password. Please try again.';
-                errorMsg.style.display = 'block';
-            }
+            errorMsg.textContent = 'Invalid username or password. Please try again.';
+            errorMsg.style.display = 'block';
             
             loginForm.classList.add('shake');
             setTimeout(() => loginForm.classList.remove('shake'), 500);

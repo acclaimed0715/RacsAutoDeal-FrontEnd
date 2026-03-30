@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Racs Auto Deal | Homepage</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="preview.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Montserrat:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <header class="navbar smart-nav">
+        <div class="nav-container">
+            <div class="logo-container">
+                <img src="assets/logo.png" alt="Racs Auto Deal Logo" class="logo-img">
+            </div>
+            <div class="nav-search-group">
+                <div class="search-bar nav-search">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" placeholder="Search vehicles...">
+                    <i class="fa-solid fa-xmark clear-icon"></i>
+                </div>
+            </div>
+            <div class="nav-right-actions">
+                <div class="nav-notif-container" style="position: relative;">
+                    <button class="nav-btn nav-notif-btn" id="navNotifBtn" title="Notifications">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="notif-badge" id="notifBadge">3</span>
+                    </button>
+
+                    <!-- Notification Popup -->
+                    <div class="notif-modal" id="notifModal">
+                        <div class="notif-modal-header">
+                            <div class="notif-modal-title">
+                                <h3><i class="fa-solid fa-bell"></i> Notifications</h3>
+                                <span class="notif-badge-pill" id="notifCountPill">0</span>
+                            </div>
+                            <div class="notif-modal-actions">
+                                <span class="close-notif-modal" id="closeNotifBtn"><i
+                                        class="fa-solid fa-xmark"></i></span>
+                            </div>
+                        </div>
+                        <div class="notif-modal-body" id="notifModalBody">
+                            <ul class="notif-list-modal" id="notifList">
+                                <!-- Populated by JS -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-overlay"></div>
+
+        <div class="hero-container">
+            <div class="hero-content">
+                <h2 class="subtitle reveal-up" data-delay="0.2">Racs Auto Deal</h2>
+                <h1 class="title reveal-up" data-delay="0.4">Your Next Journey<br>Starts Here.</h1>
+                <p class="description reveal-up" data-delay="0.6">
+                    Welcome to <strong>Racs Auto Deal</strong>, your premier destination for quality
+                    vehicles where we offer a curated selection of cars designed to
+                    fit every lifestyle. Explore our inventory and discover the
+                    exceptional service and unbeatable value that make us stand
+                    out from the rest!
+                </p>
+                <div class="hero-actions reveal-up" data-delay="0.8">
+                    <a href="#carGrid" class="cta-btn primary-cta">
+                        <span>Explore Inventory</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="scroll-indicator" id="scrollBtn">
+            <span class="scroll-text">Scroll down below to browse</span>
+            <div class="arrow-container">
+                <i class="fa-solid fa-arrow-down arrow-down"></i>
+            </div>
+        </div>
+    </main>
+
+    <!-- Promo Carousel -->
+    <section class="promo-section">
+        <div class="promo-container">
+            <div class="promo-carousel" id="promoCarousel">
+                <div class="promo-track" id="promoTrack">
+                    <!-- Slide 1: Showcase -->
+                    <div class="promo-slide active">
+                        <img src="assets/promo_showcase.png" alt="Car Showcase">
+                        <div class="promo-content">
+                            <span class="promo-tag rev-item" data-delay="0.1">Showcase</span>
+                            <h2 class="rev-item" data-delay="0.3">Porsche 911 GT3</h2>
+                            <p class="rev-item" data-delay="0.5">Experience the pinnacle of performance and precision
+                                engineering.</p>
+                            <a href="#carGrid" class="promo-btn rev-item" data-delay="0.7">View Details</a>
+                        </div>
+                    </div>
+                    <!-- Slide 2: Deals -->
+                    <div class="promo-slide">
+                        <img src="assets/promo_deals.png" alt="Special Deals">
+                        <div class="promo-content">
+                            <span class="promo-tag orange rev-item" data-delay="0.1">Hot Deal</span>
+                            <h2 class="rev-item" data-delay="0.3">Seasonal Savings</h2>
+                            <p class="rev-item" data-delay="0.5">Get up to ₱100,000 off on selected premium SUVs this
+                                month.</p>
+                            <a href="#carGrid" class="promo-btn rev-item" data-delay="0.7">Explore Deals</a>
+                        </div>
+                    </div>
+                    <!-- Slide 3: New Arrivals -->
+                    <div class="promo-slide">
+                        <img src="assets/promo_new.png" alt="New Arrival">
+                        <div class="promo-content">
+                            <span class="promo-tag blue rev-item" data-delay="0.1">New Arrival</span>
+                            <h2 class="rev-item" data-delay="0.3">The Future Is Here</h2>
+                            <p class="rev-item" data-delay="0.5">Discover our latest collection of 2024 luxury electric
+                                vehicles.</p>
+                            <a href="#carGrid" class="promo-btn rev-item" data-delay="0.7">See What's New</a>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="promo-nav prev" id="promoPrev"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="promo-nav next" id="promoNext"><i class="fa-solid fa-chevron-right"></i></button>
+
+                <div class="promo-dots" id="promoDots">
+                    <div class="promo-dot-wrapper active"><span class="dot">
+                            <div class="dot-progress"></div>
+                        </span></div>
+                    <div class="promo-dot-wrapper"><span class="dot">
+                            <div class="dot-progress"></div>
+                        </span></div>
+                    <div class="promo-dot-wrapper"><span class="dot">
+                            <div class="dot-progress"></div>
+                        </span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="inventory-section">
+        <!-- Search and Filter moved to Navbar -->
+
+        <div class="inventory-content">
+            <!-- Persistent Sidebar -->
+            <aside class="filter-sidebar persistent-sidebar" id="filterSidebar">
+                <div class="filter-header">
+                    <div class="filter-title">
+                        <i class="fa-solid fa-filter"></i>
+                        <h2>Filters</h2>
+                    </div>
+                </div>
+
+                <div class="filter-content">
+                    <!-- Category -->
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <div class="filter-group-title">
+                                <i class="fa-solid fa-layer-group"></i> CATEGORY
+                            </div>
+                            <i class="fa-solid fa-chevron-down section-toggle"></i>
+                        </div>
+                        <ul class="filter-list">
+                            <li><i class="fa-solid fa-arrow-trend-up"></i> New</li>
+                            <li><i class="fa-regular fa-star"></i> Best Deal</li>
+                            <li><i class="fa-solid fa-hand-pointer"></i> Most Clicked</li>
+                        </ul>
+                    </div>
+
+                    <!-- Vehicle Type -->
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <div class="filter-group-title">
+                                <i class="fa-solid fa-car"></i> VEHICLE TYPE
+                            </div>
+                            <i class="fa-solid fa-chevron-down section-toggle"></i>
+                        </div>
+                        <ul class="filter-list text-only">
+                            <li>Sports Car</li>
+                            <li>Van</li>
+                            <li>Hatchback</li>
+                            <li>Electric Car</li>
+                            <li>Sedan</li>
+                            <li>Coupe</li>
+                            <li>SUV</li>
+                        </ul>
+                    </div>
+
+                    <!-- Search Brand -->
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <div class="filter-group-title">
+                                <i class="fa-solid fa-car"></i> SEARCH BRAND
+                            </div>
+                            <i class="fa-solid fa-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="filter-search-input">
+                            <input type="text" id="brandSearchInput" placeholder="Search Here...">
+                        </div>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <div class="filter-group-title">
+                                <i class="fa-solid fa-tag"></i> PRICE RANGE
+                            </div>
+                            <i class="fa-solid fa-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="price-range-inputs">
+                            <div class="price-input-wrapper">
+                                <span>MIN</span>
+                                <input type="number" id="minPriceInput" placeholder="Min Price">
+                            </div>
+                            <div class="price-input-wrapper">
+                                <span>MAX</span>
+                                <input type="number" id="maxPriceInput" placeholder="Max Price">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-footer">
+                    <button class="filter-reset-btn"><i class="fa-solid fa-rotate-left"></i> Reset Filters</button>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div class="inventory-main">
+                <div class="inventory-header">
+                    <h2 class="category-title" id="dynamicCategoryTitle">All Vehicles</h2>
+                    <div class="view-toggles">
+                        <button class="view-btn active" id="gridViewBtn" title="Grid View">
+                            <i class="fa-solid fa-grip"></i>
+                        </button>
+                        <button class="view-btn" id="listViewBtn" title="List View">
+                            <i class="fa-solid fa-list"></i>
+                        </button>
+                        <button class="view-btn" id="garageViewBtn" title="Garage (Favorites)">
+                            <i class="fa-solid fa-key"></i>
+                            <span class="fav-count-badge" id="inventoryFavCount">0</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="car-grid grid-view" id="carGrid">
+                    <!-- Cars dynamically injected here based on pagination -->
+                </div>
+
+                <div class="pagination-container" id="paginationContainer">
+                    <button class="page-btn prev-page" id="prevPageBtn" disabled><i
+                            class="fa-solid fa-chevron-left"></i></button>
+                    <div class="page-numbers" id="pageNumbers">
+                        <!-- Page numbers injected here -->
+                    </div>
+                    <button class="page-btn next-page" id="nextPageBtn"><i
+                            class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="support-section" id="support">
+        <div class="support-container">
+            <div class="section-title">
+                <h2>Help & Support</h2>
+                <p>Everything you need to know about buying and selling with Racs Auto Deal.</p>
+            </div>
+
+            <div class="support-grid">
+                <!-- FAQs -->
+                <div class="faq-accordion">
+                    <h3>Frequently Asked Questions</h3>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>How do I book a test drive?</span>
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>You can book a test drive by clicking the "Inquire" button on any vehicle page or calling
+                                us directly at 0917 110 6548. Our team will coordinate with you for a schedule.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>Do you offer car financing?</span>
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes! We partner with various banks to provide competitive financing options tailored to
+                                your budget. Visit our showroom for a quick computation.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>What documents are needed to sell my car?</span>
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>To sell your car, you'll need the Original OR/CR, valid IDs, and a duly signed Deed of
+                                Sale. We can handle the appraisal and offer a fair market price.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>Are the vehicles in your inventory inspected?</span>
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Absolutely. Every vehicle undergoes a thorough multi-point inspection and detailed
+                                reconditioning before being listed to ensure your peace of mind.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Support Actions -->
+                <div class="support-actions-side">
+                    <div class="contact-card-simple">
+                        <i class="fa-solid fa-phone"></i>
+                        <span>Contact Us +123 456 789</span>
+                    </div>
+                    <button class="report-trigger-btn" id="openReportBtn">
+                        <i class="fa-solid fa-flag"></i>
+                        <span>Submit A Report</span>
+                    </button>
+                    <p class="support-footer-note">Send Report if you have any issues.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Send Report Modal -->
+    <div class="report-modal-overlay" id="reportOverlay"></div>
+    <div class="report-modal" id="reportModal">
+        <div class="report-modal-content">
+            <span class="close-report-btn" id="closeReportBtn"><i class="fa-solid fa-xmark"></i></span>
+            <h2>Send Report</h2>
+
+            <form id="reportForm">
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" id="reportEmail" placeholder="Enter your email" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Reason *</label>
+                    <div class="select-wrapper">
+                        <select id="reportReason" required>
+                            <option value="" disabled selected>Select Reason</option>
+                            <option value="inquiry">Inquiry Not Responding</option>
+                            <option value="listing">Duplicate Listing</option>
+                            <option value="sold">Sold Vehicle Still Listed</option>
+                            <option value="price">Price Discrepancy</option>
+                            <option value="technical">Technical Issue</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="form-group" id="otherReasonGroup" style="display: none;">
+                    <label>Please specify *</label>
+                    <input type="text" id="otherReason" placeholder="Enter specific reason">
+                </div>
+
+                <div class="form-group">
+                    <label>Describe the issue</label>
+                    <textarea id="reportIssue" placeholder="Enter details here..." rows="5"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Evidence (Optional)</label>
+                    <div class="upload-btn-wrapper">
+                        <button type="button" class="upload-btn">
+                            <span>Upload Screenshot</span>
+                            <i class="fa-solid fa-download"></i>
+                        </button>
+                        <input type="file" id="reportFile" hidden>
+                    </div>
+                </div>
+
+                <p class="report-form-note">Send Report if you have any issues.</p>
+
+                <button type="submit" class="report-submit-btn">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <!-- Left: Logo -->
+            <div class="footer-logo">
+                <img src="assets/logo.png" alt="Racs Auto Deal Logo" class="logo-img">
+            </div>
+
+            <!-- Middle: About Us -->
+            <div class="footer-about">
+                <h3 class="footer-heading">About Us</h3>
+                <p class="footer-text">
+                    At <strong>RACS AUTO DEAL</strong>, we are committed to helping customers find the perfect vehicle
+                    that fits their lifestyle, needs, and budget. Our dealership offers a carefully selected range of
+                    quality vehicles, ensuring reliability, performance, and value in every purchase.
+                </p>
+            </div>
+
+            <!-- Right: Contact Us -->
+            <div class="footer-contact">
+                <h3 class="footer-heading">Contact Us</h3>
+                <p class="footer-text">
+                    Questions, comments, or suggestions? You can reach out us with our contact below and we'll be in
+                    touch shortly.
+                </p>
+                <ul class="contact-list">
+                    <li>
+                        <i class="fa-solid fa-location-dot contact-icon red-icon"></i>
+                        <span>No. 7 N.I.A. Road, Carsadang Bago 2, Imus, Cavite</span>
+                    </li>
+                    <li>
+                        <i class="fa-solid fa-phone contact-icon red-icon"></i>
+                        <span>0917 110 6548</span>
+                    </li>
+                    <li>
+                        <i class="fa-brands fa-facebook-messenger contact-icon blue-icon"></i>
+                        <span>RACS AUTO DEAL</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="social-icons">
+                <a href="#"><i class="fa-brands fa-facebook-messenger"></i></a>
+                <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61560596447465" target="_blank"
+                    rel="noopener noreferrer"><i class="fa-brands fa-facebook-f"></i></a>
+            </div>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms & Conditions</a>
+                <span class="copyright">All Rights Reserved &copy; 2026</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Preview Modal -->
+    <div class="preview-overlay" id="previewOverlay"></div>
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-modal-content">
+            <span class="close-preview-btn" id="closePreviewBtn"><i class="fa-solid fa-xmark"></i></span>
+
+
+
+            <div class="preview-container">
+                <div class="preview-left">
+                    <div class="preview-image-wrapper">
+                        <div class="carousel-container">
+                            <button class="carousel-btn prev-btn" id="prevImgBtn"><i
+                                    class="fa-solid fa-chevron-left"></i></button>
+                            <img id="carImg" src="" alt="Car Image">
+                            <button class="carousel-btn next-btn" id="nextImgBtn"><i
+                                    class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        <div class="carousel-dots" id="carouselDots"></div>
+                        <div class="star-badge" id="favoriteBtn" title="Favorite">
+                            <i class="fa-solid fa-key" id="favoriteIcon"></i>
+                        </div>
+                    </div>
+                    <div class="preview-car-info">
+                        <div class="title-price-row">
+                            <h1 id="carTitle">Title</h1>
+                            <span id="modalCarPrice" class="modal-price">Price</span>
+                        </div>
+                        <span id="carPostedTime">Posted 1 hr ago</span>
+                    </div>
+                </div>
+
+                <div class="preview-right">
+                    <div class="main-features-grid">
+                        <div class="feature-block">
+                            <i class="fa-solid fa-car"></i>
+                            <span id="featModel">2012 Model</span>
+                        </div>
+                        <div class="feature-block">
+                            <i class="fa-solid fa-gauge"></i>
+                            <span id="featMileage">25,000 KM</span>
+                        </div>
+                        <div class="feature-block">
+                            <i class="fa-solid fa-gears"></i>
+                            <span id="featTrans">Automatic</span>
+                        </div>
+                        <div class="feature-block">
+                            <i class="fa-solid fa-gas-pump"></i>
+                            <span id="featFuel">Diesel</span>
+                        </div>
+                    </div>
+
+                    <div class="tabs-header">
+                        <div class="tab-item active" data-tab="description">Description <div class="tab-underline">
+                            </div>
+                        </div>
+                        <div class="tab-item" data-tab="otherFeatures">Other Features <div class="tab-underline"></div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content active" id="description-tab">
+                        <div class="description-wrapper">
+                            <p class="modal-description clamped" id="carDescription"></p>
+                            <span class="read-more-toggle hidden" id="readMoreToggle">Read more</span>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="other-features-tab">
+                        <ul class="car-specs-list other-features-list">
+                            <li id="featEngine"><strong>Engine:</strong> <span></span></li>
+                            <li id="featHP"><strong>HP:</strong> <span></span></li>
+                            <li id="featTorque"><strong>Torque:</strong> <span></span></li>
+                            <li id="featSafety"><strong>Safety:</strong> <span></span></li>
+                            <li id="featSeating"><strong>Seating:</strong> <span></span></li>
+                        </ul>
+                    </div>
+
+                    <div class="dealer-action">
+                        <button class="message-dealer-btn" id="inquireBtnModal">Inquire</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gmail Style Composer -->
+    <div class="email-composer" id="emailComposer">
+        <div class="composer-header">
+            <span>New Message</span>
+            <div class="composer-actions">
+                <i class="fa-solid fa-minus"></i>
+                <i class="fa-solid fa-expand"></i>
+                <i class="fa-solid fa-xmark" id="closeComposerBtn"></i>
+            </div>
+        </div>
+        <div class="composer-body">
+            <div class="composer-field">
+                <span>From</span>
+                <input type="email" id="composerFrom" placeholder="Your Email">
+            </div>
+            <div class="composer-field">
+                <span>To</span>
+                <input type="text" value="sales@racsautodeal.com" readonly>
+            </div>
+            <div class="composer-field">
+                <span>Subject</span>
+                <input type="text" id="composerSubject" value="">
+            </div>
+            <textarea id="composerMessage" class="composer-textarea"></textarea>
+        </div>
+        <div class="composer-footer">
+            <button class="compose-send-btn" id="sendEmailBtn">Send</button>
+            <div class="footer-icons">
+                <i class="fa-solid fa-font"></i>
+                <i class="fa-solid fa-paperclip"></i>
+                <i class="fa-solid fa-link"></i>
+                <i class="fa-solid fa-face-smile"></i>
+                <i class="fa-brands fa-google-drive"></i>
+                <i class="fa-solid fa-image"></i>
+            </div>
+            <i class="fa-solid fa-trash-can composer-delete"></i>
+        </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+
+</html>

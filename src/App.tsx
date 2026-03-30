@@ -15,7 +15,7 @@ import TermsAndPrivacy from './pages/TermsAndPrivacy';
 
 // Protected Route Wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+    const isLoggedIn = !!localStorage.getItem('racs_staff_member');
     if (!isLoggedIn) return <Navigate to="/login" replace />;
     return <>{children}</>;
 };

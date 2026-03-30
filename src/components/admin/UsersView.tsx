@@ -1,33 +1,37 @@
 import React, { useState } from 'react';
+import { useInventory } from '../../context/InventoryContext';
 import { type StaffMember } from '../../types';
 
-const INITIAL_USERS: StaffMember[] = [
-    { id: 'u1', username: 'SuperAdmin01', firstName: 'Super', lastName: 'Admin', email: 'admin@racsautodeal.com', phone: '09123456789', role: 'Super Admin' },
-    { id: 'u2', username: 'Janina122', firstName: 'Janina', lastName: 'Santos', email: 'janina@racsautodeal.com', phone: '09987654321', role: 'Admin' }
-];
-
 const UsersView: React.FC = () => {
-    const [users, setUsers] = useState<StaffMember[]>(INITIAL_USERS);
+    const { staff, addStaff, deleteStaff, currentUser } = useInventory();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [form, setForm] = useState<Partial<StaffMember>>({ role: 'Admin' });
+    const [form, setForm] = useState<Partial<StaffMember>>({ role: 'INVENTORY_MANAGER' });
 
     const openAdd = () => {
-        setForm({ role: 'Admin', username: '', firstName: '', lastName: '', email: '', phone: '' });
+        setForm({ role: 'INVENTORY_MANAGER', username: '', name: '' });
         setIsModalOpen(true);
     };
 
-    const deleteUser = (id: string) => {
-        if (id === 'u1') return alert('Cannot delete Super Admin');
-        setUsers(users.filter(u => u.id !== id));
+    const handleDelete = (id: string, role: string) => {
+        if (role === 'SUPER_ADMIN') return alert('Cannot delete Super Admin');
+        if (window.confirm('Are you sure you want to delete this user?')) {
+            deleteStaff(id);
+        }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Use a temporary password format like Username123!
+        const tempPassword = `${form.username}123!`;
+        
         const newUser = {
             ...form,
-            id: 'u_' + Date.now()
-        } as StaffMember;
-        setUsers([...users, newUser]);
+            password: tempPassword
+        } as Partial<StaffMember>;
+        
+        await addStaff(newUser);
+        alert(`User created! Temporary password is: ${tempPassword}`);
         setIsModalOpen(false);
     };
 
@@ -36,10 +40,12 @@ const UsersView: React.FC = () => {
             <div className="page-header">
                 <div className="header-left">
                     <h1>Manage Staff Users</h1>
-                    <p className="stats-text">Total: {users.length} members</p>
+                    <p className="stats-text">Total: {staff.length} members</p>
                 </div>
                 <div className="header-right">
-                    <button className="add-user-btn" onClick={openAdd}><i className="fa-solid fa-plus"></i> Add User</button>
+                    {currentUser?.role === 'SUPER_ADMIN' && (
+                        <button className="add-user-btn" onClick={openAdd}><i className="fa-solid fa-plus"></i> Add User</button>
+                    )}
                 </div>
             </div>
 
@@ -55,30 +61,30 @@ const UsersView: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {users.map(user => (
+                        {staff.map(user => (
                             <tr key={user.id}>
                                 <td>
                                     <div className="user-profile">
-                                        <div className="user-avatar">{user.firstName[0]}</div>
+                                        <div className="user-avatar">{user.name?.[0]}</div>
                                         <div className="user-info-text">
                                             <span className="username">{user.username}</span>
-                                            <span className="fullname">{user.firstName} {user.lastName}</span>
+                                            <span className="fullname">{user.name}</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td><span className={`role-badge ${user.role.toLowerCase().replace(' ', '-')}`}>{user.role}</span></td>
+                                <td><span className={`role-badge ${user.role.toLowerCase()}`}>{user.role.replace('_', ' ')}</span></td>
                                 <td>
                                     <div className="contact-info">
-                                        <div className="contact-item"><i className="fa-solid fa-envelope"></i> {user.email}</div>
-                                        <div className="contact-item"><i className="fa-solid fa-phone"></i> {user.phone}</div>
+                                        <div className="contact-item">N/A</div>
                                     </div>
                                 </td>
                                 <td><span className="status-dot active"></span> Active</td>
                                 <td>
-                                    <div className="action-row">
-                                        <button className="icon-btn" onClick={() => deleteUser(user.id)} disabled={user.id === 'u1'}><i className="fa-solid fa-trash"></i></button>
-                                        <i className="fa-solid fa-ellipsis-vertical more-options"></i>
-                                    </div>
+                                    {currentUser?.role === 'SUPER_ADMIN' && (
+                                        <div className="action-row">
+                                            <button className="icon-btn" onClick={() => handleDelete(user.id, user.role)} disabled={user.role === 'SUPER_ADMIN'}><i className="fa-solid fa-trash"></i></button>
+                                        </div>
+                                    )}
                                 </td>
                             </tr>
                         ))}
@@ -96,30 +102,19 @@ const UsersView: React.FC = () => {
                         </div>
                         <form onSubmit={handleSubmit}>
                             <div className="user-modal-body">
-                                <div className="form-group-row">
-                                    <div className="user-form-group">
-                                        <input type="text" placeholder="First Name" className="user-input" value={form.firstName} onChange={e => setForm({...form, firstName: e.target.value})} required />
-                                    </div>
-                                    <div className="user-form-group">
-                                        <input type="text" placeholder="Last Name" className="user-input" value={form.lastName} onChange={e => setForm({...form, lastName: e.target.value})} required />
-                                    </div>
+                                <div className="user-form-group full-width">
+                                    <input type="text" placeholder="Full Name" className="user-input" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
                                 </div>
                                 <div className="user-form-group full-width">
                                     <input type="text" placeholder="Username" className="user-input" value={form.username} onChange={e => setForm({...form, username: e.target.value})} required />
-                                </div>
-                                <div className="user-form-group full-width">
-                                    <input type="email" placeholder="Email Address" className="user-input" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
-                                </div>
-                                <div className="user-form-group full-width">
-                                    <input type="text" placeholder="Phone Number" className="user-input" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} required />
                                 </div>
                             </div>
                             <div className="user-modal-footer">
                                 <div className="status-selector">
                                     <label>Role</label>
-                                    <select value={form.role} onChange={e => setForm({...form, role: e.target.value})} className="status-select">
-                                        <option value="Admin">Admin</option>
-                                        <option value="Super Admin">Super Admin</option>
+                                    <select value={form.role} onChange={e => setForm({...form, role: e.target.value as any})} className="status-select">
+                                        <option value="INVENTORY_MANAGER">Inventory Manager</option>
+                                        <option value="SUPER_ADMIN">Super Admin</option>
                                     </select>
                                 </div>
                                 <button type="submit" className="user-add-btn">Add User</button>

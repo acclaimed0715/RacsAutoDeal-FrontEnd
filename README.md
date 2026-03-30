@@ -1,73 +1,62 @@
-# React + TypeScript + Vite
+# RACS Auto Deal Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a React (Vite) frontend application with a Node.js (Express) backend. It uses **Prisma ORM** connecting to a **MySQL Database**.
 
-Currently, two official plugins are available:
+## Getting Started on a New Computer
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+If you clone or move this project to a brand-new computer, follow these exact steps to get the database and servers running again:
 
-## React Compiler
+### 1. Prerequisites
+You must install these programs on the new computer before you begin:
+* **Node.js** (v18 or higher)
+* **MySQL Server** (You can use standalone MySQL Installer, or XAMPP)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 2. Setup Database Structure
+1. Open your MySQL client (like MySQL Workbench, or phpMyAdmin if you use XAMPP).
+2. Create a new, completely empty database and name it `racs_auto_deal`.
 
-## Expanding the ESLint configuration
+### 3. Setup Project Files
+1. Open the project folder in VS Code or your Terminal.
+2. In the `server` folder, create a file named `.env` if it does not already exist.
+3. Add the following line to the `.env` file to connect to your local MySQL database:
+   ```env
+   DATABASE_URL="mysql://root:@127.0.0.1:3306/racs_auto_deal"
+   ```
+   *(Note: If your MySQL root user has a password on the new machine, insert it between `root:` and `@`)*
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 4. Install Dependencies & Build Database
+Open two terminal windows (one for the `server` folder, one for the main project folder).
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+In the **`server`** folder terminal, run these commands in order:
+```bash
+# 1. Install all backend packages
+npm install
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# 2. Tell Prisma to build the tables in your empty database
+npx prisma db push
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# 3. Create the initial 'admin' / 'admin123' Super Admin account
+npm run prisma:generate
+npx ts-node prisma/seed.ts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+In the **Main root folder** terminal, run:
+```bash
+# Install all frontend packages
+npm install
 ```
+
+### 5. Start Servers
+Finally, to start the application, run the developer mode commands:
+
+**Terminal 1 (`/server`):**
+```bash
+npm run dev
+```
+
+**Terminal 2 (`/` root):**
+```bash
+npm run dev
+```
+
+The app will become available at `http://localhost:5173`. You can log back into `/login` using the generated `admin` and `admin123` credentials.

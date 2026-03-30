@@ -21,6 +21,8 @@ export interface Vehicle {
     status: CarStatus;
     images: string[];
     date: string;
+    isArchived?: boolean;
+    saleReportedBy?: string;
     posted?: string; // UI only
     type?: string; // UI only
 }
@@ -28,12 +30,10 @@ export interface Vehicle {
 export interface StaffMember {
     id: string;
     username: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    role: string;
+    name: string;
+    role: 'SUPER_ADMIN' | 'INVENTORY_MANAGER';
     password?: string;
+    createdAt?: string;
 }
 
 export interface UserReport {

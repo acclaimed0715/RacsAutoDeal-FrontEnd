@@ -3,15 +3,13 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useInventory } from '../../context/InventoryContext';
 
 const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { notifications } = useInventory();
-    const navigate = useNavigate();
+    const { notifications, currentUser, logoutStaff } = useInventory();
     const location = useLocation();
     
     const unreadCount = notifications.filter(n => !n.isRead).length;
 
     const handleLogout = () => {
-        localStorage.removeItem('adminLoggedIn');
-        navigate('/login');
+        logoutStaff();
     };
 
     const getViewTitle = () => {
@@ -41,21 +39,25 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             <i className="fa-solid fa-car"></i> Manage Inventory
                         </NavLink>
                     </li>
-                    <li>
-                        <NavLink to="/admin/users" className={({ isActive }) => isActive ? 'active' : ''}>
-                            <i className="fa-solid fa-users"></i> Manage Users
-                        </NavLink>
-                    </li>
+                    {currentUser?.role === 'SUPER_ADMIN' && (
+                        <li>
+                            <NavLink to="/admin/users" className={({ isActive }) => isActive ? 'active' : ''}>
+                                <i className="fa-solid fa-users"></i> Manage Users
+                            </NavLink>
+                        </li>
+                    )}
                     <li>
                         <NavLink to="/admin/reports" className={({ isActive }) => isActive ? 'active' : ''}>
                             <i className="fa-solid fa-flag"></i> Manage Reports
                         </NavLink>
                     </li>
-                    <li>
-                        <NavLink to="/admin/settings" className={({ isActive }) => isActive ? 'active' : ''}>
-                            <i className="fa-solid fa-gear"></i> Settings
-                        </NavLink>
-                    </li>
+                    {currentUser?.role === 'SUPER_ADMIN' && (
+                        <li>
+                            <NavLink to="/admin/settings" className={({ isActive }) => isActive ? 'active' : ''}>
+                                <i className="fa-solid fa-gear"></i> Settings
+                            </NavLink>
+                        </li>
+                    )}
                     <li className="logout-link" onClick={handleLogout}>
                         <a href="#"><i className="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
                     </li>
@@ -74,7 +76,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         </div>
                         <div className="admin-profile">
                             <div className="avatar"><i className="fa-solid fa-user"></i></div>
-                            <span>Admin</span>
+                            <span>{currentUser?.name || 'Admin'}</span>
                         </div>
                     </div>
                 </header>

@@ -1,6 +1,6 @@
 // src/types/index.ts
 
-export type CarStatus = 'open' | 'in-progress' | 'closed' | 'pending_deal' | 'sold';
+export type CarStatus = 'open' | 'negotiating' | 'sold';
 
 export interface Vehicle {
     id: string;
@@ -22,7 +22,14 @@ export interface Vehicle {
     images: string[];
     date: string;
     isArchived?: boolean;
+    pendingDeletion?: boolean;
+    deletionRequestedBy?: string;
+    /** Why the staff member requested removal (shown to Super Admin) */
+    deletionRemark?: string;
     saleReportedBy?: string;
+    isBestDeal?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
     posted?: string; // UI only
     type?: string; // UI only
 }
@@ -31,6 +38,7 @@ export interface StaffMember {
     id: string;
     username: string;
     name: string;
+    email?: string;
     role: 'SUPER_ADMIN' | 'INVENTORY_MANAGER';
     password?: string;
     createdAt?: string;

@@ -12,11 +12,25 @@ import UsersView from './components/admin/UsersView';
 import ReportsView from './components/admin/ReportsView';
 import SettingsView from './components/admin/SettingsView';
 import TermsAndPrivacy from './pages/TermsAndPrivacy';
+import CarDetail from './pages/CarDetail';
 
 // Protected Route Wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const isLoggedIn = !!localStorage.getItem('racs_staff_member');
     if (!isLoggedIn) return <Navigate to="/login" replace />;
+    return <>{children}</>;
+};
+
+// Super Admin only route — redirects Inventory Managers to dashboard
+const SuperAdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const stored = localStorage.getItem('racs_staff_member');
+    if (!stored) return <Navigate to="/login" replace />;
+    try {
+        const user = JSON.parse(stored);
+        if (user.role !== 'SUPER_ADMIN') return <Navigate to="/admin" replace />;
+    } catch {
+        return <Navigate to="/login" replace />;
+    }
     return <>{children}</>;
 };
 
@@ -31,6 +45,7 @@ const App: React.FC = () => {
                     <Route path="/about" element={<AboutUs />} />
                     <Route path="/cars" element={<CarsPage />} />
                     <Route path="/terms" element={<TermsAndPrivacy />} />
+                    <Route path="/car/:id" element={<CarDetail />} />
                     <Route path="/login" element={<Login />} />
 
                     {/* Admin Routes */}
@@ -49,25 +64,25 @@ const App: React.FC = () => {
                         </ProtectedRoute>
                     } />
                     <Route path="/admin/users" element={
-                        <ProtectedRoute>
+                        <SuperAdminRoute>
                             <AdminLayout>
                                 <UsersView />
                             </AdminLayout>
-                        </ProtectedRoute>
+                        </SuperAdminRoute>
                     } />
                     <Route path="/admin/reports" element={
-                        <ProtectedRoute>
+                        <SuperAdminRoute>
                             <AdminLayout>
                                 <ReportsView />
                             </AdminLayout>
-                        </ProtectedRoute>
+                        </SuperAdminRoute>
                     } />
                     <Route path="/admin/settings" element={
-                        <ProtectedRoute>
+                        <SuperAdminRoute>
                             <AdminLayout>
                                 <SettingsView />
                             </AdminLayout>
-                        </ProtectedRoute>
+                        </SuperAdminRoute>
                     } />
 
                     {/* Fallback */}

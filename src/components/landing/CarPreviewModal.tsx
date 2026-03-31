@@ -21,12 +21,33 @@ const CarPreviewModal: React.FC<CarPreviewModalProps> = ({ car, isOpen, onClose 
 
     const handleInquire = () => {
         setIsEmailOpen(true);
-        setEmailMsg(`Hi, I'm interested in the ${car.name} ${car.modelYear} listed for ${car.price}. Is it still available?`);
+        const carUrl = `${window.location.origin}/cars?carId=${car.id}`;
+        const details = `
+-----------------------------------------
+VEHICLE INTEREST: ${car.name.toUpperCase()}
+-----------------------------------------
+Price: ${car.price}
+Model Year: ${car.modelYear}
+Mileage: ${car.mileage || 'N/A'}
+Transmission: ${car.transmission}
+Fuel Type: ${car.fuelType}
+Engine: ${car.engine || 'Standard'}
+-----------------------------------------
+Vehicle Link: ${carUrl}
+-----------------------------------------
+
+Hi, I'm interested in this ${car.name}. Is it still available for viewing?`;
+        setEmailMsg(details.trim());
     };
 
     const sendInquiry = () => {
-        alert('Inquiry sent to dealer!');
+        if (!emailFrom) {
+            alert('Please provide your email address.');
+            return;
+        }
+        alert(`Inquiry for ${car.name} sent to dealer!`);
         setIsEmailOpen(false);
+        setEmailFrom('');
     };
 
     return (
@@ -148,18 +169,45 @@ const CarPreviewModal: React.FC<CarPreviewModalProps> = ({ car, isOpen, onClose 
                             <span>Subject</span>
                             <input type="text" value={`Inquiry: ${car.name}`} readOnly />
                         </div>
-                        <textarea 
-                            className="composer-textarea" 
-                            value={emailMsg} 
-                            onChange={e => setEmailMsg(e.target.value)}
-                        ></textarea>
+                        
+                        <div className="composer-content-area" style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                            <textarea 
+                                className="composer-textarea" 
+                                value={emailMsg} 
+                                onChange={e => setEmailMsg(e.target.value)}
+                                style={{ flex: 1, paddingBottom: '80px' }}
+                            ></textarea>
+
+                            {/* ATTACHMENT CHIP */}
+                            <div className="attachment-chip" style={{
+                                position: 'absolute',
+                                bottom: '15px',
+                                left: '15px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                background: 'rgba(56, 189, 248, 0.1)',
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                border: '1px solid rgba(56, 189, 248, 0.3)',
+                                maxWidth: '300px'
+                            }}>
+                                <img src={car.images[0]} alt="" style={{ width: '40px', height: '30px', borderRadius: '4px', objectFit: 'cover' }} />
+                                <div style={{ overflow: 'hidden' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#38bdf8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        <i className="fa-solid fa-link" style={{ marginRight: '5px' }}></i> Vehicle Details Link
+                                    </div>
+                                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Click to view original listing</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div className="composer-footer">
                         <button className="compose-send-btn" onClick={sendInquiry}>Send</button>
                         <div className="footer-icons">
                             <i className="fa-solid fa-font"></i>
+                            <i className="fa-solid fa-link" style={{ color: '#38bdf8' }}></i>
                             <i className="fa-solid fa-paperclip"></i>
-                            <i className="fa-solid fa-link"></i>
                             <i className="fa-solid fa-face-smile"></i>
                             <i className="fa-solid fa-image"></i>
                         </div>

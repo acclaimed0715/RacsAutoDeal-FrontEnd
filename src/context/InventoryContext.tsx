@@ -16,14 +16,19 @@ interface InventoryContextType {
     addVehicle: (vehicle: Vehicle) => Promise<void>;
     updateVehicle: (vehicle: Vehicle) => Promise<void>;
     deleteVehicle: (id: string) => Promise<void>;
+    requestDeletionVehicle: (id: string, requestedBy: string, remarks: string) => Promise<void>;
+    resolveDeletion: (id: string, action: 'approve' | 'reject') => Promise<void>;
     resolveSale: (id: string, action: 'approve' | 'reject') => Promise<void>;
     addStaff: (staff: Partial<StaffMember>) => Promise<void>;
+    updateStaff: (id: string, data: Partial<StaffMember>) => Promise<void>;
+    changePassword: (id: string, currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
     deleteStaff: (id: string) => Promise<void>;
     addReport: (report: UserReport) => Promise<void>;
     resolveReport: (id: string) => Promise<void>;
     deleteReport: (id: string) => Promise<void>;
     updateSettings: (settings: AppSettings) => Promise<void>;
     addNotification: (title: string, message: string, type: AdminNotification['type'], sender: string) => void;
+    markAllNotificationsRead: () => Promise<void>;
     clearNotifications: () => void;
 }
 
@@ -78,6 +83,18 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 setReports(reportsData);
                 setSettings(settingsData);
                 setStaff(staffData);
+
+                // Load notifications from backend if logged in as SUPER_ADMIN
+                if (storedUser) {
+                    const user = JSON.parse(storedUser);
+                    if (user.role === 'SUPER_ADMIN') {
+                        try {
+                            const notifRes = await fetch(`${API_BASE_URL}/notifications`);
+                            const notifData: AdminNotification[] = await notifRes.json();
+                            if (Array.isArray(notifData)) setNotifications(notifData);
+                        } catch { /* non-critical */ }
+                    }
+                }
             } catch (error) {
                 console.error('Failed to fetch data from backend', error);
             } finally {
@@ -87,6 +104,68 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
         fetchData();
     }, []);
+
+    // Keep super admin reports / notifications in sync without requiring a manual refresh.
+    useEffect(() => {
+        if (!currentUser || currentUser.role !== 'SUPER_ADMIN') return;
+
+        let cancelled = false;
+        const interval = window.setInterval(async () => {
+            try {
+                const [reportsRes, notifRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/reports`),
+                    fetch(`${API_BASE_URL}/notifications`),
+                ]);
+
+                const [reportsData, notifData]: [UserReport[], AdminNotification[]] = await Promise.all([
+                    reportsRes.json(),
+                    notifRes.json(),
+                ]);
+
+                if (!cancelled) {
+                    if (Array.isArray(reportsData)) setReports(reportsData);
+                    if (Array.isArray(notifData)) setNotifications(notifData);
+                }
+            } catch (e) {
+                // Non-critical: polling failures should not break the admin UI.
+            }
+        }, 7000);
+
+        return () => {
+            cancelled = true;
+            window.clearInterval(interval);
+        };
+    }, [currentUser?.role]);
+
+    // Session timeout (in seconds) based on settings.sessionTimeout
+    useEffect(() => {
+        if (!currentUser) return;
+        const timeoutSeconds = settings.sessionTimeout || 0;
+        if (timeoutSeconds <= 0) return;
+
+        let lastActivity = Date.now();
+        const markActivity = () => {
+            lastActivity = Date.now();
+        };
+
+        const events: Array<keyof WindowEventMap> = ['click', 'mousemove', 'keydown', 'scroll'];
+        events.forEach(ev => window.addEventListener(ev, markActivity));
+
+        const intervalId = window.setInterval(() => {
+            const diff = Date.now() - lastActivity;
+            if (diff > timeoutSeconds * 1000) {
+                window.clearInterval(intervalId);
+                events.forEach(ev => window.removeEventListener(ev, markActivity));
+                logoutStaff();
+                alert('Your admin session has expired due to inactivity.');
+            }
+        }, 1000);
+
+        return () => {
+            window.clearInterval(intervalId);
+            events.forEach(ev => window.removeEventListener(ev, markActivity));
+        };
+    }, [currentUser?.id, settings.sessionTimeout]);
 
     const loginStaff = async (username: string, password: string) => {
         try {
@@ -154,6 +233,56 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
     };
 
+    const requestDeletionVehicle = async (id: string, requestedBy: string, remarks: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/cars/${id}/request-deletion`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ requestedBy, remarks }),
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error((err as { error?: string }).error || 'Request failed');
+            }
+            const updated = await res.json();
+            setCars(prev => ({ ...prev, [updated.id]: updated }));
+            try {
+                const notifRes = await fetch(`${API_BASE_URL}/notifications`);
+                const notifData: AdminNotification[] = await notifRes.json();
+                if (Array.isArray(notifData)) setNotifications(notifData);
+            } catch { /* non-critical */ }
+        } catch (error) {
+            console.error('Error requesting deletion:', error);
+            throw error;
+        }
+    };
+
+    const resolveDeletion = async (id: string, action: 'approve' | 'reject') => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/cars/${id}/resolve-deletion`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action }),
+            });
+            if (action === 'approve' && res.status === 204) {
+                setCars(prev => {
+                    const { [id]: _, ...rest } = prev;
+                    return rest;
+                });
+            } else if (action === 'reject' && res.ok) {
+                const updated = await res.json();
+                setCars(prev => ({ ...prev, [updated.id]: updated }));
+            }
+            try {
+                const notifRes = await fetch(`${API_BASE_URL}/notifications`);
+                const notifData: AdminNotification[] = await notifRes.json();
+                if (Array.isArray(notifData)) setNotifications(notifData);
+            } catch { /* non-critical */ }
+        } catch (error) {
+            console.error('Error resolving deletion:', error);
+        }
+    };
+
     const resolveSale = async (id: string, action: 'approve' | 'reject') => {
         try {
             const res = await fetch(`${API_BASE_URL}/cars/${id}/resolve-sale`, {
@@ -163,13 +292,13 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             });
             const updatedCar = await res.json();
             setCars(prev => ({ ...prev, [updatedCar.id]: updatedCar }));
-            
-            addNotification(
-                action === 'approve' ? 'Sale Approved' : 'Sale Rejected',
-                `Deal for ${updatedCar.name} has been ${action === 'approve' ? 'archived' : 'rejected'}.`,
-                action === 'approve' ? 'success' : 'warning',
-                'Super Admin'
-            );
+
+            // Refresh notifications from backend after resolving
+            try {
+                const notifRes = await fetch(`${API_BASE_URL}/notifications`);
+                const notifData: AdminNotification[] = await notifRes.json();
+                if (Array.isArray(notifData)) setNotifications(notifData);
+            } catch { /* non-critical */ }
         } catch (error) {
             console.error('Error resolving sale:', error);
         }
@@ -186,6 +315,35 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             setStaff(prev => [newStaff, ...prev]);
         } catch (error) {
             console.error('Error adding staff:', error);
+        }
+    };
+
+    const updateStaff = async (id: string, data: Partial<StaffMember>) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/staff/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const updated = await res.json();
+            setStaff(prev => prev.map(s => s.id === id ? updated : s));
+        } catch (error) {
+            console.error('Error updating staff:', error);
+        }
+    };
+
+    const changePassword = async (id: string, currentPassword: string, newPassword: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/staff/${id}/change-password`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currentPassword, newPassword })
+            });
+            const data = await res.json();
+            if (!res.ok) return { success: false, error: data.error || 'Failed to change password' };
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: 'Network error. Please try again.' };
         }
     };
 
@@ -262,19 +420,27 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         });
     };
 
+    const markAllNotificationsRead = async () => {
+        try {
+            await fetch(`${API_BASE_URL}/notifications/read-all`, { method: 'PATCH' });
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        } catch (error) {
+            console.error('Error marking notifications read:', error);
+        }
+    };
+
     const clearNotifications = () => {
         setNotifications([]);
-        localStorage.setItem('racs_admin_notifications', JSON.stringify([]));
     };
 
     return (
         <InventoryContext.Provider value={{
             cars, reports, settings, staff, currentUser, notifications, isLoading,
             loginStaff, logoutStaff,
-            addVehicle, updateVehicle, deleteVehicle, resolveSale,
-            addStaff, deleteStaff,
+            addVehicle, updateVehicle, deleteVehicle, requestDeletionVehicle, resolveDeletion, resolveSale,
+            addStaff, updateStaff, changePassword, deleteStaff,
             addReport, resolveReport, deleteReport,
-            updateSettings, addNotification, clearNotifications
+            updateSettings, addNotification, markAllNotificationsRead, clearNotifications
         }}>
             {children}
         </InventoryContext.Provider>

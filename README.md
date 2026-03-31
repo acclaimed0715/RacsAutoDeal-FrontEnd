@@ -22,7 +22,7 @@ You must install these programs on the new computer before you begin:
    ```env
    DATABASE_URL="mysql://root:@127.0.0.1:3306/racs_auto_deal"
    ```
-   *(Note: If your MySQL root user has a password on the new machine, insert it between `root:` and `@`)*
+   *(No `)*
 
 ### 4. Install Dependencies & Build Database
 Open two terminal windows (one for the `server` folder, one for the main project folder).

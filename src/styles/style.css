@@ -1224,11 +1224,18 @@ body {
     transform: scale(1.08);
 }
 
-.car-card .car-badge {
+.car-card .badges-container {
     position: absolute;
     top: 14px;
     left: 14px;
     z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.car-card .car-badge {
     background: var(--grad-red);
     color: #fff;
     padding: 0.35rem 0.9rem;
@@ -1238,6 +1245,31 @@ body {
     letter-spacing: 0.8px;
     box-shadow: 0 4px 12px var(--primary-glow);
     text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.car-card .badge-new {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #000;
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.car-card .badge-best-deal {
+    background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 210, 255, 0.3);
+}
+
+.car-card .badge-negotiating {
+    background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+    color: #000;
+    box-shadow: 0 4px 12px rgba(247, 151, 30, 0.35);
+    animation: pulse-negotiating 2s ease-in-out infinite;
+}
+
+@keyframes pulse-negotiating {
+    0%, 100% { box-shadow: 0 4px 12px rgba(247, 151, 30, 0.35); }
+    50% { box-shadow: 0 4px 20px rgba(247, 151, 30, 0.65); }
 }
 
 /* 2. Middle - Content Section */
@@ -1739,15 +1771,11 @@ body {
 }
 
 .car-badge {
-    position: absolute;
-    top: 15px;
-    left: 15px;
     padding: 0.4rem 0.8rem;
     font-size: 0.75rem;
     font-weight: 800;
     border-radius: 4px;
     color: #fff;
-    z-index: 10;
     text-transform: uppercase;
     letter-spacing: 0.8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);

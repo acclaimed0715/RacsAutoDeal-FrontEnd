@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useInventory } from '../../context/InventoryContext';
 
 const SettingsView: React.FC = () => {
-    const { settings, updateSettings } = useInventory();
+    const { settings, updateSettings, currentUser, changePassword } = useInventory();
     const [localSettings, setLocalSettings] = useState(settings);
     const [activeTab, setActiveTab] = useState<'General' | 'Security' | 'Notifications' | 'Categories'>('General');
     const [newCategory, setNewCategory] = useState('');
@@ -29,8 +29,10 @@ const SettingsView: React.FC = () => {
     return (
         <div className="settings-view">
             <div className="page-header">
-                <h1>System Settings</h1>
-                <p className="stats-text">Configure business and security rules.</p>
+                <div>
+                    <h1>System Settings</h1>
+                    <p className="stats-text">Configure business and security rules.</p>
+                </div>
                 <button className="save-btn" onClick={handleSave}><i className="fa-solid fa-save"></i> Save Settings</button>
             </div>
 
@@ -62,9 +64,9 @@ const SettingsView: React.FC = () => {
                                 <label>Contact Phone</label>
                                 <input type="text" value={localSettings.phone} onChange={e => setLocalSettings({...localSettings, phone: e.target.value})} />
                             </div>
-                            <div className="form-group">
+                            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                                 <label>Business Address</label>
-                                <textarea value={localSettings.address} onChange={e => setLocalSettings({...localSettings, address: e.target.value})} />
+                                <textarea rows={4} value={localSettings.address} onChange={e => setLocalSettings({...localSettings, address: e.target.value})} />
                             </div>
                         </div>
                     )}
@@ -96,19 +98,57 @@ const SettingsView: React.FC = () => {
                     )}
 
                     {activeTab === 'Security' && (
-                        <div className="settings-grid">
-                            <div className="form-group">
-                                <label>Admin Password</label>
-                                <div style={{ display: 'flex', gap: '10px' }}>
-                                    <input type="password" value={localSettings.adminPassword} onChange={e => setLocalSettings({...localSettings, adminPassword: e.target.value})} />
-                                    <button className="icon-btn-outline"><i className="fa-solid fa-eye"></i></button>
+                        <>
+                            <div className="settings-grid">
+                                <div className="form-group">
+                                    <label>Admin Password</label>
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <input type="password" value={localSettings.adminPassword} onChange={e => setLocalSettings({...localSettings, adminPassword: e.target.value})} />
+                                        <button type="button" className="icon-btn-outline"><i className="fa-solid fa-eye"></i></button>
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>Session Timeout (seconds)</label>
+                                    <input
+                                        type="number"
+                                        min={10}
+                                        value={localSettings.sessionTimeout}
+                                        onChange={e => {
+                                            const v = parseInt(e.target.value, 10);
+                                            setLocalSettings({
+                                                ...localSettings,
+                                                sessionTimeout: isNaN(v) ? 0 : v,
+                                            });
+                                        }}
+                                    />
                                 </div>
                             </div>
-                            <div className="form-group">
-                                <label>Session Timeout (minutes)</label>
-                                <input type="number" value={localSettings.sessionTimeout} onChange={e => setLocalSettings({...localSettings, sessionTimeout: parseInt(e.target.value)})} />
+
+                            {/* My Account moved here */}
+                            <div className="account-grid" style={{ marginTop: '2rem' }}>
+                                <div className="account-card">
+                                    <h3><i className="fa-solid fa-user"></i> My Profile</h3>
+                                    <div className="account-info-row">
+                                        <span className="account-info-label">Full Name</span>
+                                        <span className="account-info-value">{currentUser?.name || '—'}</span>
+                                    </div>
+                                    <div className="account-info-row">
+                                        <span className="account-info-label">Username</span>
+                                        <span className="account-info-value">@{currentUser?.username || '—'}</span>
+                                    </div>
+                                    <div className="account-info-row">
+                                        <span className="account-info-label">Email</span>
+                                        <span className="account-info-value">{currentUser?.email || 'N/A'}</span>
+                                    </div>
+                                    <div className="account-info-row">
+                                        <span className="account-info-label">Role</span>
+                                        <span className={`role-badge ${currentUser?.role?.toLowerCase()}`}>
+                                            {currentUser?.role?.replace('_', ' ')}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        </>
                     )}
 
                     {activeTab === 'Notifications' && (

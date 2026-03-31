@@ -2,37 +2,157 @@ import React, { useState } from 'react';
 import { useInventory } from '../../context/InventoryContext';
 import { type StaffMember } from '../../types';
 
+interface UserForm {
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+    role: 'SUPER_ADMIN' | 'INVENTORY_MANAGER';
+}
+
+const defaultForm: UserForm = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    username: '',
+    role: 'INVENTORY_MANAGER',
+};
+
+const splitName = (name: string) => {
+    const parts = name.trim().split(' ');
+    return { firstName: parts[0] || '', lastName: parts.slice(1).join(' ') };
+};
+
+// Generates an 8-char alphanumeric temp password: up to 4 letters from username + 4 digits
+const genTempPassword = (username: string): string => {
+    const letters = username.replace(/[^a-zA-Z]/g, '').slice(0, 4).padEnd(4, 'a').toLowerCase();
+    return `${letters}1234`;
+};
+
+const PASSWORD_RULES = /^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{1,8}$/;
+
 const UsersView: React.FC = () => {
-    const { staff, addStaff, deleteStaff, currentUser } = useInventory();
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [form, setForm] = useState<Partial<StaffMember>>({ role: 'INVENTORY_MANAGER' });
+    const { staff, addStaff, updateStaff, deleteStaff, currentUser } = useInventory();
+
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [addForm, setAddForm] = useState<UserForm>(defaultForm);
+
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [editId, setEditId] = useState<string | null>(null);
+    const [editForm, setEditForm] = useState<UserForm>(defaultForm);
+
+    const hasSuperAdmin = staff.some(s => s.role === 'SUPER_ADMIN');
 
     const openAdd = () => {
-        setForm({ role: 'INVENTORY_MANAGER', username: '', name: '' });
-        setIsModalOpen(true);
+        setAddForm(defaultForm);
+        setIsAddOpen(true);
+    };
+
+    const openEdit = (user: StaffMember) => {
+        const { firstName, lastName } = splitName(user.name);
+        setEditId(user.id);
+        setEditForm({
+            firstName,
+            lastName,
+            email: user.email || '',
+            username: user.username,
+            role: user.role,
+        });
+        setIsEditOpen(true);
     };
 
     const handleDelete = (id: string, role: string) => {
-        if (role === 'SUPER_ADMIN') return alert('Cannot delete Super Admin');
+        if (role === 'SUPER_ADMIN') return alert('Cannot delete the Super Admin account.');
         if (window.confirm('Are you sure you want to delete this user?')) {
             deleteStaff(id);
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        // Use a temporary password format like Username123!
-        const tempPassword = `${form.username}123!`;
-        
-        const newUser = {
-            ...form,
-            password: tempPassword
-        } as Partial<StaffMember>;
-        
-        await addStaff(newUser);
-        alert(`User created! Temporary password is: ${tempPassword}`);
-        setIsModalOpen(false);
+
+        if (addForm.role === 'SUPER_ADMIN' && hasSuperAdmin) {
+            alert('Only one Super Admin account is allowed.');
+            return;
+        }
+
+        const fullName = `${addForm.firstName} ${addForm.lastName}`.trim();
+        const tempPassword = genTempPassword(addForm.username);
+
+        await addStaff({
+            name: fullName,
+            username: addForm.username,
+            email: addForm.email,
+            role: addForm.role,
+            password: tempPassword,
+        });
+        setIsAddOpen(false);
+    };
+
+    const handleEdit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editId) return;
+
+        const originalUser = staff.find(s => s.id === editId);
+        const superAdminAlreadyExists = staff.some(s => s.role === 'SUPER_ADMIN' && s.id !== editId);
+
+        if (editForm.role === 'SUPER_ADMIN' && superAdminAlreadyExists) {
+            alert('Only one Super Admin account is allowed.');
+            return;
+        }
+
+        const fullName = `${editForm.firstName} ${editForm.lastName}`.trim();
+
+        await updateStaff(editId, {
+            name: fullName,
+            username: editForm.username,
+            email: editForm.email,
+            role: editForm.role,
+        });
+        setIsEditOpen(false);
+        setEditId(null);
+    };
+
+    const RoleRadios = ({
+        value,
+        onChange,
+        excludeId,
+    }: {
+        value: 'SUPER_ADMIN' | 'INVENTORY_MANAGER';
+        onChange: (r: 'SUPER_ADMIN' | 'INVENTORY_MANAGER') => void;
+        excludeId?: string;
+    }) => {
+        const superAdminTaken = staff.some(
+            s => s.role === 'SUPER_ADMIN' && s.id !== excludeId
+        );
+        return (
+            <div className="role-radio-group">
+                <label className={`role-radio-option${value === 'INVENTORY_MANAGER' ? ' selected' : ''}`}>
+                    <input
+                        type="radio"
+                        name="role"
+                        value="INVENTORY_MANAGER"
+                        checked={value === 'INVENTORY_MANAGER'}
+                        onChange={() => onChange('INVENTORY_MANAGER')}
+                    />
+                    <i className="fa-solid fa-boxes-stacked"></i>
+                    <span>Inventory Manager</span>
+                </label>
+                <label className={`role-radio-option${value === 'SUPER_ADMIN' ? ' selected' : ''}${superAdminTaken ? ' disabled' : ''}`}>
+                    <input
+                        type="radio"
+                        name="role"
+                        value="SUPER_ADMIN"
+                        checked={value === 'SUPER_ADMIN'}
+                        onChange={() => !superAdminTaken && onChange('SUPER_ADMIN')}
+                        disabled={superAdminTaken}
+                    />
+                    <i className="fa-solid fa-crown"></i>
+                    <span>Super Admin</span>
+                    {superAdminTaken && <span className="role-taken-badge">Taken</span>}
+                </label>
+            </div>
+        );
     };
 
     return (
@@ -40,11 +160,13 @@ const UsersView: React.FC = () => {
             <div className="page-header">
                 <div className="header-left">
                     <h1>Manage Staff Users</h1>
-                    <p className="stats-text">Total: {staff.length} members</p>
+                    <p className="stats-text">Total: {staff.length} {staff.length === 1 ? 'member' : 'members'}</p>
                 </div>
                 <div className="header-right">
                     {currentUser?.role === 'SUPER_ADMIN' && (
-                        <button className="add-user-btn" onClick={openAdd}><i className="fa-solid fa-plus"></i> Add User</button>
+                        <button className="add-user-btn" onClick={openAdd}>
+                            <i className="fa-solid fa-plus"></i> Add User
+                        </button>
                     )}
                 </div>
             </div>
@@ -65,24 +187,43 @@ const UsersView: React.FC = () => {
                             <tr key={user.id}>
                                 <td>
                                     <div className="user-profile">
-                                        <div className="user-avatar">{user.name?.[0]}</div>
+                                        <div className="user-avatar">{user.name?.[0]?.toUpperCase()}</div>
                                         <div className="user-info-text">
-                                            <span className="username">{user.username}</span>
-                                            <span className="fullname">{user.name}</span>
+                                            <span className="username">{user.name}</span>
+                                            <span className="fullname">@{user.username}</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td><span className={`role-badge ${user.role.toLowerCase()}`}>{user.role.replace('_', ' ')}</span></td>
+                                <td>
+                                    <span className={`role-badge ${user.role.toLowerCase()}`}>
+                                        {user.role.replace('_', ' ')}
+                                    </span>
+                                </td>
                                 <td>
                                     <div className="contact-info">
-                                        <div className="contact-item">N/A</div>
+                                        <div className="contact-item">{user.email || 'N/A'}</div>
                                     </div>
                                 </td>
                                 <td><span className="status-dot active"></span> Active</td>
                                 <td>
                                     {currentUser?.role === 'SUPER_ADMIN' && (
                                         <div className="action-row">
-                                            <button className="icon-btn" onClick={() => handleDelete(user.id, user.role)} disabled={user.role === 'SUPER_ADMIN'}><i className="fa-solid fa-trash"></i></button>
+                                            <button
+                                                className="icon-btn"
+                                                onClick={() => openEdit(user)}
+                                                title="Edit user"
+                                            >
+                                                <i className="fa-solid fa-pen-to-square"></i>
+                                            </button>
+                                            {user.role !== 'SUPER_ADMIN' && (
+                                                <button
+                                                    className="icon-btn"
+                                                    onClick={() => handleDelete(user.id, user.role)}
+                                                    title="Delete user"
+                                                >
+                                                    <i className="fa-solid fa-trash"></i>
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                 </td>
@@ -92,32 +233,112 @@ const UsersView: React.FC = () => {
                 </table>
             </div>
 
-            {isModalOpen && (
+            {/* ── Add User Modal ── */}
+            {isAddOpen && (
                 <>
-                    <div className="admin-modal-overlay active" onClick={() => setIsModalOpen(false)}></div>
+                    <div className="admin-modal-overlay active" onClick={() => setIsAddOpen(false)}></div>
                     <div className="user-modal active">
                         <div className="user-modal-header">
                             <h3>Add New Staff User</h3>
-                            <span className="close-user-modal" onClick={() => setIsModalOpen(false)}><i className="fa-solid fa-circle-xmark"></i></span>
+                            <span className="close-user-modal" onClick={() => setIsAddOpen(false)}>
+                                <i className="fa-solid fa-circle-xmark"></i>
+                            </span>
                         </div>
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleAdd}>
                             <div className="user-modal-body">
-                                <div className="user-form-group full-width">
-                                    <input type="text" placeholder="Full Name" className="user-input" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+                                <div className="user-form-row">
+                                    <div className="user-form-group">
+                                        <input type="text" placeholder="First Name" className="user-input"
+                                            value={addForm.firstName} onChange={e => setAddForm({ ...addForm, firstName: e.target.value })} required />
+                                    </div>
+                                    <div className="user-form-group">
+                                        <input type="text" placeholder="Last Name" className="user-input"
+                                            value={addForm.lastName} onChange={e => setAddForm({ ...addForm, lastName: e.target.value })} required />
+                                    </div>
                                 </div>
                                 <div className="user-form-group full-width">
-                                    <input type="text" placeholder="Username" className="user-input" value={form.username} onChange={e => setForm({...form, username: e.target.value})} required />
+                                    <input type="email" placeholder="Email Address" className="user-input"
+                                        value={addForm.email} onChange={e => setAddForm({ ...addForm, email: e.target.value })} required />
+                                </div>
+                                <div className="user-form-group full-width">
+                                    <input type="text" placeholder="Username" className="user-input"
+                                        value={addForm.username} onChange={e => setAddForm({ ...addForm, username: e.target.value })} required />
+                                </div>
+                                <div className="user-form-group full-width">
+                                    <div className="temp-password-field">
+                                        <i className="fa-solid fa-key temp-password-icon"></i>
+                                        <input type="text" className="user-input temp-password-input"
+                                            value={addForm.username ? genTempPassword(addForm.username) : ''}
+                                            placeholder="Temporary password (auto-generated)" readOnly />
+                                    </div>
+                                    <p className="temp-password-hint">
+                                        <i className="fa-solid fa-circle-info"></i> This is the temporary password. Share it with the new user.
+                                    </p>
+                                </div>
+                                <div className="user-form-group full-width">
+                                    <label className="field-label">Role</label>
+                                    <RoleRadios value={addForm.role} onChange={r => setAddForm({ ...addForm, role: r })} />
                                 </div>
                             </div>
                             <div className="user-modal-footer">
-                                <div className="status-selector">
-                                    <label>Role</label>
-                                    <select value={form.role} onChange={e => setForm({...form, role: e.target.value as any})} className="status-select">
-                                        <option value="INVENTORY_MANAGER">Inventory Manager</option>
-                                        <option value="SUPER_ADMIN">Super Admin</option>
-                                    </select>
-                                </div>
+                                <button type="button" className="user-cancel-btn" onClick={() => setIsAddOpen(false)}>Cancel</button>
                                 <button type="submit" className="user-add-btn">Add User</button>
+                            </div>
+                        </form>
+                    </div>
+                </>
+            )}
+
+            {/* ── Edit User Modal ── */}
+            {isEditOpen && (
+                <>
+                    <div className="admin-modal-overlay active" onClick={() => setIsEditOpen(false)}></div>
+                    <div className="user-modal active">
+                        <div className="user-modal-header">
+                            <h3>Edit Staff User</h3>
+                            <span className="close-user-modal" onClick={() => setIsEditOpen(false)}>
+                                <i className="fa-solid fa-circle-xmark"></i>
+                            </span>
+                        </div>
+                        <form onSubmit={handleEdit}>
+                            <div className="user-modal-body">
+                                <div className="user-form-row">
+                                    <div className="user-form-group">
+                                        <input type="text" placeholder="First Name" className="user-input"
+                                            value={editForm.firstName} onChange={e => setEditForm({ ...editForm, firstName: e.target.value })} required />
+                                    </div>
+                                    <div className="user-form-group">
+                                        <input type="text" placeholder="Last Name" className="user-input"
+                                            value={editForm.lastName} onChange={e => setEditForm({ ...editForm, lastName: e.target.value })} required />
+                                    </div>
+                                </div>
+                                <div className="user-form-group full-width">
+                                    <input type="email" placeholder="Email Address" className="user-input"
+                                        value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} required />
+                                </div>
+                                <div className="user-form-group full-width">
+                                    <input type="text" placeholder="Username" className="user-input"
+                                        value={editForm.username} onChange={e => setEditForm({ ...editForm, username: e.target.value })} required />
+                                </div>
+                                <div className="user-form-group full-width">
+                                    <label className="field-label">Role</label>
+                                    {editForm.role === 'SUPER_ADMIN' ? (
+                                        <div className="role-locked-notice">
+                                            <i className="fa-solid fa-shield-halved"></i>
+                                            <span>Super Admin role cannot be changed.</span>
+                                        </div>
+                                    ) : (
+                                        <RoleRadios
+                                            value={editForm.role}
+                                            onChange={r => setEditForm({ ...editForm, role: r })}
+                                            excludeId={editId ?? undefined}
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                            <div className="user-modal-footer">
+                                <button type="button" className="user-cancel-btn" onClick={() => setIsEditOpen(false)}>Cancel</button>
+                                <button type="submit" className="user-add-btn">Save Changes</button>
                             </div>
                         </form>
                     </div>

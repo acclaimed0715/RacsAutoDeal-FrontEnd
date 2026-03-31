@@ -5,7 +5,7 @@ import CarCard from './CarCard';
 
 const ITEMS_PER_PAGE = 10;
 
-const Inventory: React.FC<{ onViewCar: (id: string) => void }> = ({ onViewCar }) => {
+const Inventory: React.FC = () => {
     const { cars } = useInventory();
     
     // Filter State
@@ -18,7 +18,9 @@ const Inventory: React.FC<{ onViewCar: (id: string) => void }> = ({ onViewCar })
     const [currentPage, setCurrentPage] = useState(1);
 
     const filteredCars = useMemo(() => {
-        let list = Object.values(cars);
+        // Only hide confirmed-sold (archived) cars.
+        // Pending-sold (status=sold but not yet archived = awaiting super admin approval) stays visible.
+        let list = Object.values(cars).filter(c => !c.isArchived);
 
         if (brandSearch) {
             const s = brandSearch.toLowerCase();
@@ -45,14 +47,24 @@ const Inventory: React.FC<{ onViewCar: (id: string) => void }> = ({ onViewCar })
         }
 
         if (activeCategories.length > 0) {
-            // Simplified category matching based on badges logic
             list = list.filter(car => {
-                const id = car.id;
                 const badges: string[] = [];
-                if (id === 'escape2012') badges.push('best deal');
-                if (id === 'escape2012_titanium') badges.push('most clicked');
-                if (id === 'livina2023') badges.push('new');
-                return activeCategories.some(cat => badges.includes(cat));
+                
+                // New logic: New if < 5 days
+                if (car.createdAt) {
+                    const created = new Date(car.createdAt);
+                    const now = new Date();
+                    const diffDays = (now.getTime() - created.getTime()) / (1000 * 3600 * 24);
+                    if (diffDays < 5) badges.push('new');
+                }
+
+                // Best Deal logic: from backend
+                if (car.isBestDeal) badges.push('best deal');
+
+                // Legacy hardcoded fallback if needed (though it should be dynamic now)
+                if (car.id === 'escape2012_titanium') badges.push('most clicked');
+
+                return activeCategories.some(cat => badges.includes(cat.toLowerCase()));
             });
         }
 
@@ -110,7 +122,6 @@ const Inventory: React.FC<{ onViewCar: (id: string) => void }> = ({ onViewCar })
                                 <CarCard 
                                     key={car.id} 
                                     car={car} 
-                                    onView={onViewCar} 
                                 />
                             ))
                         )}

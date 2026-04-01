@@ -1,9 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useInventory } from '../../context/InventoryContext';
 import { type Vehicle, type CarStatus } from '../../types';
 
+const DEFAULT_VEHICLE_TYPES = ['SUV', 'Sedan', 'Electric Car', 'Hatchback', 'Van', 'Sports Car', 'Coupe'] as const;
+
 const InventoryView: React.FC = () => {
-    const { cars, deleteVehicle, requestDeletionVehicle, resolveDeletion, addVehicle, updateVehicle, currentUser, resolveSale } = useInventory();
+    const { cars, deleteVehicle, requestDeletionVehicle, resolveDeletion, addVehicle, updateVehicle, currentUser, resolveSale, settings } = useInventory();
     const allCars = Object.values(cars);
     const inventory = allCars.filter(c => !c.isArchived);
     const pendingApproval = allCars.filter(c => c.status === 'sold' && !c.isArchived);
@@ -24,12 +26,29 @@ const InventoryView: React.FC = () => {
 
     const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
 
+    const vehicleTypeOptions = useMemo(() => {
+        const fromSettings =
+            settings.vehicleTypes && settings.vehicleTypes.length > 0
+                ? settings.vehicleTypes
+                : [...DEFAULT_VEHICLE_TYPES];
+        const current = form.type;
+        if (current && !fromSettings.includes(current)) {
+            return [...fromSettings, current];
+        }
+        return fromSettings;
+    }, [settings.vehicleTypes, form.type]);
+
+    const defaultVehicleType =
+        settings.vehicleTypes && settings.vehicleTypes.length > 0
+            ? settings.vehicleTypes[0]
+            : DEFAULT_VEHICLE_TYPES[0];
+
     const openAdd = () => {
         setEditingCar(null);
         setForm({
             name: '', price: '', modelYear: '', mileage: '', brand: '',
             transmission: '', fuelType: '', engine: '', hp: '', torque: '',
-            safety: '', seating: '', description: '', status: 'open' as CarStatus, type: 'SUV',
+            safety: '', seating: '', description: '', status: 'open' as CarStatus, type: defaultVehicleType,
             date: new Date().toLocaleDateString()
         });
         setImages([]);
@@ -583,14 +602,10 @@ const InventoryView: React.FC = () => {
                                         </div>
                                         <div className="deal-form-group">
                                             <label className="field-label">Vehicle Type</label>
-                                            <select className="deal-input" value={form.type} onChange={e => setForm({...form, type: e.target.value})} style={{ background: 'var(--input-bg)', color: 'white' }}>
-                                                <option value="SUV">SUV</option>
-                                                <option value="Sedan">Sedan</option>
-                                                <option value="Electric Car">Electric Car</option>
-                                                <option value="Hatchback">Hatchback</option>
-                                                <option value="Van">Van</option>
-                                                <option value="Sports Car">Sports Car</option>
-                                                <option value="Coupe">Coupe</option>
+                                            <select className="deal-input" value={form.type ?? ''} onChange={e => setForm({ ...form, type: e.target.value })} style={{ background: 'var(--input-bg)', color: 'white' }}>
+                                                {vehicleTypeOptions.map(t => (
+                                                    <option key={t} value={t}>{t}</option>
+                                                ))}
                                             </select>
                                         </div>
                                     </div>

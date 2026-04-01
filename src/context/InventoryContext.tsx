@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { type Vehicle, type UserReport, type AppSettings, type AdminNotification, type StaffMember } from '../types';
 
 const API_BASE_URL = 'http://localhost:5000/api';
@@ -19,7 +19,14 @@ interface InventoryContextType {
     requestDeletionVehicle: (id: string, requestedBy: string, remarks: string) => Promise<void>;
     resolveDeletion: (id: string, action: 'approve' | 'reject') => Promise<void>;
     resolveSale: (id: string, action: 'approve' | 'reject') => Promise<void>;
-    addStaff: (staff: Partial<StaffMember>) => Promise<void>;
+    addStaff: (
+        staff: Partial<StaffMember>
+    ) => Promise<{
+        success: boolean;
+        welcomeEmailSent?: boolean;
+        welcomeEmailError?: string;
+        error?: string;
+    }>;
     updateStaff: (id: string, data: Partial<StaffMember>) => Promise<void>;
     changePassword: (id: string, currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
     deleteStaff: (id: string) => Promise<void>;
@@ -84,15 +91,14 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 setSettings(settingsData);
                 setStaff(staffData);
 
-                // Load notifications from backend if logged in as SUPER_ADMIN
+                // Notifications for all logged-in staff (Super Admin + Inventory Manager)
                 if (storedUser) {
-                    const user = JSON.parse(storedUser);
-                    if (user.role === 'SUPER_ADMIN') {
-                        try {
-                            const notifRes = await fetch(`${API_BASE_URL}/notifications`);
-                            const notifData: AdminNotification[] = await notifRes.json();
-                            if (Array.isArray(notifData)) setNotifications(notifData);
-                        } catch { /* non-critical */ }
+                    try {
+                        const notifRes = await fetch(`${API_BASE_URL}/notifications`);
+                        const notifData: AdminNotification[] = await notifRes.json();
+                        if (Array.isArray(notifData)) setNotifications(notifData);
+                    } catch {
+                        /* non-critical */
                     }
                 }
             } catch (error) {
@@ -105,67 +111,99 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         fetchData();
     }, []);
 
-    // Keep super admin reports / notifications in sync without requiring a manual refresh.
+    // Poll notifications for all staff; poll reports too for Super Admin.
     useEffect(() => {
-        if (!currentUser || currentUser.role !== 'SUPER_ADMIN') return;
+        if (!currentUser) return;
 
         let cancelled = false;
-        const interval = window.setInterval(async () => {
+        const tick = async () => {
             try {
-                const [reportsRes, notifRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/reports`),
-                    fetch(`${API_BASE_URL}/notifications`),
-                ]);
-
-                const [reportsData, notifData]: [UserReport[], AdminNotification[]] = await Promise.all([
-                    reportsRes.json(),
-                    notifRes.json(),
-                ]);
-
-                if (!cancelled) {
-                    if (Array.isArray(reportsData)) setReports(reportsData);
-                    if (Array.isArray(notifData)) setNotifications(notifData);
+                if (currentUser.role === 'SUPER_ADMIN') {
+                    const [reportsRes, notifRes] = await Promise.all([
+                        fetch(`${API_BASE_URL}/reports`),
+                        fetch(`${API_BASE_URL}/notifications`),
+                    ]);
+                    const [reportsData, notifData]: [UserReport[], AdminNotification[]] = await Promise.all([
+                        reportsRes.json(),
+                        notifRes.json(),
+                    ]);
+                    if (!cancelled) {
+                        if (Array.isArray(reportsData)) setReports(reportsData);
+                        if (Array.isArray(notifData)) setNotifications(notifData);
+                    }
+                } else {
+                    const notifRes = await fetch(`${API_BASE_URL}/notifications`);
+                    const notifData: AdminNotification[] = await notifRes.json();
+                    if (!cancelled && Array.isArray(notifData)) setNotifications(notifData);
                 }
-            } catch (e) {
-                // Non-critical: polling failures should not break the admin UI.
+            } catch {
+                /* non-critical */
             }
-        }, 7000);
+        };
 
+        const interval = window.setInterval(tick, 8000);
         return () => {
             cancelled = true;
             window.clearInterval(interval);
         };
-    }, [currentUser?.role]);
+    }, [currentUser?.id, currentUser?.role]);
 
-    // Session timeout (in seconds) based on settings.sessionTimeout
+    const logoutStaff = useCallback(() => {
+        setCurrentUser(null);
+        localStorage.removeItem('racs_staff_member');
+        window.location.href = '/login';
+    }, []);
+
+    // Idle session timeout (seconds from settings) — Super Admin & Inventory Manager
     useEffect(() => {
         if (!currentUser) return;
-        const timeoutSeconds = settings.sessionTimeout || 0;
+        const timeoutSeconds = Math.max(0, Number(settings.sessionTimeout) || 0);
         if (timeoutSeconds <= 0) return;
 
-        let lastActivity = Date.now();
+        const lastActivityRef = { current: Date.now() };
+
+        let throttleUntil = 0;
         const markActivity = () => {
-            lastActivity = Date.now();
+            const now = Date.now();
+            if (now < throttleUntil) return;
+            throttleUntil = now + 400;
+            lastActivityRef.current = now;
         };
 
-        const events: Array<keyof WindowEventMap> = ['click', 'mousemove', 'keydown', 'scroll'];
-        events.forEach(ev => window.addEventListener(ev, markActivity));
+        const events: (keyof WindowEventMap)[] = [
+            'mousedown',
+            'mousemove',
+            'keydown',
+            'scroll',
+            'touchstart',
+            'click',
+            'wheel',
+            'pointerdown',
+        ];
+        events.forEach(ev => window.addEventListener(ev, markActivity, { passive: true }));
+
+        const onVisibility = () => {
+            if (document.visibilityState === 'visible') markActivity();
+        };
+        document.addEventListener('visibilitychange', onVisibility);
 
         const intervalId = window.setInterval(() => {
-            const diff = Date.now() - lastActivity;
+            const diff = Date.now() - lastActivityRef.current;
             if (diff > timeoutSeconds * 1000) {
                 window.clearInterval(intervalId);
                 events.forEach(ev => window.removeEventListener(ev, markActivity));
+                document.removeEventListener('visibilitychange', onVisibility);
                 logoutStaff();
-                alert('Your admin session has expired due to inactivity.');
+                alert('Your session has expired due to inactivity.');
             }
         }, 1000);
 
         return () => {
             window.clearInterval(intervalId);
             events.forEach(ev => window.removeEventListener(ev, markActivity));
+            document.removeEventListener('visibilitychange', onVisibility);
         };
-    }, [currentUser?.id, settings.sessionTimeout]);
+    }, [currentUser?.id, currentUser?.role, settings.sessionTimeout, logoutStaff]);
 
     const loginStaff = async (username: string, password: string) => {
         try {
@@ -185,12 +223,6 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             console.error('Login error:', error);
             return false;
         }
-    };
-
-    const logoutStaff = () => {
-        setCurrentUser(null);
-        localStorage.removeItem('racs_staff_member');
-        window.location.href = '/login';
     };
 
     const addVehicle = async (vehicle: Vehicle) => {
@@ -311,10 +343,21 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-            const newStaff = await res.json();
-            setStaff(prev => [newStaff, ...prev]);
+            const payload = await res.json();
+            if (!res.ok) {
+                console.error('Error adding staff:', payload?.error);
+                return { success: false, error: payload?.error ?? 'Could not create user.' };
+            }
+            const {
+                welcomeEmailSent = false,
+                welcomeEmailError,
+                ...newStaff
+            } = payload as StaffMember & { welcomeEmailSent?: boolean; welcomeEmailError?: string };
+            setStaff(prev => [newStaff as StaffMember, ...prev]);
+            return { success: true, welcomeEmailSent, welcomeEmailError };
         } catch (error) {
             console.error('Error adding staff:', error);
+            return { success: false, error: 'Network error. Is the API running?' };
         }
     };
 

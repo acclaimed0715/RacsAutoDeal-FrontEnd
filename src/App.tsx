@@ -11,6 +11,7 @@ import InventoryView from './components/admin/InventoryView';
 import UsersView from './components/admin/UsersView';
 import ReportsView from './components/admin/ReportsView';
 import SettingsView from './components/admin/SettingsView';
+import StaffAccountGate from './components/admin/StaffAccountGate';
 import TermsAndPrivacy from './pages/TermsAndPrivacy';
 import CarDetail from './pages/CarDetail';
 
@@ -60,6 +61,13 @@ const App: React.FC = () => {
                         <ProtectedRoute>
                             <AdminLayout>
                                 <InventoryView />
+                            </AdminLayout>
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/admin/account" element={
+                        <ProtectedRoute>
+                            <AdminLayout>
+                                <StaffAccountGate />
                             </AdminLayout>
                         </ProtectedRoute>
                     } />

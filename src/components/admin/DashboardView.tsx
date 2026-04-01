@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { useInventory } from '../../context/InventoryContext';
+import { getBrandColor, getVehicleTypeColor, sortTypeLabels } from '../../utils/chartColors';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -23,7 +24,7 @@ ChartJS.register(
 );
 
 const DashboardView: React.FC = () => {
-    const { cars, reports, currentUser, resolveSale } = useInventory();
+    const { cars, reports, currentUser, resolveSale, settings } = useInventory();
     const inventory = Object.values(cars);
     const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
 
@@ -185,22 +186,29 @@ const DashboardView: React.FC = () => {
         }
     };
 
+    const preferredTypes = settings.vehicleTypes || [];
+    const typeLabelsSorted = sortTypeLabels(Object.keys(typeMap), preferredTypes);
+    const typeColors = typeLabelsSorted.map((label) => getVehicleTypeColor(label, preferredTypes));
+
     const typeChartData = {
-        labels: Object.keys(typeMap),
+        labels: typeLabelsSorted,
         datasets: [{
             label: 'Value (₱)',
-            data: Object.values(typeMap),
-            backgroundColor: 'rgba(225, 29, 72, 0.7)',
+            data: typeLabelsSorted.map((label) => typeMap[label]),
+            backgroundColor: typeColors,
             borderRadius: 6
         }]
     };
 
+    const brandLabelsSorted = Object.keys(brandMap).sort((a, b) => a.localeCompare(b));
+    const brandColors = brandLabelsSorted.map((label) => getBrandColor(label));
+
     const brandChartData = {
-        labels: Object.keys(brandMap),
+        labels: brandLabelsSorted,
         datasets: [{
             label: 'Value (₱)',
-            data: Object.values(brandMap),
-            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+            data: brandLabelsSorted.map((label) => brandMap[label]),
+            backgroundColor: brandColors,
             borderRadius: 6
         }]
     };
@@ -303,6 +311,31 @@ const DashboardView: React.FC = () => {
                         <div style={{ height: '250px' }}>
                             <Bar data={typeChartData} options={chartOptions as any} />
                         </div>
+                        <div
+                            style={{
+                                marginTop: '1rem',
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '10px 14px',
+                                fontSize: '0.78rem',
+                                color: 'var(--text-secondary)',
+                            }}
+                        >
+                            {typeLabelsSorted.map((label, i) => (
+                                <span key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                    <span
+                                        style={{
+                                            width: '10px',
+                                            height: '10px',
+                                            borderRadius: '3px',
+                                            background: typeColors[i],
+                                            flexShrink: 0,
+                                        }}
+                                    />
+                                    {label}
+                                </span>
+                            ))}
+                        </div>
                     </div>
                 )}
 
@@ -313,6 +346,31 @@ const DashboardView: React.FC = () => {
                         </div>
                         <div style={{ height: '250px' }}>
                             <Bar data={brandChartData} options={chartOptions as any} />
+                        </div>
+                        <div
+                            style={{
+                                marginTop: '1rem',
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '10px 14px',
+                                fontSize: '0.78rem',
+                                color: 'var(--text-secondary)',
+                            }}
+                        >
+                            {brandLabelsSorted.map((label, i) => (
+                                <span key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                    <span
+                                        style={{
+                                            width: '10px',
+                                            height: '10px',
+                                            borderRadius: '3px',
+                                            background: brandColors[i],
+                                            flexShrink: 0,
+                                        }}
+                                    />
+                                    {label}
+                                </span>
+                            ))}
                         </div>
                     </div>
                 )}

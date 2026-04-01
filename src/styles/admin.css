@@ -225,6 +225,8 @@ body[data-theme="light"] {
 
 .dashboard-content.active {
     display: flex;
+    flex: 1;
+    min-height: 0;
 }
 
 @keyframes fadeIn {
@@ -239,9 +241,11 @@ body[data-theme="light"] {
     }
 }
 
-/* Topbar */
+/* Topbar — flex-shrink: 0 keeps height from collapsing in .main-content column layout */
 .topbar {
-    height: 80px;
+    flex-shrink: 0;
+    min-height: 96px;
+    box-sizing: border-box;
     background: linear-gradient(180deg, rgba(15, 23, 42, 0.72) 0%, rgba(15, 23, 42, 0.55) 100%);
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(16px);
@@ -249,7 +253,7 @@ body[data-theme="light"] {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 3rem;
+    padding: 1.15rem 3rem;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -257,35 +261,40 @@ body[data-theme="light"] {
 }
 
 .topbar-left h2 {
-    font-size: 1.6rem;
+    font-size: 1.85rem;
     font-weight: 800;
+    line-height: 1.25;
     color: var(--text-primary);
     letter-spacing: -0.02em;
+    margin: 0;
 }
 
 .topbar-right {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 1.75rem;
 }
 
 .topbar-welcome {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    padding: 0.45rem 0.8rem;
+    gap: 0.5rem;
+    padding: 0.65rem 1.1rem;
     border-radius: 999px;
     border: 1px solid rgba(255,255,255,0.08);
     background: rgba(255,255,255,0.03);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-secondary);
 }
 
 .topbar-welcome span {
-    font-weight: 900;
-    color: #fff;
+    font-weight: 800;
+    color: var(--text-primary);
 }
 
 .notifications {
-    font-size: 1.3rem;
+    font-size: 1.45rem;
     color: var(--text-secondary);
     cursor: pointer;
     position: relative;
@@ -296,16 +305,29 @@ body[data-theme="light"] {
     color: var(--primary);
 }
 
-.notifications::after {
-    content: '';
+/* Unread count uses .notif-badge — no permanent ::after dot */
+
+.notif-badge {
     position: absolute;
-    top: -2px;
-    right: -2px;
-    width: 8px;
-    height: 8px;
-    background: var(--primary);
-    border-radius: 50%;
-    border: 2px solid var(--bg-dark);
+    top: -6px;
+    right: -8px;
+    min-width: 1.1rem;
+    background: #ef4444;
+    color: white;
+    font-size: 0.65rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 20px;
+    font-weight: 800;
+    line-height: 1.2;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+    display: none;
+    text-align: center;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.notif-badge.active {
+    display: block;
 }
 
 .admin-profile {
@@ -369,11 +391,15 @@ body[data-theme="light"] {
     top: calc(100% + 12px);
     right: 0;
     width: 320px;
+    max-height: min(420px, 70vh);
+    display: flex;
+    flex-direction: column;
     background: var(--card-bg);
     border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
     border-radius: 14px;
     box-shadow: 0 16px 40px -8px rgba(0,0,0,0.5);
-    z-index: 200;
+    z-index: 5000;
     overflow: hidden;
     animation: dropdownIn 0.15s ease;
 }
@@ -766,18 +792,6 @@ body[data-theme="light"] {
     opacity: 0.3;
 }
 
-/* Topbar welcome text */
-.topbar-welcome {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-}
-
-.topbar-welcome span {
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
 .profile-chevron {
     font-size: 0.7rem;
     color: var(--text-secondary);
@@ -1155,7 +1169,8 @@ body[data-theme="light"] .page-header h1 {
 .add-btn,
 .save-btn,
 .add-car-btn,
-.user-add-btn {
+.user-add-btn,
+.add-user-btn {
     background: linear-gradient(135deg, var(--primary), var(--primary-hover));
     color: #fff;
     border: none;
@@ -1164,7 +1179,7 @@ body[data-theme="light"] .page-header h1 {
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.6rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1174,7 +1189,8 @@ body[data-theme="light"] .page-header h1 {
 .add-btn:hover,
 .save-btn:hover,
 .add-car-btn:hover,
-.user-add-btn:hover {
+.user-add-btn:hover,
+.add-user-btn:hover {
     transform: translateY(-2px);
     box-shadow: var(--glow-primary);
 }
@@ -1820,6 +1836,7 @@ body[data-theme="light"] .page-header h1 {
 
 .form-group input,
 .form-group select,
+.form-group textarea,
 .user-input,
 .deal-input,
 .deal-textarea,
@@ -1831,11 +1848,19 @@ body[data-theme="light"] .page-header h1 {
     border-radius: 10px;
     color: var(--text-primary);
     font-size: 0.95rem;
+    font-family: inherit;
+    line-height: 1.5;
     outline: none;
     transition: all 0.3s;
 }
 
+.form-group textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
 body[data-theme="light"] .form-group input,
+body[data-theme="light"] .form-group textarea,
 body[data-theme="light"] .user-input,
 body[data-theme="light"] .deal-input,
 body[data-theme="light"] .deal-textarea,
@@ -1845,12 +1870,17 @@ body[data-theme="light"] .status-select {
 
 .form-group input:focus,
 .form-group select:focus,
+.form-group textarea:focus,
 .user-input:focus,
 .deal-input:focus,
 .deal-textarea:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.2);
     background: rgba(0, 0, 0, 0.4);
+}
+
+body[data-theme="light"] .form-group textarea:focus {
+    background: #fff;
 }
 
 .deal-textarea {
@@ -2078,8 +2108,16 @@ body[data-theme="light"] .deal-image-upload {
     border: 1px solid var(--border);
     border-radius: 10px;
     color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
     outline: none;
     transition: all 0.3s;
+}
+
+.settings-form textarea {
+    min-height: 140px;
+    resize: vertical;
 }
 
 body[data-theme="light"] .settings-form input,
@@ -2161,87 +2199,11 @@ input:checked+.slider:before {
     transform: translateX(24px);
 }
 
-/* Notifications Dropdown */
-.notifications {
-    position: relative;
-    cursor: pointer;
-}
+/* (duplicate notification dropdown rules removed — use .notif-wrapper block above) */
 
-.notif-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #ef4444;
-    color: white;
-    font-size: 0.7rem;
-    padding: 0.2rem 0.5rem;
-    border-radius: 20px;
-    font-weight: 800;
-    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
-    display: none;
-    /* hidden if 0 */
-}
-
-.notif-badge.active {
-    display: block;
-}
-
-.notif-dropdown {
-    position: absolute;
-    top: calc(100% + 15px);
-    right: 0;
-    width: 320px;
-    background: var(--card-bg);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(12px);
-    border-radius: 16px;
-    box-shadow: var(--shadow-lg);
-    z-index: 2000;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.notifications:hover .notif-dropdown,
-.notif-dropdown.active {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.notif-dropdown-header {
-    padding: 1.2rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.notif-dropdown-header h3 {
-    font-size: 1rem;
-    font-weight: 700;
-}
-
-.notif-dropdown-header button {
-    background: transparent;
-    border: none;
-    color: var(--primary);
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.notif-list {
-    max-height: 400px;
+.notif-list-scroll {
+    max-height: 320px;
     overflow-y: auto;
-}
-
-.notif-empty {
-    padding: 3rem 1.2rem;
-    text-align: center;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
 }
 
 .notif-item {
@@ -2588,6 +2550,18 @@ body[data-theme="light"] .role-radio-option.selected {
     display: flex;
     flex-direction: column;
     gap: 0;
+}
+
+/* Required field indicator (passwords, etc.) */
+.required-field-mark {
+    color: var(--primary);
+    font-weight: 800;
+    margin-left: 0.2em;
+    font-size: 1.05em;
+    line-height: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    cursor: help;
 }
 
 .account-form-group {

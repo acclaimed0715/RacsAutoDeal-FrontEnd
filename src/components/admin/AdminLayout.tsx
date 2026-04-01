@@ -26,9 +26,14 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         return () => document.body.classList.remove('layout-no-nav-offset');
     }, []);
 
-    const handleNotifOpen = () => {
-        setNotifOpen(o => !o);
-        if (!notifOpen && unreadCount > 0) markAllNotificationsRead();
+    const handleNotifOpen = (e: React.MouseEvent | React.KeyboardEvent) => {
+        e.stopPropagation();
+        setNotifOpen(prev => {
+            if (!prev && unreadCount > 0) {
+                void markAllNotificationsRead();
+            }
+            return !prev;
+        });
     };
 
     const getViewTitle = () => {
@@ -37,6 +42,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         if (path.includes('users')) return 'Manage Staff Users';
         if (path.includes('reports')) return 'User Reports';
         if (path.includes('settings')) return 'System Settings';
+        if (path.includes('account')) return 'My Account';
         if (path.includes('sold')) return 'Sold Cars';
         return 'Dashboard Overview';
     };
@@ -57,7 +63,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         <li>
                             <NavLink to="/admin/inventory" className={({ isActive }) => isActive ? 'active' : ''}>
                                 <i className="fa-solid fa-car"></i> Manage Inventory
-                                {currentUser?.role === 'SUPER_ADMIN' && unreadCount > 0 && (
+                                {unreadCount > 0 && (
                                     <span className="sidebar-badge">{unreadCount}</span>
                                 )}
                             </NavLink>
@@ -83,6 +89,13 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                 </NavLink>
                             </li>
                         )}
+                        {currentUser?.role !== 'SUPER_ADMIN' && (
+                            <li>
+                                <NavLink to="/admin/account" className={({ isActive }) => isActive ? 'active' : ''}>
+                                    <i className="fa-solid fa-key"></i> My Account
+                                </NavLink>
+                            </li>
+                        )}
                         <li className="logout-link" onClick={logoutStaff}>
                             <a href="#"><i className="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
                         </li>
@@ -96,8 +109,21 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         </div>
                         <div className="topbar-right">
                             <div className="notif-wrapper" ref={notifRef}>
-                                <div className="notifications" onClick={handleNotifOpen}>
-                                    <i className="fa-regular fa-bell"></i>
+                                <div
+                                    className="notifications"
+                                    onClick={handleNotifOpen}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            handleNotifOpen(e);
+                                        }
+                                    }}
+                                    aria-expanded={notifOpen}
+                                    aria-label="Notifications"
+                                >
+                                    <i className="fa-regular fa-bell" aria-hidden />
                                     {unreadCount > 0 && <span className="notif-badge active">{unreadCount}</span>}
                                 </div>
                                 {notifOpen && (
@@ -105,20 +131,22 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                         <div className="notif-dropdown-header">
                                             <span>Notifications</span>
                                         </div>
-                                        {notifications.length === 0 ? (
-                                            <div className="notif-empty">No notifications</div>
-                                        ) : (
-                                            notifications.slice(0, 8).map(n => (
-                                                <div key={n.id} className={`notif-item${n.isRead ? '' : ' unread'}`}>
-                                                    <div className={`notif-dot ${n.type}`}></div>
-                                                    <div className="notif-content">
-                                                        <p className="notif-title">{n.title}</p>
-                                                        <p className="notif-msg">{n.message}</p>
-                                                        <p className="notif-time">{n.time}</p>
+                                        <div className="notif-list-scroll">
+                                            {notifications.length === 0 ? (
+                                                <div className="notif-empty">No notifications</div>
+                                            ) : (
+                                                notifications.slice(0, 20).map(n => (
+                                                    <div key={n.id} className={`notif-item${n.isRead ? '' : ' unread'}`}>
+                                                        <div className={`notif-dot ${n.type}`}></div>
+                                                        <div className="notif-content">
+                                                            <p className="notif-title">{n.title}</p>
+                                                            <p className="notif-msg">{n.message}</p>
+                                                            <p className="notif-time">{n.time}</p>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))
-                                        )}
+                                                ))
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>

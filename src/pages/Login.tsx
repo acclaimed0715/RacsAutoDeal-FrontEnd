@@ -48,7 +48,10 @@ const Login: React.FC = () => {
                     <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '0.9rem' }}>Sign in to your admin account</p>
                     <form onSubmit={handleLogin} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
                         <div>
-                            <label style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.82rem', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Username</label>
+                            <label style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.82rem', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                                Username
+                                <abbr title="Required" style={{ color: 'var(--primary)', fontWeight: 800, marginLeft: '0.2em', textDecoration: 'none' }}>*</abbr>
+                            </label>
                             <input
                                 type="text"
                                 placeholder="Enter your username"
@@ -59,7 +62,10 @@ const Login: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.82rem', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Password</label>
+                            <label style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.82rem', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                                Password
+                                <abbr title="Required" style={{ color: 'var(--primary)', fontWeight: 800, marginLeft: '0.2em', textDecoration: 'none' }}>*</abbr>
+                            </label>
                             <input
                                 type="password"
                                 placeholder="Enter your password"

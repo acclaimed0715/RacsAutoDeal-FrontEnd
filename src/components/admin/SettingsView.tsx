@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useInventory } from '../../context/InventoryContext';
+import ChangePasswordForm from './ChangePasswordForm';
 
 const SettingsView: React.FC = () => {
-    const { settings, updateSettings, currentUser, changePassword } = useInventory();
+    const { settings, updateSettings, currentUser } = useInventory();
+    const [searchParams] = useSearchParams();
     const [localSettings, setLocalSettings] = useState(settings);
     const [activeTab, setActiveTab] = useState<'General' | 'Security' | 'Notifications' | 'Categories'>('General');
     const [newCategory, setNewCategory] = useState('');
+
+    useEffect(() => {
+        if (searchParams.get('tab') === 'security') {
+            setActiveTab('Security');
+        }
+    }, [searchParams]);
 
     const handleSave = () => {
         updateSettings(localSettings);
@@ -99,15 +108,11 @@ const SettingsView: React.FC = () => {
 
                     {activeTab === 'Security' && (
                         <>
+                            <p className="stats-text" style={{ marginBottom: '1.25rem', maxWidth: '42rem' }}>
+                                Manage your Super Admin profile and login password. App session timeout applies to all staff.
+                            </p>
                             <div className="settings-grid">
-                                <div className="form-group">
-                                    <label>Admin Password</label>
-                                    <div style={{ display: 'flex', gap: '10px' }}>
-                                        <input type="password" value={localSettings.adminPassword} onChange={e => setLocalSettings({...localSettings, adminPassword: e.target.value})} />
-                                        <button type="button" className="icon-btn-outline"><i className="fa-solid fa-eye"></i></button>
-                                    </div>
-                                </div>
-                                <div className="form-group">
+                                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                                     <label>Session Timeout (seconds)</label>
                                     <input
                                         type="number"
@@ -124,7 +129,6 @@ const SettingsView: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* My Account moved here */}
                             <div className="account-grid" style={{ marginTop: '2rem' }}>
                                 <div className="account-card">
                                     <h3><i className="fa-solid fa-user"></i> My Profile</h3>
@@ -147,6 +151,7 @@ const SettingsView: React.FC = () => {
                                         </span>
                                     </div>
                                 </div>
+                                <ChangePasswordForm />
                             </div>
                         </>
                     )}

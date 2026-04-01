@@ -79,13 +79,24 @@ const UsersView: React.FC = () => {
         const fullName = `${addForm.firstName} ${addForm.lastName}`.trim();
         const tempPassword = genTempPassword(addForm.username);
 
-        await addStaff({
+        const result = await addStaff({
             name: fullName,
             username: addForm.username,
-            email: addForm.email,
+            email: addForm.email.trim(),
             role: addForm.role,
             password: tempPassword,
         });
+        if (!result.success) {
+            alert(result.error ?? 'Could not create user.');
+            return;
+        }
+        if (result.welcomeEmailError) {
+            alert(
+                `User was created, but the welcome email could not be sent.\n\n${result.welcomeEmailError}\n\nCheck server logs and Gmail (App Password, MAIL_USER / MAIL_PASS in backend .env).`
+            );
+        } else if (addForm.email.trim() && result.welcomeEmailSent) {
+            alert(`Welcome email sent to ${addForm.email.trim()}.`);
+        }
         setIsAddOpen(false);
     };
 

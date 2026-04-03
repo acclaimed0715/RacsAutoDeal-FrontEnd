@@ -4,6 +4,7 @@ import { useInventory } from '../context/InventoryContext';
 import Navbar from '../components/landing/Navbar';
 import Footer from '../components/landing/Footer';
 import { type Vehicle } from '../types';
+import { formatListingPosted } from '../utils/listingTime';
 
 const CarDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -96,7 +97,7 @@ Hi, I'm interested in this ${car.name}. Is it still available for viewing?`;
                             <div>
                                 <h1 style={{ fontSize: '3rem', fontWeight: '800', margin: 0, color: 'white' }}>{car.name} {car.modelYear}</h1>
                                 <div style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                    <span><i className="fa-regular fa-clock" style={{ marginRight: '6px' }}></i> {car.posted || 'Recently Added'}</span>
+                                    <span><i className="fa-regular fa-clock" style={{ marginRight: '6px' }}></i> {formatListingPosted(car)}</span>
                                 </div>
                             </div>
                             <div style={{ textAlign: 'right' }}>

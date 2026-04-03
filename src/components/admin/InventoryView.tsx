@@ -5,7 +5,7 @@ import { type Vehicle, type CarStatus } from '../../types';
 const DEFAULT_VEHICLE_TYPES = ['SUV', 'Sedan', 'Electric Car', 'Hatchback', 'Van', 'Sports Car', 'Coupe'] as const;
 
 const InventoryView: React.FC = () => {
-    const { cars, deleteVehicle, requestDeletionVehicle, resolveDeletion, addVehicle, updateVehicle, currentUser, resolveSale, settings } = useInventory();
+    const { cars, deleteVehicle, requestDeletionVehicle, resolveDeletion, addVehicle, updateVehicle, currentUser, resolveSale, settings, updateSettings } = useInventory();
     const allCars = Object.values(cars);
     const inventory = allCars.filter(c => !c.isArchived);
     const pendingApproval = allCars.filter(c => c.status === 'sold' && !c.isArchived);
@@ -23,8 +23,22 @@ const InventoryView: React.FC = () => {
     const [images, setImages] = useState<string[]>([]);
     const [removalModalCar, setRemovalModalCar] = useState<Vehicle | null>(null);
     const [removalRemark, setRemovalRemark] = useState('');
+    const [newCategory, setNewCategory] = useState('');
 
     const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
+
+    const handleAddCategory = async () => {
+        if (!newCategory.trim()) return;
+        const current = settings.vehicleTypes || [];
+        if (current.includes(newCategory.trim())) return;
+        await updateSettings({ ...settings, vehicleTypes: [...current, newCategory.trim()] });
+        setNewCategory('');
+    };
+
+    const handleRemoveCategory = async (cat: string) => {
+        const current = settings.vehicleTypes || [];
+        await updateSettings({ ...settings, vehicleTypes: current.filter(c => c !== cat) });
+    };
 
     const vehicleTypeOptions = useMemo(() => {
         const fromSettings =
@@ -183,6 +197,69 @@ const InventoryView: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {isSuperAdmin && (
+                <div
+                    className="inventory-categories-card"
+                    style={{
+                        marginBottom: '1.5rem',
+                        padding: '1.25rem 1.5rem',
+                        background: 'var(--card-bg)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '12px',
+                    }}
+                >
+                    <h2 style={{ fontSize: '1.1rem', fontWeight: 700, margin: '0 0 0.35rem' }}>Vehicle categories</h2>
+                    <p className="stats-text" style={{ marginBottom: '1rem' }}>
+                        Types available when adding or editing cars and in dashboard charts.
+                    </p>
+                    <div className="inventory-categories-add-row">
+                        <div className="form-group" style={{ flex: '1 1 220px', minWidth: 0, marginBottom: 0 }}>
+                            <input
+                                type="text"
+                                placeholder="Add category (e.g. Truck)"
+                                value={newCategory}
+                                onChange={e => setNewCategory(e.target.value)}
+                            />
+                        </div>
+                        <button type="button" className="user-add-btn inventory-categories-add-btn" onClick={() => void handleAddCategory()}>
+                            Add
+                        </button>
+                    </div>
+                    <div className="categories-list" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                        {(settings.vehicleTypes || []).map(cat => (
+                            <div
+                                key={cat}
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    background: 'var(--surface)',
+                                    padding: '0.5rem 1rem',
+                                    borderRadius: '50px',
+                                    gap: '10px',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                }}
+                            >
+                                <span>{cat}</span>
+                                <i
+                                    className="fa-solid fa-xmark"
+                                    style={{ cursor: 'pointer', color: 'var(--accent)' }}
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-label={`Remove ${cat}`}
+                                    onClick={() => void handleRemoveCategory(cat)}
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            void handleRemoveCategory(cat);
+                                        }
+                                    }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Tabs */}
             <div className="inv-tabs">

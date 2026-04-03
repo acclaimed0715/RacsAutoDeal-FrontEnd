@@ -1,6 +1,6 @@
 /**
  * Distinct colors for dashboard charts. Vehicle types use palette order from
- * Settings → Categories when possible so colors stay consistent across sessions.
+ * Manage Inventory → Vehicle categories when possible so colors stay consistent across sessions.
  */
 
 export const CHART_PALETTE = [

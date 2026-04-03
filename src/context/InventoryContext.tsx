@@ -3,6 +3,18 @@ import { type Vehicle, type UserReport, type AppSettings, type AdminNotification
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
+/** Sent with notification requests so the API can filter IM login alerts (Super Admin only). */
+function staffRoleHeaders(): HeadersInit {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('racs_staff_member') : null;
+    if (!raw) return {};
+    try {
+        const u = JSON.parse(raw) as StaffMember;
+        return { 'X-Staff-Role': u.role };
+    } catch {
+        return {};
+    }
+}
+
 interface InventoryContextType {
     cars: Record<string, Vehicle>;
     reports: UserReport[];
@@ -91,14 +103,16 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 setSettings(settingsData);
                 setStaff(staffData);
 
-                // Notifications for all logged-in staff (Super Admin + Inventory Manager)
                 if (storedUser) {
                     try {
-                        const notifRes = await fetch(`${API_BASE_URL}/notifications`);
+                        const u = JSON.parse(storedUser) as StaffMember;
+                        const notifRes = await fetch(`${API_BASE_URL}/notifications`, {
+                            headers: { 'X-Staff-Role': u.role },
+                        });
                         const notifData: AdminNotification[] = await notifRes.json();
                         if (Array.isArray(notifData)) setNotifications(notifData);
                     } catch {
-                        /* non-critical */
+                        setNotifications([]);
                     }
                 }
             } catch (error) {
@@ -111,7 +125,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         fetchData();
     }, []);
 
-    // Poll notifications for all staff; poll reports too for Super Admin.
+    // Poll reports + notifications for Super Admin; notifications only for Inventory Managers.
     useEffect(() => {
         if (!currentUser) return;
 
@@ -121,7 +135,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 if (currentUser.role === 'SUPER_ADMIN') {
                     const [reportsRes, notifRes] = await Promise.all([
                         fetch(`${API_BASE_URL}/reports`),
-                        fetch(`${API_BASE_URL}/notifications`),
+                        fetch(`${API_BASE_URL}/notifications`, { headers: { 'X-Staff-Role': 'SUPER_ADMIN' } }),
                     ]);
                     const [reportsData, notifData]: [UserReport[], AdminNotification[]] = await Promise.all([
                         reportsRes.json(),
@@ -132,7 +146,9 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                         if (Array.isArray(notifData)) setNotifications(notifData);
                     }
                 } else {
-                    const notifRes = await fetch(`${API_BASE_URL}/notifications`);
+                    const notifRes = await fetch(`${API_BASE_URL}/notifications`, {
+                        headers: { 'X-Staff-Role': 'INVENTORY_MANAGER' },
+                    });
                     const notifData: AdminNotification[] = await notifRes.json();
                     if (!cancelled && Array.isArray(notifData)) setNotifications(notifData);
                 }
@@ -216,6 +232,15 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 const user = await res.json();
                 setCurrentUser(user);
                 localStorage.setItem('racs_staff_member', JSON.stringify(user));
+                try {
+                    const notifRes = await fetch(`${API_BASE_URL}/notifications`, {
+                        headers: { 'X-Staff-Role': user.role },
+                    });
+                    const notifData: AdminNotification[] = await notifRes.json();
+                    if (Array.isArray(notifData)) setNotifications(notifData);
+                } catch {
+                    /* non-critical */
+                }
                 return true;
             }
             return false;
@@ -279,7 +304,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             const updated = await res.json();
             setCars(prev => ({ ...prev, [updated.id]: updated }));
             try {
-                const notifRes = await fetch(`${API_BASE_URL}/notifications`);
+                const notifRes = await fetch(`${API_BASE_URL}/notifications`, { headers: staffRoleHeaders() });
                 const notifData: AdminNotification[] = await notifRes.json();
                 if (Array.isArray(notifData)) setNotifications(notifData);
             } catch { /* non-critical */ }
@@ -306,7 +331,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 setCars(prev => ({ ...prev, [updated.id]: updated }));
             }
             try {
-                const notifRes = await fetch(`${API_BASE_URL}/notifications`);
+                const notifRes = await fetch(`${API_BASE_URL}/notifications`, { headers: staffRoleHeaders() });
                 const notifData: AdminNotification[] = await notifRes.json();
                 if (Array.isArray(notifData)) setNotifications(notifData);
             } catch { /* non-critical */ }
@@ -325,9 +350,8 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             const updatedCar = await res.json();
             setCars(prev => ({ ...prev, [updatedCar.id]: updatedCar }));
 
-            // Refresh notifications from backend after resolving
             try {
-                const notifRes = await fetch(`${API_BASE_URL}/notifications`);
+                const notifRes = await fetch(`${API_BASE_URL}/notifications`, { headers: staffRoleHeaders() });
                 const notifData: AdminNotification[] = await notifRes.json();
                 if (Array.isArray(notifData)) setNotifications(notifData);
             } catch { /* non-critical */ }
@@ -465,7 +489,10 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     const markAllNotificationsRead = async () => {
         try {
-            await fetch(`${API_BASE_URL}/notifications/read-all`, { method: 'PATCH' });
+            await fetch(`${API_BASE_URL}/notifications/read-all`, {
+                method: 'PATCH',
+                headers: staffRoleHeaders(),
+            });
             setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
         } catch (error) {
             console.error('Error marking notifications read:', error);

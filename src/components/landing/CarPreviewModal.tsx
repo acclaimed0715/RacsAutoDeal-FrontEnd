@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { type Vehicle } from '../../types';
+import { formatListingPosted } from '../../utils/listingTime';
 
 interface CarPreviewModalProps {
     car: Vehicle;
@@ -88,7 +89,7 @@ Hi, I'm interested in this ${car.name}. Is it still available for viewing?`;
                                     <h1>{car.name}</h1>
                                     <span className="modal-price">{car.price}</span>
                                 </div>
-                                <span>{car.posted || 'Recently Added'}</span>
+                                <span>{formatListingPosted(car)}</span>
                             </div>
                         </div>
 

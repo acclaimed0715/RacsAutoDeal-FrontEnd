@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { type Vehicle } from '../../types';
+import { formatListingPosted } from '../../utils/listingTime';
 
 interface CarCardProps {
     car: Vehicle;
@@ -71,7 +72,7 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
             </div>
             <div className="car-card-right">
                 <div className="card-price">{car.price}</div>
-                <div className="card-posted-compact"><i className="fa-regular fa-clock"></i> {car.posted || 'Recent'}</div>
+                <div className="card-posted-compact"><i className="fa-regular fa-clock"></i> {formatListingPosted(car)}</div>
             </div>
         </div>
     );

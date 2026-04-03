@@ -957,6 +957,41 @@ body[data-theme="light"] .section-search {
     margin: 1rem 0;
 }
 
+/* Manage Inventory → vehicle categories: align field + Add with shared height */
+.inventory-categories-add-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.inventory-categories-add-row .form-group {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+}
+
+.inventory-categories-add-row .form-group input {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 2.85rem;
+    flex: 1;
+}
+
+.inventory-categories-add-row .inventory-categories-add-btn {
+    margin: 0;
+    flex-shrink: 0;
+    align-self: stretch;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* Wider than default; keep vertical padding from .user-add-btn (do not use padding: 0 Npx) */
+    padding-inline: 1.5rem;
+}
+
 /* Views & Headers */
 .dashboard-content {
     padding: 3rem;

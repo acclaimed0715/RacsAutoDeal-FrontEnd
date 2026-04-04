@@ -16,7 +16,7 @@ const CarDetail: React.FC = () => {
     const [currentImgIdx, setCurrentImgIdx] = useState(0);
     const [isEmailOpen, setIsEmailOpen] = useState(false);
     const [emailFrom, setEmailFrom] = useState('');
-    const [emailMsg, setEmailMsg] = useState('');
+
 
     useEffect(() => {
         if (id && cars[id]) {
@@ -49,23 +49,6 @@ const CarDetail: React.FC = () => {
 
     const handleInquire = () => {
         setIsEmailOpen(true);
-        const carUrl = window.location.href;
-        const details = `
------------------------------------------
-VEHICLE INTEREST: ${car.name.toUpperCase()}
------------------------------------------
-Price: ${car.price}
-Model Year: ${car.modelYear}
-Mileage: ${car.mileage || 'N/A'}
-Transmission: ${car.transmission}
-Fuel Type: ${car.fuelType}
-Engine: ${car.engine || 'Standard'}
------------------------------------------
-Vehicle Link: ${carUrl}
------------------------------------------
-
-Hi, I'm interested in this ${car.name}. Is it still available for viewing?`;
-        setEmailMsg(details.trim());
     };
 
     const sendInquiry = () => {
@@ -227,8 +210,7 @@ Hi, I'm interested in this ${car.name}. Is it still available for viewing?`;
                             <div 
                                 className="composer-textarea" 
                                 contentEditable={true}
-                                onInput={e => {
-                                    setEmailMsg(e.currentTarget.innerText);
+                                onInput={() => {
                                 }}
                                 style={{ 
                                     flex: 1, 

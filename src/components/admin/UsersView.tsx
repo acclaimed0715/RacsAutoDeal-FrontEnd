@@ -29,7 +29,6 @@ const genTempPassword = (username: string): string => {
     return `${letters}1234`;
 };
 
-const PASSWORD_RULES = /^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{1,8}$/;
 
 const UsersView: React.FC = () => {
     const { staff, addStaff, updateStaff, deleteStaff, currentUser } = useInventory();
@@ -104,7 +103,7 @@ const UsersView: React.FC = () => {
         e.preventDefault();
         if (!editId) return;
 
-        const originalUser = staff.find(s => s.id === editId);
+
         const superAdminAlreadyExists = staff.some(s => s.role === 'SUPER_ADMIN' && s.id !== editId);
 
         if (editForm.role === 'SUPER_ADMIN' && superAdminAlreadyExists) {

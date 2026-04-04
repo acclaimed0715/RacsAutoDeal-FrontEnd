@@ -50,8 +50,9 @@ export interface UserReport {
     userEmail: string;
     reason: string;
     description?: string;
+    photoData?: string;
     date: string;
-    status: 'PENDING' | 'RESOLVED';
+    status: 'PENDING' | 'RESOLVED' | 'REOPENED';
 }
 
 export interface AppSettings {

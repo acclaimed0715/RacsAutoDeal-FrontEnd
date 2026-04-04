@@ -44,6 +44,7 @@ interface InventoryContextType {
     deleteStaff: (id: string) => Promise<void>;
     addReport: (report: UserReport) => Promise<void>;
     resolveReport: (id: string) => Promise<void>;
+    reopenReport: (id: string) => Promise<void>;
     deleteReport: (id: string) => Promise<void>;
     updateSettings: (settings: AppSettings) => Promise<void>;
     addNotification: (title: string, message: string, type: AdminNotification['type'], sender: string) => void;
@@ -451,6 +452,20 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
     };
 
+    const reopenReport = async (id: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/reports/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'REOPENED' })
+            });
+            const updatedReport = await res.json();
+            setReports(prev => prev.map(r => r.id === id ? updatedReport : r));
+        } catch (error) {
+            console.error('Error reopening report:', error);
+        }
+    };
+
     const deleteReport = async (id: string) => {
         try {
             await fetch(`${API_BASE_URL}/reports/${id}`, { method: 'DELETE' }); // You'll need to add this endpoint to index.ts
@@ -509,7 +524,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             loginStaff, logoutStaff,
             addVehicle, updateVehicle, deleteVehicle, requestDeletionVehicle, resolveDeletion, resolveSale,
             addStaff, updateStaff, changePassword, deleteStaff,
-            addReport, resolveReport, deleteReport,
+            addReport, resolveReport, reopenReport, deleteReport,
             updateSettings, addNotification, markAllNotificationsRead, clearNotifications
         }}>
             {children}

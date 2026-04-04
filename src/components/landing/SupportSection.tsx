@@ -7,32 +7,67 @@ const SupportSection: React.FC = () => {
     const [email, setEmail] = useState('');
     const [reason, setReason] = useState('');
     const [issue, setIssue] = useState('');
+    const [photo, setPhoto] = useState<File | null>(null);
+    const [photoError, setPhotoError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPhotoError('');
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            if (file.size > 5 * 1024 * 1024) {
+                setPhotoError('Photo must be less than 5MB');
+                setPhoto(null);
+                e.target.value = '';
+            } else {
+                setPhoto(file);
+            }
+        }
+    };
+
+    const readFileAsDataURL = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         
+        let photoData = '';
+        if (photo) {
+            try {
+                photoData = await readFileAsDataURL(photo);
+            } catch (err) {
+                console.error("Failed to read photo", err);
+            }
+        }
+
         const newReport = {
             id: 'rep_' + Date.now(),
             userName: email.split('@')[0],
             userEmail: email,
             reason: reason,
             description: issue,
+            photoData: photoData || undefined,
             date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
             status: 'PENDING' as const
         };
 
-        setTimeout(() => {
-            addReport(newReport);
-            setIsSubmitting(false);
-            setIsReportOpen(false);
-            setEmail('');
-            setReason('');
-            setIssue('');
-            alert('Report submitted successfully!');
-        }, 1000);
+        await addReport(newReport);
+        setIsSubmitting(false);
+        setIsReportOpen(false);
+        setEmail('');
+        setReason('');
+        setIssue('');
+        setPhoto(null);
+        setShowSuccess(true);
     };
 
     return (
@@ -111,13 +146,80 @@ const SupportSection: React.FC = () => {
 
                                 <div className="form-group">
                                     <label>Describe the issue</label>
-                                    <textarea value={issue} onChange={e => setIssue(e.target.value)} placeholder="Enter details here..." rows={5}></textarea>
+                                    <textarea value={issue} onChange={e => setIssue(e.target.value)} placeholder="Enter details here..." rows={4}></textarea>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Attach Evidence (Photo, Max 5MB)</label>
+                                    <div className="file-upload-wrapper" style={{ position: 'relative' }}>
+                                        <input 
+                                            type="file" 
+                                            accept="image/*" 
+                                            onChange={handlePhotoChange} 
+                                            style={{ 
+                                                opacity: 0,
+                                                position: 'absolute',
+                                                top: 0, left: 0, bottom: 0, right: 0, 
+                                                width: '100%', 
+                                                cursor: 'pointer',
+                                                zIndex: 2
+                                            }}
+                                        />
+                                        <div style={{
+                                            background: 'var(--input-bg)', 
+                                            padding: '1.5rem', 
+                                            borderRadius: '8px', 
+                                            border: '2px dashed var(--border)', 
+                                            color: 'var(--text-secondary)',
+                                            textAlign: 'center',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            gap: '0.5rem',
+                                            transition: 'border-color 0.3s ease',
+                                            position: 'relative',
+                                            zIndex: 1
+                                        }}>
+                                            <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: '2rem', color: photo ? '#10b981' : 'var(--primary)' }}></i>
+                                            <span style={{ fontWeight: 500, color: 'white' }}>
+                                                {photo ? photo.name : 'Click to Browse Image'}
+                                            </span>
+                                            {!photo && <span style={{ fontSize: '0.85rem' }}>PNG, JPG up to 5MB</span>}
+                                            {photo && <span style={{ fontSize: '0.85rem', color: '#10b981' }}>File selected</span>}
+                                        </div>
+                                    </div>
+                                    {photoError && <p style={{ color: 'var(--primary)', fontSize: '0.85rem', marginTop: '5px' }}>{photoError}</p>}
                                 </div>
 
                                 <button type="submit" className="report-submit-btn" disabled={isSubmitting}>
                                     {isSubmitting ? 'Sending...' : 'Submit'}
                                 </button>
                             </form>
+                        </div>
+                    </div>
+                </>
+            )}
+
+            {/* Success Modal */}
+            {showSuccess && (
+                <>
+                    <div className="report-modal-overlay active" onClick={() => setShowSuccess(false)}></div>
+                    <div className="report-modal active" style={{ display: 'block', maxWidth: '400px', textAlign: 'center' }}>
+                        <div className="report-modal-content" style={{ padding: '3rem 2rem' }}>
+                            <div style={{ width: '80px', height: '80px', background: 'rgba(225, 29, 72, 0.1)', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', margin: '0 auto 1.5rem' }}>
+                                <i className="fa-solid fa-check"></i>
+                            </div>
+                            <h2 style={{ marginBottom: '1rem' }}>Report Submitted</h2>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
+                                Thank you for letting us know. Our team will review your report and get back to you shortly.
+                            </p>
+                            <button 
+                                type="button" 
+                                className="report-submit-btn" 
+                                onClick={() => setShowSuccess(false)}
+                            >
+                                Done
+                            </button>
                         </div>
                     </div>
                 </>

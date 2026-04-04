@@ -349,7 +349,7 @@ const InventoryView: React.FC = () => {
                                             <i className="fa-solid fa-circle-check"></i> Sold
                                         </span>
                                     ) : (
-                                        <span className="status-pill pill-open">{car.status.toUpperCase().replace('_', ' ')}</span>
+                                        <span className="status-pill pill-open">{String(car.status).toUpperCase().replace('_', ' ')}</span>
                                     )}
                                     </td>
                                     <td>

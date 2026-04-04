@@ -3,10 +3,12 @@ import { useInventory } from '../../context/InventoryContext';
 import { type UserReport } from '../../types';
 
 const ReportsView: React.FC = () => {
-    const { reports, resolveReport, reopenReport, deleteReport } = useInventory();
+    const { reports, resolveReport, reopenReport, deleteReport, sendReply } = useInventory();
 
     const [activeTab, setActiveTab] = useState<'PENDING' | 'RESOLVED' | 'REOPENED'>('PENDING');
     const [selectedReport, setSelectedReport] = useState<UserReport | null>(null);
+    const [replyMessage, setReplyMessage] = useState('');
+    const [isSending, setIsSending] = useState(false);
     const pending = reports.filter(r => r.status === 'PENDING');
     const resolved = reports.filter(r => r.status === 'RESOLVED');
     const reopened = reports.filter(r => r.status === 'REOPENED');
@@ -146,9 +148,51 @@ const ReportsView: React.FC = () => {
                                     </div>
                                 </div>
                             )}
+
+                            <div style={{ marginTop: '2rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+                                <strong style={{ color: 'white', display: 'block', marginBottom: '0.5rem' }}>Send Email Reply:</strong>
+                                <textarea 
+                                    value={replyMessage}
+                                    onChange={(e) => setReplyMessage(e.target.value)}
+                                    placeholder="Type your reply here. It will be sent via email to the user..."
+                                    style={{
+                                        width: '100%',
+                                        background: 'var(--input-bg)',
+                                        border: '1px solid var(--border)',
+                                        borderRadius: '8px',
+                                        padding: '1rem',
+                                        color: 'white',
+                                        minHeight: '100px',
+                                        marginBottom: '1rem',
+                                        resize: 'vertical'
+                                    }}
+                                />
+                                <button 
+                                    className="message-dealer-btn" 
+                                    onClick={async () => {
+                                        if (!replyMessage.trim()) return alert('Please enter a message.');
+                                        setIsSending(true);
+                                        const res = await sendReply('report', selectedReport.id, replyMessage);
+                                        setIsSending(false);
+                                        if (res.success) {
+                                            alert('Reply sent successfully!');
+                                            setReplyMessage('');
+                                        } else {
+                                            alert('Error: ' + res.error);
+                                        }
+                                    }}
+                                    disabled={isSending}
+                                    style={{ width: '100%', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+                                >
+                                    {isSending ? 'Sending...' : <><i className="fa-solid fa-paper-plane"></i> Send Reply</>}
+                                </button>
+                            </div>
                         </div>
                         <div className="user-modal-footer">
-                            <button type="button" className="user-cancel-btn" onClick={() => setSelectedReport(null)}>Close</button>
+                            <button type="button" className="user-cancel-btn" onClick={() => {
+                                setSelectedReport(null);
+                                setReplyMessage('');
+                            }}>Close</button>
                         </div>
                     </div>
                 </>

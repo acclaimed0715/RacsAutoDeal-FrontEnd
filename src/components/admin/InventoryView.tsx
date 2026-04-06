@@ -1,6 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { useInventory } from '../../context/InventoryContext';
 import { type Vehicle, type CarStatus } from '../../types';
+import { formatPrice, formatNumberWithCommas } from '../../utils/format';
 
 const DEFAULT_VEHICLE_TYPES = ['SUV', 'Sedan', 'Electric Car', 'Hatchback', 'Van', 'Sports Car', 'Coupe'] as const;
 
@@ -309,7 +310,7 @@ const InventoryView: React.FC = () => {
                                         </div>
                                     </td>
                                     <td>{car.brand}</td>
-                                    <td>{car.price}</td>
+                                    <td>{formatPrice(car.price)}</td>
                                     <td>
                                     {car.pendingDeletion ? (
                                         <div className="status-pending-removal-wrap">
@@ -454,7 +455,7 @@ const InventoryView: React.FC = () => {
                                                     </div>
                                                 </td>
                                                 <td>{car.brand}</td>
-                                                <td className="price-cell">{car.price}</td>
+                                                <td className="price-cell">{formatPrice(car.price)}</td>
                                                 <td>{car.saleReportedBy || 'Unknown'}</td>
                                                 <td>
                                                     <div className="action-row">
@@ -512,7 +513,7 @@ const InventoryView: React.FC = () => {
                                             </td>
                                             <td>{car.brand}</td>
                                             <td>{car.modelYear}</td>
-                                            <td className="price-cell">{car.price}</td>
+                                            <td className="price-cell">{formatPrice(car.price)}</td>
                                             <td>{car.saleReportedBy || 'Unknown'}</td>
                                             <td><span className="sold-archived-badge"><i className="fa-solid fa-circle-check"></i> Sold &amp; Archived</span></td>
                                         </tr>
@@ -675,7 +676,14 @@ const InventoryView: React.FC = () => {
                                     <div className="deal-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                         <div className="deal-form-group">
                                             <label className="field-label">Price</label>
-                                            <input type="text" placeholder="e.g. 1,200,000" className="deal-input" value={form.price?.replace('₱', '')} onChange={e => setForm({...form, price: e.target.value})} required />
+                                            <input 
+                                                type="text" 
+                                                placeholder="e.g. 1,200,000" 
+                                                className="deal-input" 
+                                                value={form.price?.replace('₱', '')} 
+                                                onChange={e => setForm({...form, price: formatNumberWithCommas(e.target.value)})} 
+                                                required 
+                                            />
                                         </div>
                                         <div className="deal-form-group">
                                             <label className="field-label">Vehicle Type</label>

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { type Vehicle } from '../../types';
+import { useInventory } from '../../context/InventoryContext';
 import { formatListingPosted } from '../../utils/listingTime';
+import { formatPrice } from '../../utils/format';
 
 interface CarPreviewModalProps {
     car: Vehicle;
@@ -14,6 +16,9 @@ const CarPreviewModal: React.FC<CarPreviewModalProps> = ({ car, isOpen, onClose 
     const [isEmailOpen, setIsEmailOpen] = useState(false);
     const [emailFrom, setEmailFrom] = useState('');
     const [emailMsg, setEmailMsg] = useState('');
+    const [isSending, setIsSending] = useState(false);
+
+    const { addInquiry } = useInventory();
 
     if (!isOpen) return null;
 
@@ -27,7 +32,7 @@ const CarPreviewModal: React.FC<CarPreviewModalProps> = ({ car, isOpen, onClose 
 -----------------------------------------
 VEHICLE INTEREST: ${car.name.toUpperCase()}
 -----------------------------------------
-Price: ${car.price}
+Price: ${formatPrice(car.price)}
 Model Year: ${car.modelYear}
 Mileage: ${car.mileage || 'N/A'}
 Transmission: ${car.transmission}
@@ -41,14 +46,23 @@ Hi, I'm interested in this ${car.name}. Is it still available for viewing?`;
         setEmailMsg(details.trim());
     };
 
-    const sendInquiry = () => {
+    const sendInquiry = async () => {
         if (!emailFrom) {
             alert('Please provide your email address.');
             return;
         }
-        alert(`Inquiry for ${car.name} sent to dealer!`);
-        setIsEmailOpen(false);
-        setEmailFrom('');
+        
+        setIsSending(true);
+        try {
+            await addInquiry(car.id, car.name, emailFrom, emailMsg);
+            alert(`Inquiry for ${car.name} sent! Please check your email for confirmation.`);
+            setIsEmailOpen(false);
+            setEmailFrom('');
+        } catch (error) {
+            alert('Failed to send inquiry. Please try again later.');
+        } finally {
+            setIsSending(false);
+        }
     };
 
     return (
@@ -87,13 +101,14 @@ Hi, I'm interested in this ${car.name}. Is it still available for viewing?`;
                             <div className="preview-car-info">
                                 <div className="title-price-row">
                                     <h1>{car.name}</h1>
-                                    <span className="modal-price">{car.price}</span>
+                                    <span className="modal-price">{formatPrice(car.price)}</span>
                                 </div>
                                 <span>{formatListingPosted(car)}</span>
                             </div>
                         </div>
 
                         <div className="preview-right">
+                            <div style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '15px', paddingLeft: '5px' }}>Specifications</div>
                             <div className="main-features-grid">
                                 <div className="feature-block">
                                     <i className="fa-solid fa-car"></i>
@@ -204,7 +219,9 @@ Hi, I'm interested in this ${car.name}. Is it still available for viewing?`;
                         </div>
                     </div>
                     <div className="composer-footer">
-                        <button className="compose-send-btn" onClick={sendInquiry}>Send</button>
+                        <button className="compose-send-btn" onClick={sendInquiry} disabled={isSending}>
+                            {isSending ? 'Sending...' : 'Send'}
+                        </button>
                         <div className="footer-icons">
                             <i className="fa-solid fa-font"></i>
                             <i className="fa-solid fa-link" style={{ color: '#38bdf8' }}></i>

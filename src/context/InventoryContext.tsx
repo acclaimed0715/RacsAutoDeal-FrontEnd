@@ -23,7 +23,7 @@ interface InventoryContextType {
     currentUser: StaffMember | null;
     notifications: AdminNotification[];
     isLoading: boolean;
-    loginStaff: (username: string, password: string) => Promise<boolean>;
+    loginStaff: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
     logoutStaff: () => void;
     addVehicle: (vehicle: Vehicle) => Promise<void>;
     updateVehicle: (vehicle: Vehicle) => Promise<void>;
@@ -46,6 +46,9 @@ interface InventoryContextType {
     resolveReport: (id: string) => Promise<void>;
     reopenReport: (id: string) => Promise<void>;
     deleteReport: (id: string) => Promise<void>;
+    addInquiry: (carId: string, carName: string, userEmail: string, message: string) => Promise<void>;
+    requestPasswordReset: (email: string) => Promise<{ success: boolean; message: string; error?: string }>;
+    resetPassword: (email: string, otp: string, newPassword: string) => Promise<{ success: boolean; message: string; error?: string }>;
     updateSettings: (settings: AppSettings) => Promise<void>;
     addNotification: (title: string, message: string, type: AdminNotification['type'], sender: string) => void;
     markAllNotificationsRead: () => Promise<void>;
@@ -229,8 +232,9 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
+            const data = await res.json();
             if (res.ok) {
-                const user = await res.json();
+                const user = data;
                 setCurrentUser(user);
                 localStorage.setItem('racs_staff_member', JSON.stringify(user));
                 try {
@@ -242,12 +246,12 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 } catch {
                     /* non-critical */
                 }
-                return true;
+                return { success: true };
             }
-            return false;
+            return { success: false, error: data.error || 'Invalid username or password' };
         } catch (error) {
             console.error('Login error:', error);
-            return false;
+            return { success: false, error: 'Network error. Is the API running?' };
         }
     };
 
@@ -475,6 +479,53 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
     };
 
+    const addInquiry = async (carId: string, carName: string, userEmail: string, message: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/inquiries`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ carId, carName, userEmail, message })
+            });
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || 'Failed to send inquiry');
+            }
+        } catch (error) {
+            console.error('Error adding inquiry:', error);
+            throw error;
+        }
+    };
+
+    const requestPasswordReset = async (email: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            if (!res.ok) return { success: false, message: data.error || 'Request failed', error: data.error };
+            return { success: true, message: data.message };
+        } catch (error) {
+            return { success: false, message: 'Network error', error: 'Network error' };
+        }
+    };
+
+    const resetPassword = async (email: string, otp: string, newPassword: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp, newPassword })
+            });
+            const data = await res.json();
+            if (!res.ok) return { success: false, message: data.error || 'Reset failed', error: data.error };
+            return { success: true, message: data.message };
+        } catch (error) {
+            return { success: false, message: 'Network error', error: 'Network error' };
+        }
+    };
+
     const updateSettings = async (newSettings: AppSettings) => {
         try {
             const res = await fetch(`${API_BASE_URL}/settings`, {
@@ -525,6 +576,8 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             addVehicle, updateVehicle, deleteVehicle, requestDeletionVehicle, resolveDeletion, resolveSale,
             addStaff, updateStaff, changePassword, deleteStaff,
             addReport, resolveReport, reopenReport, deleteReport,
+            addInquiry,
+            requestPasswordReset, resetPassword,
             updateSettings, addNotification, markAllNotificationsRead, clearNotifications
         }}>
             {children}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useInventory } from '../../context/InventoryContext';
+import { formatPrice } from '../../utils/format';
 
 const SoldView: React.FC = () => {
     const { cars, resolveSale } = useInventory();
@@ -52,7 +53,7 @@ const SoldView: React.FC = () => {
                                             </div>
                                         </td>
                                         <td>{car.brand}</td>
-                                        <td className="price-cell">{car.price}</td>
+                                        <td className="price-cell">{formatPrice(car.price)}</td>
                                         <td>{car.saleReportedBy || 'Unknown'}</td>
                                         <td>
                                             <div className="action-row">
@@ -118,7 +119,7 @@ const SoldView: React.FC = () => {
                                     </td>
                                     <td>{car.brand}</td>
                                     <td>{car.modelYear}</td>
-                                    <td className="price-cell">{car.price}</td>
+                                    <td className="price-cell">{formatPrice(car.price)}</td>
                                     <td>{car.saleReportedBy || 'Unknown'}</td>
                                     <td>
                                         <span className="sold-archived-badge">

@@ -8,16 +8,16 @@ const Footer: React.FC = () => {
                 <div className="footer-logo" style={{ flex: '1', minWidth: '200px' }}>
                     <img src="/assets/logo.png" alt="Racs Auto Deal Logo" className="logo-img" style={{ maxWidth: '180px' }} />
                 </div>
-                
+
                 <div className="footer-contact" style={{ flex: '1', minWidth: '200px' }}>
                     <h4 className="footer-heading" style={{ textAlign: 'left', marginBottom: '1.5rem' }}>Contact Us</h4>
                     <ul className="contact-list" style={{ padding: 0, margin: 0, listStyle: 'none' }}>
                         <li style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', color: '#c4c4c4' }}>
-                            <i className="fa-solid fa-phone contact-icon" style={{ color: 'var(--accent)' }}></i> 
+                            <i className="fa-solid fa-phone contact-icon" style={{ color: 'var(--accent)' }}></i>
                             <span>+123 456 789</span>
                         </li>
                         <li style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', color: '#c4c4c4' }}>
-                            <i className="fa-solid fa-envelope contact-icon" style={{ color: 'var(--accent)' }}></i> 
+                            <i className="fa-solid fa-envelope contact-icon" style={{ color: 'var(--accent)' }}></i>
                             <span>racsautodeal@gmail.com</span>
                         </li>
                     </ul>

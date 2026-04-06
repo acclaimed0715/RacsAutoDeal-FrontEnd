@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { useInventory } from '../../context/InventoryContext';
 import { getBrandColor, getVehicleTypeColor, sortTypeLabels } from '../../utils/chartColors';
+import { formatPrice } from '../../utils/format';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -593,7 +594,7 @@ const DashboardView: React.FC = () => {
                                                 </span>
                                             </div>
                                             <div style={{ color: 'var(--text-secondary)', marginTop: '0.25rem', fontSize: '0.9rem' }}>
-                                                {c.modelYear} • {c.brand} • {c.price}
+                                                {c.modelYear} • {c.brand} • {formatPrice(c.price)}
                                             </div>
                                         </div>
                                     </div>
@@ -635,7 +636,7 @@ const DashboardView: React.FC = () => {
                                             </div>
                                         </td>
                                         <td style={{ padding: '15px' }}>{car.saleReportedBy || 'Unknown'}</td>
-                                        <td style={{ padding: '15px', fontWeight: 'bold' }}>{car.price}</td>
+                                        <td style={{ padding: '15px', fontWeight: 'bold' }}>{formatPrice(car.price)}</td>
                                         <td style={{ padding: '15px', textAlign: 'right' }}>
                                             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                                                 <button 

@@ -5,17 +5,19 @@ import Navbar from '../components/landing/Navbar';
 import Footer from '../components/landing/Footer';
 import { type Vehicle } from '../types';
 import { formatListingPosted } from '../utils/listingTime';
+import { formatPrice } from '../utils/format';
 
 const CarDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { cars, isLoading } = useInventory();
+    const { cars, isLoading, addInquiry } = useInventory();
     
     const [car, setCar] = useState<Vehicle | null>(null);
     const [activeTab, setActiveTab] = useState<'description' | 'otherFeatures'>('description');
     const [currentImgIdx, setCurrentImgIdx] = useState(0);
     const [isEmailOpen, setIsEmailOpen] = useState(false);
     const [emailFrom, setEmailFrom] = useState('');
+    const [isSending, setIsSending] = useState(false);
 
 
     useEffect(() => {
@@ -51,14 +53,25 @@ const CarDetail: React.FC = () => {
         setIsEmailOpen(true);
     };
 
-    const sendInquiry = () => {
+    const sendInquiry = async () => {
         if (!emailFrom) {
             alert('Please provide your email address.');
             return;
         }
-        alert(`Inquiry for ${car.name} sent to dealer!`);
-        setIsEmailOpen(false);
-        setEmailFrom('');
+        if (!car) return;
+
+        setIsSending(true);
+        try {
+            const message = `Hi, I'm interested in this ${car.name}. Is it still available for viewing?`;
+            await addInquiry(car.id, car.name, emailFrom, message);
+            alert(`Inquiry for ${car.name} sent! Please check your email for confirmation.`);
+            setIsEmailOpen(false);
+            setEmailFrom('');
+        } catch (error) {
+            alert('Failed to send inquiry. Please try again later.');
+        } finally {
+            setIsSending(false);
+        }
     };
 
     return (
@@ -84,7 +97,7 @@ const CarDetail: React.FC = () => {
                                 </div>
                             </div>
                             <div style={{ textAlign: 'right' }}>
-                                <div style={{ fontSize: '2.8rem', color: 'var(--primary)', fontWeight: '900', lineHeight: 1 }}>{car.price}</div>
+                                <div style={{ fontSize: '2.8rem', color: 'var(--primary)', fontWeight: '900', lineHeight: 1 }}>{formatPrice(car.price)}</div>
                                 <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '5px' }}>Excluding Registration & Fees</div>
                             </div>
                         </div>
@@ -119,6 +132,10 @@ const CarDetail: React.FC = () => {
                         </div>
 
                         <div className="detail-info-section" style={{ background: 'var(--card-bg)', padding: '35px', borderRadius: '24px', border: '1px solid var(--border)', position: 'sticky', top: '100px' }}>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ height: '2px', width: '20px', background: 'var(--primary)' }}></div>
+                                Specifications
+                            </div>
                             <div className="main-features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px', marginBottom: '35px' }}>
                                 <div className="feature-block">
                                     <i className="fa-solid fa-calendar-days" style={{ color: 'var(--primary)' }}></i>
@@ -231,7 +248,7 @@ const CarDetail: React.FC = () => {
                                 <br/><br/>
                                 <b>Details:</b>
                                 <br/>
-                                • Price: {car.price}
+                                • Price: {formatPrice(car.price)}
                                 <br/>
                                 • Model Year: {car.modelYear}
                                 <br/>
@@ -280,7 +297,9 @@ const CarDetail: React.FC = () => {
                         </div>
                     </div>
                     <div className="composer-footer">
-                        <button className="compose-send-btn" onClick={sendInquiry}>Send</button>
+                        <button className="compose-send-btn" onClick={sendInquiry} disabled={isSending}>
+                            {isSending ? 'Sending...' : 'Send'}
+                        </button>
                         <div className="footer-icons">
                             <i className="fa-solid fa-font"></i>
                             <i className="fa-solid fa-link" style={{ color: '#38bdf8' }}></i>

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useInventory } from '../context/InventoryContext';
+import ForgotPasswordModal from '../components/auth/ForgotPasswordModal';
 
 const Login: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
     const { loginStaff } = useInventory();
     const navigate = useNavigate();
 
@@ -18,11 +20,11 @@ const Login: React.FC = () => {
         e.preventDefault();
         setError('');
         
-        const success = await loginStaff(username, password);
-        if (success) {
+        const res = await loginStaff(username, password);
+        if (res.success) {
             window.location.href = '/admin'; // Force full refresh to capture secure data fetches
         } else {
-            setError('Invalid username or password');
+            setError(res.error || 'Invalid username or password');
         }
     };
 
@@ -94,8 +96,22 @@ const Login: React.FC = () => {
                             <i className="fa-solid fa-arrow-left" style={{ marginRight: '8px' }}></i>Back to Site
                         </button>
                     </form>
+                    <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                        <button 
+                            type="button" 
+                            onClick={() => setIsForgotModalOpen(true)}
+                            style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                        >
+                            Forgot Password?
+                        </button>
+                    </div>
                 </div>
             </div>
+            
+            <ForgotPasswordModal 
+                isOpen={isForgotModalOpen} 
+                onClose={() => setIsForgotModalOpen(false)} 
+            />
         </div>
     );
 };

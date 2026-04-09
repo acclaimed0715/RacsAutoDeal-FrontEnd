@@ -35,19 +35,25 @@ const SuperAdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) 
     return <>{children}</>;
 };
 
+import { CompareProvider } from './context/CompareContext';
+import ComparePage from './pages/ComparePage';
+import CompareBar from './components/CompareBar';
+
 const App: React.FC = () => {
     return (
-        <InventoryProvider>
-            <Router>
-                <Routes>
-                    {/* Public Routes */}
-                    {/* Public Routes */}
-                    <Route path="/" element={<Home />} />
-                    <Route path="/about" element={<AboutUs />} />
-                    <Route path="/cars" element={<CarsPage />} />
-                    <Route path="/terms" element={<TermsAndPrivacy />} />
-                    <Route path="/car/:id" element={<CarDetail />} />
-                    <Route path="/login" element={<Login />} />
+        <CompareProvider>
+            <InventoryProvider>
+                <Router>
+                    <CompareBar />
+                    <Routes>
+                        {/* Public Routes */}
+                        <Route path="/" element={<Home />} />
+                        <Route path="/about" element={<AboutUs />} />
+                        <Route path="/cars" element={<CarsPage />} />
+                        <Route path="/compare" element={<ComparePage />} />
+                        <Route path="/terms" element={<TermsAndPrivacy />} />
+                        <Route path="/car/:id" element={<CarDetail />} />
+                        <Route path="/login" element={<Login />} />
 
                     {/* Admin Routes */}
                     <Route path="/admin" element={
@@ -97,8 +103,10 @@ const App: React.FC = () => {
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </Router>
-        </InventoryProvider>
+            </InventoryProvider>
+        </CompareProvider>
     );
 };
+
 
 export default App;

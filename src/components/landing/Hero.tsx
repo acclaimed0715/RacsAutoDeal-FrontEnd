@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, useMotionValue, useTransform, useSpring, AnimatePresence } from 'framer-motion';
+import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 const SLIDE_DURATION = 6000; // 6 seconds
@@ -31,37 +31,83 @@ const slides = [
 const Hero: React.FC = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     
-    // Mouse tracking for parallax (Applied to active slide car)
-    const mouseX = useMotionValue(0);
-    const mouseY = useMotionValue(0);
-    const springX = useSpring(mouseX, { stiffness: 50, damping: 20 });
-    const springY = useSpring(mouseY, { stiffness: 50, damping: 20 });
-    const carX = useTransform(springX, [-500, 500], [20, -20]);
-    const carY = useTransform(springY, [-500, 500], [15, -15]);
-    const glowX = useTransform(springX, [-500, 500], [-30, 30]);
-    const glowY = useTransform(springY, [-500, 500], [-20, 20]);
-
     const nextSlide = useCallback(() => {
         setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, []);
 
+    const prevSlide = useCallback(() => {
+        setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    }, []);
+
+    useEffect(() => {
+        const autoPlayTimer = setInterval(nextSlide, SLIDE_DURATION);
+        return () => clearInterval(autoPlayTimer);
+    }, [nextSlide]);
+
+    // Mouse tracking for parallax
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+    const springX = useSpring(mouseX, { stiffness: 50, damping: 20 });
+    const springY = useSpring(mouseY, { stiffness: 50, damping: 20 });
+    const parallaxX = useTransform(springX, [-500, 500], [15, -15]);
+    const parallaxY = useTransform(springY, [-500, 500], [10, -10]);
+
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
-            const { clientX, clientY } = e;
-            const moveX = clientX - window.innerWidth / 2;
-            const moveY = clientY - window.innerHeight / 2;
+            const moveX = e.clientX - window.innerWidth / 2;
+            const moveY = e.clientY - window.innerHeight / 2;
             mouseX.set(moveX);
             mouseY.set(moveY);
         };
-
-        const autoPlayTimer = setInterval(nextSlide, SLIDE_DURATION);
-
         window.addEventListener('mousemove', handleMouseMove);
-        return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-            clearInterval(autoPlayTimer);
-        };
-    }, [mouseX, mouseY, nextSlide]);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, [mouseX, mouseY]);
+
+    // Calculate indices for the stack
+    const getPosition = (index: number) => {
+        const diff = (index - currentSlide + slides.length) % slides.length;
+        if (diff === 0) return "center";
+        if (diff === 1) return "right";
+        if (diff === slides.length - 1) return "left";
+        return "hidden";
+    };
+
+    const variants = {
+        center: { 
+            x: 0, 
+            scale: 1, 
+            zIndex: 10, 
+            opacity: 1,
+            rotateY: 0,
+            filter: 'brightness(1)'
+        },
+        right: { 
+            x: '45%', 
+            y: -40, // Move a little up when behind
+            scale: 0.8, 
+            zIndex: 5, 
+            opacity: 0.4,
+            rotateY: -15,
+            filter: 'brightness(0.5) blur(1px)'
+        },
+        left: { 
+            x: '-45%', 
+            y: -40, // Move a little up when behind
+            scale: 0.8, 
+            zIndex: 5, 
+            opacity: 0.4,
+            rotateY: 15,
+            filter: 'brightness(0.5) blur(1px)'
+        },
+        hidden: { 
+            scale: 0.5, 
+            opacity: 0, 
+            zIndex: 0,
+            x: 0,
+            y: 0
+        }
+    };
+
 
     const slide = slides[currentSlide];
 
@@ -84,13 +130,13 @@ const Hero: React.FC = () => {
                         <p className="hero-sub-description">
                             Welcome to <strong>Racs Auto Deal</strong>, your premier destination for quality
                             vehicles. Explore our curated selection of cars designed to
-                            fit every lifestyle, from luxury sedans to powerful SUVs.
+                            fit every lifestyle.
                         </p>
                         
                         <div className="hero-action-group">
                             <Link to="/cars" className="hero-primary-btn">
                                 <span>Browse Inventory</span>
-                                <i className="fa-solid fa-car-side"></i>
+                                <i className="fa-solid fa-arrow-right"></i>
                             </Link>
                         </div>
 
@@ -107,54 +153,78 @@ const Hero: React.FC = () => {
                     </motion.div>
                 </div>
 
-                <div className="hero-right-visual">
-                    <motion.div 
-                        className="hero-glow-back"
-                        style={{ x: glowX, y: glowY }}
-                    ></motion.div>
+                <div className="hero-right-visual" style={{ perspective: '1000px' }}>
+                    <div className="hero-stack-container" style={{ position: 'relative', width: '100%', height: '450px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {slides.map((s, index) => {
+                            const pos = getPosition(index);
+                            return (
+                                <motion.div
+                                    key={s.id}
+                                    variants={variants}
+                                    animate={pos}
+                                    transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+                                    style={{
+                                        position: 'absolute',
+                                        width: '100%',
+                                        maxWidth: '600px',
+                                        cursor: pos !== 'center' ? 'pointer' : 'default'
+                                    }}
+                                    onClick={() => {
+                                        if (pos === 'right') nextSlide();
+                                        if (pos === 'left') prevSlide();
+                                    }}
+                                >
+                                    <motion.div 
+                                        style={{ 
+                                            x: pos === 'center' ? parallaxX : 0, 
+                                            y: pos === 'center' ? parallaxY : 0 
+                                        }}
+                                    >
+                                        <img 
+                                            src={s.image} 
+                                            alt={s.tagline} 
+                                            style={{ 
+                                                width: '100%', 
+                                                height: 'auto', 
+                                                filter: pos === 'center' ? 'drop-shadow(0 20px 50px rgba(0,0,0,0.5))' : 'none' 
+                                            }} 
+                                        />
+                                        
+                                        {pos === 'center' && (
+                                            <>
+                                                <motion.div 
+                                                    className="floating-badge badge-top"
+                                                    animate={{ y: [0, -10, 0] }}
+                                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                                >
+                                                    <i className="fa-solid fa-shield-check"></i>
+                                                    <span>{s.tagline}</span>
+                                                </motion.div>
+                                                
+                                                <motion.div 
+                                                    className="floating-badge badge-bottom"
+                                                    animate={{ y: [0, 10, 0] }}
+                                                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                                                >
+                                                    <i className="fa-solid fa-tag"></i>
+                                                    <span>Racs Exclusive</span>
+                                                </motion.div>
+                                            </>
+                                        )}
+                                    </motion.div>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
                     
-                    <AnimatePresence mode="wait">
-                        <motion.div 
-                            key={`slide-${slide.id}`}
-                            className="hero-car-wrapper"
-                            style={{ x: carX, y: carY }}
-                            initial={{ opacity: 0, scale: 0.95, x: 50 }}
-                            animate={{ opacity: 1, scale: 1, x: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, x: -50 }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
-                        >
-                            <img src={slide.image} alt={slide.tagline} className="hero-parallax-img" />
-                            
-                            <motion.div 
-                                className="floating-badge badge-top"
-                                animate={{ y: [0, -10, 0] }}
-                                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                            >
-                                <i className="fa-solid fa-shield-check"></i>
-                                <span>{slide.tagline}</span>
-                            </motion.div>
-                            
-                            <motion.div 
-                                className="floating-badge badge-bottom"
-                                animate={{ y: [0, 10, 0] }}
-                                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                            >
-                                <i className="fa-solid fa-tag"></i>
-                                <span>Racs Exclusive</span>
-                            </motion.div>
-                        </motion.div>
-                    </AnimatePresence>
                 </div>
             </div>
 
-            <div className="hero-scroll-indicator" onClick={() => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })}>
-                <div className="mouse-icon">
-                    <div className="wheel"></div>
-                </div>
-                <span>Discover More</span>
-            </div>
+
+
         </main>
     );
 };
+
 
 export default Hero;

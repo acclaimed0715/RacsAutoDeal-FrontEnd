@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { type Vehicle } from '../../types';
 import { formatListingPosted } from '../../utils/listingTime';
 import { formatPrice } from '../../utils/format';
+import { useCompare } from '../../context/CompareContext';
 
 interface CarCardProps {
     car: Vehicle;
@@ -9,8 +10,22 @@ interface CarCardProps {
 
 const CarCard: React.FC<CarCardProps> = ({ car }) => {
     const navigate = useNavigate();
+    const { isInCompare, addToCompare, removeFromCompare } = useCompare();
+    
+    const isSelected = isInCompare(car.id);
+
+    const handleCompareClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (isSelected) {
+            removeFromCompare(car.id);
+        } else {
+            addToCompare(car);
+        }
+    };
+
     const getBadges = () => {
         const badges: React.ReactNode[] = [];
+// ... (rest of getBadges same)
 
         // Negotiating status — shown prominently
         if (car.status === 'negotiating') {
@@ -56,13 +71,34 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
     const isAuto = car.transmission.toLowerCase().includes('auto') || car.transmission.toLowerCase().includes('cvt');
 
     return (
-        <div className="car-card" onClick={() => navigate(`/car/${car.id}`)}>
+<div className="car-card" onClick={() => navigate(`/car/${car.id}`)}>
             <div className="car-image-wrapper">
                 {getBadges()}
+                <button 
+                    className={`card-compare-btn ${isSelected ? 'active' : ''}`}
+                    onClick={handleCompareClick}
+                    title="Compare this vehicle"
+                >
+                    {isSelected ? <i className="fa-solid fa-check"></i> : <i className="fa-solid fa-plus"></i>}
+                </button>
                 <img src={car.images[0]} alt={car.name} className="car-image" />
             </div>
             <div className="car-card-middle">
-                <h3 className="card-name">{car.name} {car.modelYear}</h3>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <h3 className="card-name" style={{ margin: 0 }}>{car.name} {car.modelYear}</h3>
+                    {car.color && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }} title={`Color: ${car.color}`}>
+                            <div style={{ 
+                                width: '10px', 
+                                height: '10px', 
+                                borderRadius: '50%', 
+                                background: car.color.toLowerCase(),
+                                border: '1px solid rgba(255,255,255,0.2)',
+                                boxShadow: `0 0 5px ${car.color.toLowerCase()}`
+                            }}></div>
+                        </div>
+                    )}
+                </div>
                 <p className="card-description clamped-desc">{car.description}</p>
                 <div className="card-features-row">
                     <div className="card-feat-compact"><span>Year</span><b>{car.modelYear}</b></div>

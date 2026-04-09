@@ -64,6 +64,8 @@ const InventoryView: React.FC = () => {
             name: '', price: '', modelYear: '', mileage: '', brand: '',
             transmission: '', fuelType: '', engine: '', hp: '', torque: '',
             safety: '', seating: '', description: '', status: 'open' as CarStatus, type: defaultVehicleType,
+            color: '',
+            otherFeatures: [],
             date: new Date().toLocaleDateString()
         });
         setImages([]);
@@ -304,13 +306,13 @@ const InventoryView: React.FC = () => {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                             <img src={car.images?.[0]} alt="" style={{ width: '60px', height: '40px', borderRadius: '4px', objectFit: 'cover' }} />
                                             <div>
-                                                <div style={{ fontWeight: 'bold' }}>{car.name}</div>
-                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{car.type} • {car.modelYear}</div>
+                                                <div style={{ fontWeight: 'bold' }}>{car.name || 'Unnamed Vehicle'}</div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{car.type || 'No Type'} • {car.modelYear || 'N/A'}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>{car.brand}</td>
-                                    <td>{formatPrice(car.price)}</td>
+                                    <td>{car.brand || '—'}</td>
+                                    <td>{car.price && car.price !== '₱' ? formatPrice(car.price) : 'No Price Set'}</td>
                                     <td>
                                     {car.pendingDeletion ? (
                                         <div className="status-pending-removal-wrap">
@@ -350,7 +352,7 @@ const InventoryView: React.FC = () => {
                                             <i className="fa-solid fa-circle-check"></i> Sold
                                         </span>
                                     ) : (
-                                        <span className="status-pill pill-open">{String(car.status).toUpperCase().replace('_', ' ')}</span>
+                                        <span className="status-pill pill-open">{(String(car.status || 'open')).toUpperCase().replace('_', ' ')}</span>
                                     )}
                                     </td>
                                     <td>
@@ -694,14 +696,18 @@ const InventoryView: React.FC = () => {
                                             </select>
                                         </div>
                                     </div>
-                                    <div className="deal-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                    <div className="deal-form-row" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)', gap: '12px' }}>
                                         <div className="deal-form-group">
                                             <label className="field-label">Model Year</label>
-                                            <input type="text" placeholder="e.g. 2024" className="deal-input" value={form.modelYear} onChange={e => setForm({...form, modelYear: e.target.value})} />
+                                            <input type="text" placeholder="e.g. 2024" className="deal-input" value={form.modelYear} onChange={e => setForm({...form, modelYear: e.target.value})} title="Vehicle model year" />
                                         </div>
                                         <div className="deal-form-group">
                                             <label className="field-label">Brand</label>
-                                            <input type="text" placeholder="e.g. Toyota" className="deal-input" value={form.brand} onChange={e => setForm({...form, brand: e.target.value})} />
+                                            <input type="text" placeholder="e.g. Toyota" className="deal-input" value={form.brand} onChange={e => setForm({...form, brand: e.target.value})} title="Vehicle brand" />
+                                        </div>
+                                        <div className="deal-form-group">
+                                            <label className="field-label">Color</label>
+                                            <input type="text" placeholder="e.g. Red" className="deal-input" value={form.color} onChange={e => setForm({...form, color: e.target.value})} title="Vehicle color" />
                                         </div>
                                     </div>
                                     <div className="deal-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -775,7 +781,13 @@ const InventoryView: React.FC = () => {
                                     <label className="section-label" style={{ marginTop: '1rem' }}>Additional Features & Info</label>
                                     <div className="deal-form-group">
                                         <label className="field-label">Other Features</label>
-                                        <textarea className="deal-textarea" placeholder="GPS, Sunroof, Leather Seats, etc." value={form.promoPrice} onChange={e => setForm({...form, promoPrice: e.target.value})} style={{ height: '80px' }}></textarea>
+                                        <textarea 
+                                            className="deal-textarea" 
+                                            placeholder="GPS, Sunroof, Leather Seats, etc. (Separate with commas)" 
+                                            value={Array.isArray(form.otherFeatures) ? form.otherFeatures.join(', ') : form.otherFeatures || ''} 
+                                            onChange={e => setForm({...form, otherFeatures: e.target.value.split(',').map(s => s.trim())})} 
+                                            style={{ height: '80px' }}
+                                        ></textarea>
                                     </div>
                                 </div>
                             </div>

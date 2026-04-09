@@ -31,7 +31,9 @@ export interface Vehicle {
     createdAt?: string;
     updatedAt?: string;
     posted?: string; // UI only
-    type?: string; // UI only
+    type?: string; 
+    color?: string;
+    otherFeatures?: string[];
 }
 
 export interface StaffMember {

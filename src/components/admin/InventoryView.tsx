@@ -86,7 +86,14 @@ const InventoryView: React.FC = () => {
     };
 
     const handleFiles = (files: FileList) => {
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+        
         Array.from(files).forEach(file => {
+            if (file.size > MAX_FILE_SIZE) {
+                alert(`File "${file.name}" exceeds the 10MB size limit.`);
+                return;
+            }
+
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -135,8 +142,12 @@ const InventoryView: React.FC = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (images.length === 0) {
-            alert('Please provide at least one image.');
+        if (images.length < 5) {
+            alert('A minimum of 5 images is required for a premium listing.');
+            return;
+        }
+        if (images.length > 10) {
+            alert('Maximum 10 images allowed per vehicle.');
             return;
         }
 
@@ -395,7 +406,8 @@ const InventoryView: React.FC = () => {
                                                     className="icon-btn"
                                                     title="Remove listing"
                                                     onClick={() => {
-                                                        if (window.confirm(`Permanently delete "${car.name}"? This cannot be undone.`)) deleteVehicle(car.id);
+                                                        setRemovalModalCar(car);
+                                                        setRemovalRemark('');
                                                     }}
                                                 >
                                                     <i className="fa-solid fa-trash"></i>
@@ -538,7 +550,7 @@ const InventoryView: React.FC = () => {
                     />
                     <div className="user-modal active removal-request-modal" style={{ display: 'block', maxWidth: '480px', width: '95%' }}>
                         <div className="user-modal-header">
-                            <h3>Request listing removal</h3>
+                            <h3>{isSuperAdmin ? 'Confirm listing removal' : 'Request listing removal'}</h3>
                             <span
                                 className="close-user-modal"
                                 onClick={() => {
@@ -559,16 +571,28 @@ const InventoryView: React.FC = () => {
                                     return;
                                 }
                                 try {
-                                    await requestDeletionVehicle(removalModalCar.id, currentUser?.name || 'Staff', r);
-                                    setRemovalModalCar(null);
-                                    setRemovalRemark('');
+                                    if (isSuperAdmin) {
+                                        if (window.confirm(`Permanently delete "${removalModalCar.name}"?\n\nThis cannot be undone.`)) {
+                                            await deleteVehicle(removalModalCar.id);
+                                            setRemovalModalCar(null);
+                                            setRemovalRemark('');
+                                        }
+                                    } else {
+                                        await requestDeletionVehicle(removalModalCar.id, currentUser?.name || 'Staff', r);
+                                        setRemovalModalCar(null);
+                                        setRemovalRemark('');
+                                    }
                                 } catch (err) {
                                     alert(err instanceof Error ? err.message : 'Could not submit removal request');
                                 }
                             }}
                         >
                             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                                A Super Admin must approve before <strong>{removalModalCar.name}</strong> is removed from the system.
+                                {isSuperAdmin 
+                                    ? `Please specify the reason for removing `
+                                    : `A Super Admin must approve before `
+                                }
+                                <strong>{removalModalCar.name}</strong> is removed from the system.
                             </p>
                             <div className="user-form-row" style={{ marginBottom: 0 }}>
                                 <label htmlFor="removal-remark">Reason / remarks</label>
@@ -584,7 +608,7 @@ const InventoryView: React.FC = () => {
                                     maxLength={2000}
                                 />
                                 <span className="temp-password-hint" style={{ marginTop: '0.35rem' }}>
-                                    Minimum 5 characters. This will be visible to the Super Admin.
+                                    Minimum 5 characters. {isSuperAdmin ? 'This will be recorded for audit purposes.' : 'This will be visible to the Super Admin.'}
                                 </span>
                             </div>
                             <div className="user-modal-footer" style={{ borderTop: '1px solid var(--border)', paddingTop: '1.25rem', marginTop: '1.25rem', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
@@ -599,7 +623,8 @@ const InventoryView: React.FC = () => {
                                     Cancel
                                 </button>
                                 <button type="submit" className="user-add-btn">
-                                    <i className="fa-solid fa-paper-plane"></i> Submit request
+                                    <i className={isSuperAdmin ? "fa-solid fa-trash-can" : "fa-solid fa-paper-plane"}></i> 
+                                    {isSuperAdmin ? " Confirm & Delete" : " Submit request"}
                                 </button>
                             </div>
                         </form>
@@ -646,7 +671,9 @@ const InventoryView: React.FC = () => {
                                     />
                                     <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: '2.5rem', color: 'var(--primary)', marginBottom: '1rem' }}></i>
                                     <p style={{ fontWeight: '600' }}>Drop your images here or click to browse</p>
-                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Include multiple angles for a premium feel (Interior, exterior, etc.)</p>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                        <strong>Requirements:</strong> Min 5, Max 10 images. Max 10MB per file.
+                                    </p>
                                 </div>
 
                                 {images.length > 0 && (

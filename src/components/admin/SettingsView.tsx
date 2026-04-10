@@ -33,7 +33,7 @@ const SettingsView: React.FC = () => {
 
             <div className="settings-container">
                 <div className="settings-tabs">
-                    {['General', 'Security', 'Notifications'].map(tab => (
+                    {['General', 'Security'].map(tab => (
                         <div 
                             key={tab} 
                             className={`settings-tab ${activeTab === tab ? 'active' : ''}`}
@@ -114,25 +114,6 @@ const SettingsView: React.FC = () => {
                                 <ChangePasswordForm />
                             </div>
                         </>
-                    )}
-
-                    {activeTab === 'Notifications' && (
-                        <div className="settings-grid">
-                            <div className="toggle-group">
-                                <div className="toggle-info">
-                                    <h4>Email Notifications</h4>
-                                    <p>Get alerted on new user reports via email.</p>
-                                </div>
-                                <input type="checkbox" checked={localSettings.emailNotif} onChange={e => setLocalSettings({...localSettings, emailNotif: e.target.checked})} />
-                            </div>
-                            <div className="toggle-group">
-                                <div className="toggle-info">
-                                    <h4>Stock Alerts</h4>
-                                    <p>Low inventory counts warning in dashboard.</p>
-                                </div>
-                                <input type="checkbox" checked={localSettings.stockNotif} onChange={e => setLocalSettings({...localSettings, stockNotif: e.target.checked})} />
-                            </div>
-                        </div>
                     )}
                 </div>
             </div>

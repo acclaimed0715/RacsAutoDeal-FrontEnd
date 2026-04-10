@@ -75,17 +75,17 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
             <div className="car-image-wrapper">
                 {getBadges()}
                 <button 
-                    className={`card-compare-btn ${isSelected ? 'active' : ''}`}
+                    className={`card-compare-btn ${isSelected ? 'active' : ''} ${!isSelected ? 'pulse-on-idle' : ''}`}
                     onClick={handleCompareClick}
                     title="Compare this vehicle"
                 >
-                    {isSelected ? <i className="fa-solid fa-check"></i> : <i className="fa-solid fa-plus"></i>}
+                    {isSelected ? <i className="fa-solid fa-right-left"></i> : <i className="fa-solid fa-chart-simple"></i>}
                 </button>
                 <img src={car.images[0]} alt={car.name} className="car-image" />
             </div>
             <div className="car-card-middle">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <h3 className="card-name" style={{ margin: 0 }}>{car.name} {car.modelYear}</h3>
+                    <h3 className="card-name" style={{ margin: 0 }}>{car.name}</h3>
                     {car.color && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }} title={`Color: ${car.color}`}>
                             <div style={{ 
@@ -101,10 +101,22 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
                 </div>
                 <p className="card-description clamped-desc">{car.description}</p>
                 <div className="card-features-row">
-                    <div className="card-feat-compact"><span>Year</span><b>{car.modelYear}</b></div>
-                    <div className="card-feat-compact"><span>Mileage</span><b>{car.mileage || 'N/A'}</b></div>
-                    <div className="card-feat-compact"><span>Fuel</span><b>{car.fuelType.split(' ')[0]}</b></div>
-                    <div className="card-feat-compact"><span>Trans</span><b>{isAuto ? 'Auto' : 'Manual'}</b></div>
+                    <div className="card-feat-compact">
+                        <span><i className="fa-regular fa-calendar"></i> Year</span>
+                        <b>{car.modelYear}</b>
+                    </div>
+                    <div className="card-feat-compact">
+                        <span><i className="fa-solid fa-gauge"></i> Mileage</span>
+                        <b>{car.mileage || 'N/A'}</b>
+                    </div>
+                    <div className="card-feat-compact">
+                        <span><i className="fa-solid fa-gas-pump"></i> Fuel</span>
+                        <b>{car.fuelType.split(' ')[0]}</b>
+                    </div>
+                    <div className="card-feat-compact">
+                        <span><i className="fa-solid fa-gears"></i> Trans</span>
+                        <b>{isAuto ? 'Auto' : 'Manual'}</b>
+                    </div>
                 </div>
             </div>
             <div className="car-card-right">

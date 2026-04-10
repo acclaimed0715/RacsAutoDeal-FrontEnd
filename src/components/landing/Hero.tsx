@@ -138,6 +138,11 @@ const Hero: React.FC = () => {
                                 <span>Browse Inventory</span>
                                 <i className="fa-solid fa-arrow-right"></i>
                             </Link>
+
+                            <Link to="/about" className="hero-secondary-btn">
+                                <span>Learn Our Story</span>
+                                <i className="fa-solid fa-circle-info"></i>
+                            </Link>
                         </div>
 
                         <div className="hero-stats-row">
@@ -148,6 +153,10 @@ const Hero: React.FC = () => {
                             <div className="stat-pill">
                                 <span className="stat-val">100%</span>
                                 <span className="stat-lbl">Reliable</span>
+                            </div>
+                            <div className="stat-pill">
+                                <span className="stat-val">24/7</span>
+                                <span className="stat-lbl">Support</span>
                             </div>
                         </div>
                     </motion.div>

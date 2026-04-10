@@ -9,7 +9,10 @@ function staffRoleHeaders(): HeadersInit {
     if (!raw) return {};
     try {
         const u = JSON.parse(raw) as StaffMember;
-        return { 'X-Staff-Role': u.role };
+        return { 
+            'X-Staff-Role': u.role,
+            'X-Staff-Name': u.name 
+        };
     } catch {
         return {};
     }
@@ -94,13 +97,17 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                     storedUser ? fetch(`${API_BASE_URL}/staff`) : Promise.resolve({ json: () => [] })
                 ]);
 
-                const carsData: Vehicle[] = await carsRes.json();
+                const carsDataRaw = await carsRes.json();
                 const reportsData: UserReport[] = await reportsRes.json();
                 const settingsData: AppSettings = await settingsRes.json();
                 const staffData: StaffMember[] = await (staffRes as any).json();
 
                 const carsMap: Record<string, Vehicle> = {};
-                if (Array.isArray(carsData)) carsData.forEach(c => carsMap[c.id] = c);
+                // Ensure carsData is an array before processing
+                const carsData = Array.isArray(carsDataRaw) ? carsDataRaw : [];
+                carsData.forEach(c => {
+                    if (c && c.id) carsMap[c.id] = c;
+                });
 
                 setCars(carsMap);
                 setReports(reportsData);
@@ -259,7 +266,10 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         try {
             const res = await fetch(`${API_BASE_URL}/cars`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...staffRoleHeaders()
+                },
                 body: JSON.stringify(vehicle)
             });
             const newCar = await res.json();
@@ -273,7 +283,10 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         try {
             const res = await fetch(`${API_BASE_URL}/cars/${vehicle.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...staffRoleHeaders()
+                },
                 body: JSON.stringify(vehicle)
             });
             const updatedCar = await res.json();
@@ -285,7 +298,10 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     const deleteVehicle = async (id: string) => {
         try {
-            await fetch(`${API_BASE_URL}/cars/${id}`, { method: 'DELETE' });
+            await fetch(`${API_BASE_URL}/cars/${id}`, { 
+                method: 'DELETE',
+                headers: staffRoleHeaders()
+            });
             setCars(prev => {
                 const { [id]: _, ...rest } = prev;
                 return rest;
@@ -530,7 +546,10 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         try {
             const res = await fetch(`${API_BASE_URL}/settings`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...staffRoleHeaders()
+                },
                 body: JSON.stringify(newSettings)
             });
             const savedSettings = await res.json();

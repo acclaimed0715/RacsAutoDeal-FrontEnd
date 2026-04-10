@@ -2613,3 +2613,67 @@ body[data-theme="light"] .role-radio-option.selected {
     display: flex;
     justify-content: flex-end;
 }
+
+/* Premium Settings Switch Toggle */
+.premium-switch {
+    width: 48px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.premium-switch::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.premium-switch.active {
+    background: var(--primary);
+    box-shadow: 0 0 10px rgba(225, 29, 72, 0.3);
+}
+
+.premium-switch.active::before {
+    left: 26px;
+    transform: scale(1.1);
+}
+
+.toggle-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.toggle-group:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.toggle-info h4 {
+    margin: 0 0 4px 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.toggle-info p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}

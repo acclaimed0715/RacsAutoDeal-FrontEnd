@@ -81,7 +81,7 @@ const CarDetail: React.FC = () => {
             <main className="car-detail-page" style={{ paddingTop: '100px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--surface)' }}>
                 <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
                     
-                    <button onClick={() => navigate(-1)} className="back-link" style={{ 
+                    <button onClick={() => navigate('/cars')} className="back-link" style={{ 
                         background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontSize: '1rem'
                     }}>
@@ -256,44 +256,10 @@ const CarDetail: React.FC = () => {
                                 <br/>
                                 • Transmission: {car.transmission}
                                 <br/><br/>
-                                <b>Vehicle Link:</b> <a href={window.location.href} style={{ color: '#0b57d0', textDecoration: 'underline' }} target="_blank" rel="noopener noreferrer">{window.location.href}</a>
+
                                 <br/><br/>
                                 Hi, I'm interested in this {car.name}. Is it still available for viewing?
                             </div>
-
-                            {/* ATTACHMENT CHIP */}
-                            <a 
-                                href={window.location.href} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="attachment-chip" 
-                                style={{
-                                    position: 'absolute',
-                                    bottom: '15px',
-                                    left: '15px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '10px',
-                                    background: 'rgba(56, 189, 248, 0.1)',
-                                    padding: '8px 12px',
-                                    borderRadius: '8px',
-                                    border: '1px solid rgba(56, 189, 248, 0.3)',
-                                    maxWidth: '300px',
-                                    textDecoration: 'none',
-                                    transition: 'background 0.2s, transform 0.2s',
-                                    cursor: 'pointer'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(56, 189, 248, 0.2)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(56, 189, 248, 0.1)'}
-                            >
-                                <img src={car.images[0]} alt="" style={{ width: '40px', height: '30px', borderRadius: '4px', objectFit: 'cover' }} />
-                                <div style={{ overflow: 'hidden' }}>
-                                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#38bdf8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        <i className="fa-solid fa-link" style={{ marginRight: '5px' }}></i> Vehicle Details Link
-                                    </div>
-                                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Click to view original listing</div>
-                                </div>
-                            </a>
                         </div>
                     </div>
                     <div className="composer-footer">

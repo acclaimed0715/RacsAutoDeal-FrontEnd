@@ -7,6 +7,8 @@ import SupportSection from '../components/landing/SupportSection';
 import Footer from '../components/landing/Footer';
 import CustomerReviews from '../components/landing/CustomerReviews';
 
+import CompareHighlight from '../components/landing/CompareHighlight';
+
 const Home: React.FC = () => {
     return (
         <div className="landing-page">
@@ -14,6 +16,7 @@ const Home: React.FC = () => {
             <Hero />
             <StatsAndServices />
             <BrandHighlights />
+            <CompareHighlight />
             <CustomerReviews />
             <SupportSection />
             <Footer />

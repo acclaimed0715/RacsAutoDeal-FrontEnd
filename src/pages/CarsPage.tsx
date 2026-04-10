@@ -7,7 +7,7 @@ const CarsPage: React.FC = () => {
     return (
         <div className="landing-page">
             <Navbar />
-            <div style={{ paddingTop: '80px' }}>
+            <div className="inventory-page-wrapper">
                 <Inventory />
             </div>
             <Footer />

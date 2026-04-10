@@ -65,7 +65,7 @@ const BrandCard: React.FC<{ brand: typeof brands[0] }> = ({ brand }) => {
                 borderRadius: '16px',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
                 cursor: 'pointer',
-                height: '115px', // Slightly taller for better name clearance
+                height: '115px', 
                 width: '160px',
                 display: 'flex',
                 alignItems: 'center',
@@ -79,7 +79,7 @@ const BrandCard: React.FC<{ brand: typeof brands[0] }> = ({ brand }) => {
             <motion.div
                 variants={{
                     hover: { 
-                        y: -15, // Lift logo higher on hover
+                        y: -15, 
                     }
                 }}
                 transition={{ type: 'spring' as const, stiffness: 300, damping: 20 }}
@@ -145,12 +145,6 @@ const BrandCard: React.FC<{ brand: typeof brands[0] }> = ({ brand }) => {
         </motion.div>
     );
 };
-
-
-
-
-
-
 
 const BrandHighlights: React.FC = () => {
     return (
@@ -243,4 +237,3 @@ const BrandHighlights: React.FC = () => {
 };
 
 export default BrandHighlights;
-

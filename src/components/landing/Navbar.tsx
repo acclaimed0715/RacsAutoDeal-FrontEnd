@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
+import { useInventory } from '../../context/InventoryContext';
 
 const Navbar: React.FC = () => {
+    const { settings } = useInventory();
     const [isScrolled, setIsScrolled] = useState(false);
+    const location = useLocation();
+    const isHome = location.pathname === '/';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -40,12 +44,20 @@ const Navbar: React.FC = () => {
                             fontFamily: "'Montserrat', sans-serif",
                             textShadow: '0 0 15px rgba(230, 57, 70, 0.4)'
                         }}>
-                            Racs Auto Deal
+                            {settings.businessName}
                         </span>
                     </NavLink>
                 </div>
                 
-                <div className="nav-links" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+                <div className="nav-links" style={{ 
+                    display: 'flex', 
+                    gap: '2rem', 
+                    alignItems: 'center',
+                    opacity: isHome && !isScrolled ? 0 : 1,
+                    transform: isHome && !isScrolled ? 'translateY(-10px)' : 'translateY(0)',
+                    pointerEvents: isHome && !isScrolled ? 'none' : 'auto',
+                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}>
                     <NavLink to="/cars" style={{ color: 'white', textDecoration: 'none', fontWeight: '600', fontSize: '1.1rem', transition: 'color 0.3s' }} className={({ isActive }) => isActive ? 'active-nav-link' : ''}>
                         Car Listing
                     </NavLink>

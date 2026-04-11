@@ -63,9 +63,6 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         <li>
                             <NavLink to="/admin/inventory" className={({ isActive }) => isActive ? 'active' : ''}>
                                 <i className="fa-solid fa-car"></i> Manage Inventory
-                                {unreadCount > 0 && (
-                                    <span className="sidebar-badge">{unreadCount}</span>
-                                )}
                             </NavLink>
                         </li>
                         {currentUser?.role === 'SUPER_ADMIN' && (

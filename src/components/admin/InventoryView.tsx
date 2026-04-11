@@ -101,8 +101,8 @@ const InventoryView: React.FC = () => {
                         const img = new Image();
                         img.onload = () => {
                             const canvas = document.createElement('canvas');
-                            const MAX_WIDTH = 1200;
-                            const MAX_HEIGHT = 1200;
+                            const MAX_WIDTH = 1920;
+                            const MAX_HEIGHT = 1920;
                             let width = img.width;
                             let height = img.height;
 
@@ -123,8 +123,8 @@ const InventoryView: React.FC = () => {
                             const ctx = canvas.getContext('2d');
                             ctx?.drawImage(img, 0, 0, width, height);
 
-                            // Compress aggressively to keep base64 strings very small
-                            const compressed = canvas.toDataURL('image/jpeg', 0.8);
+                            // Preserve high definition (HD) quality 
+                            const compressed = canvas.toDataURL('image/jpeg', 0.95);
                             setImages(prev => [...prev, compressed]);
                         };
                         img.src = e.target.result as string;
@@ -819,16 +819,18 @@ const InventoryView: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="user-modal-footer" style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', marginTop: '1rem' }}>
-                                <div className="status-selector">
-                                    <label>Vehicle Status</label>
-                                    <select value={form.status} onChange={e => setForm({...form, status: e.target.value as any})} className="status-select">
+                            <div className="user-modal-footer" style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '20px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <label style={{ margin: 0, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap' }}>Vehicle Status</label>
+                                    <select value={form.status} onChange={e => setForm({...form, status: e.target.value as any})} className="deal-input" style={{ width: 'auto', minWidth: '180px', margin: 0, padding: '0.6rem 1rem' }}>
                                         <option value="open">Open</option>
                                         <option value="negotiating">Negotiating</option>
-                                        <option value="sold">{isSuperAdmin ? 'Sold (Archive Directly)' : 'Sold (Report for Approval)'}</option>
+                                        <option value="sold">{isSuperAdmin ? 'Sold (Archive)' : 'Sold (Report)'}</option>
                                     </select>
                                 </div>
-                                <button type="submit" className="user-add-btn" style={{ padding: '0.8rem 2.5rem' }}>{editingCar ? 'Update Inventory' : 'Publish Car Listing'}</button>
+                                <button type="submit" className="user-add-btn" style={{ padding: '0.8rem 2.5rem', margin: 0 }}>
+                                    {editingCar ? 'Update Inventory' : 'Publish Car Listing'}
+                                </button>
                             </div>
                         </form>
                     </div>

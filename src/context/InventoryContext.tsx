@@ -272,10 +272,17 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 },
                 body: JSON.stringify(vehicle)
             });
+            
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || `HTTP error! status: ${res.status}`);
+            }
+            
             const newCar = await res.json();
             setCars(prev => ({ ...prev, [newCar.id]: newCar }));
         } catch (error) {
             console.error('Error adding vehicle:', error);
+            alert(`Could not add vehicle: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     };
 
@@ -289,10 +296,17 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 },
                 body: JSON.stringify(vehicle)
             });
+            
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || `HTTP error! status: ${res.status}`);
+            }
+            
             const updatedCar = await res.json();
             setCars(prev => ({ ...prev, [updatedCar.id]: updatedCar }));
         } catch (error) {
             console.error('Error updating vehicle:', error);
+            alert(`Could not update vehicle: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     };
 

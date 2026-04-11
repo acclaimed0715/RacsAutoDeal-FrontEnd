@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useCompare } from '../context/CompareContext';
 import { formatPrice } from '../utils/format';
 import { motion } from 'framer-motion';
@@ -81,110 +81,8 @@ const ComparePage: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // ── Empty State ─────────────────────────────────────────────────────────────
-  if (selectedCars.length === 0) {
-    return (
-      <div className="compare-empty-state" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="compare-page-container"
-          style={{ 
-            textAlign: 'center', 
-            maxWidth: '550px', 
-            padding: '60px 40px', 
-            background: 'rgba(255, 255, 255, 0.02)', 
-            borderRadius: '40px',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
-            position: 'relative',
-            overflow: 'hidden',
-            margin: '0 auto'
-          }}
-        >
-          {/* Background Glow */}
-          <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '350px',
-            height: '350px',
-            background: 'radial-gradient(circle, rgba(204, 0, 0, 0.08) 0%, transparent 70%)',
-            zIndex: 0,
-            pointerEvents: 'none'
-          }}></div>
-
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <motion.div
-              animate={{ 
-                y: [0, -12, 0],
-              }}
-              transition={{ 
-                duration: 4, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              }}
-              style={{ marginBottom: '35px' }}
-            >
-              <div style={{ 
-                width: '90px', 
-                height: '90px', 
-                backgroundColor: 'rgba(204, 0, 0, 0.12)', 
-                borderRadius: '24px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                margin: '0 auto',
-                border: '1px solid rgba(204, 0, 0, 0.2)',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
-              }}>
-                <i className="fa-solid fa-right-left" style={{ fontSize: '2.8rem', color: '#CC0000' }}></i>
-              </div>
-            </motion.div>
-
-            <h2 style={{ 
-              fontSize: '2.8rem', 
-              fontWeight: 900, 
-              color: 'white', 
-              marginBottom: '15px', 
-              letterSpacing: '-1.5px',
-              textShadow: '0 10px 20px rgba(0,0,0,0.2)'
-            }}>
-              No vehicles selected
-            </h2>
-            
-            <p style={{ 
-              color: '#9499A1', 
-              fontSize: '1.15rem', 
-              lineHeight: '1.7', 
-              marginBottom: '45px',
-              fontWeight: 400,
-              maxWidth: '380px',
-              margin: '0 auto 45px'
-            }}>
-              Choose up to 4 vehicles from our inventory to start a detailed side-by-side comparison.
-            </p>
-
-            <motion.button 
-              whileHover={{ scale: 1.05, boxShadow: '0 15px 30px rgba(204, 0, 0, 0.3)' }}
-              whileTap={{ scale: 0.95 }}
-              className="compare-now-btn" 
-              onClick={() => navigate('/cars')}
-              style={{
-                padding: '18px 45px',
-                fontSize: '1rem',
-                fontWeight: 800,
-                letterSpacing: '1.5px',
-                borderRadius: '16px',
-                textTransform: 'uppercase'
-              }}
-            >
-              BROWSE INVENTORY
-            </motion.button>
-          </div>
-        </motion.div>
-      </div>
-    );
+  if (selectedCars.length < 2) {
+    return <Navigate to="/cars" replace />;
   }
 
   // ── Table ───────────────────────────────────────────────────────────────────

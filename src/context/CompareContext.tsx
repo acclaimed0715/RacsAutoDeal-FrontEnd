@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { Vehicle } from '../types';
+import { useInventory } from './InventoryContext';
 
 interface CompareContextType {
     selectedCars: Vehicle[];
@@ -12,46 +13,52 @@ interface CompareContextType {
 const CompareContext = createContext<CompareContextType | undefined>(undefined);
 
 export const CompareProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [selectedCars, setSelectedCars] = useState<Vehicle[]>([]);
+    const { cars } = useInventory();
+    const [selectedCarIds, setSelectedCarIds] = useState<string[]>([]);
 
     // Load from localStorage on mount
     useEffect(() => {
-        const saved = localStorage.getItem('compare_cars');
+        localStorage.removeItem('compare_cars'); // Clear legacy 5MB quota bloat
+
+        const saved = localStorage.getItem('compare_cars_ids');
         if (saved) {
             try {
-                setSelectedCars(JSON.parse(saved));
+                setSelectedCarIds(JSON.parse(saved));
             } catch (e) {
-                console.error('Failed to parse compare_cars from localStorage');
+                console.error('Failed to parse compare_cars_ids from localStorage');
             }
         }
     }, []);
 
     // Save to localStorage on change
     useEffect(() => {
-        localStorage.setItem('compare_cars', JSON.stringify(selectedCars));
-    }, [selectedCars]);
+        localStorage.setItem('compare_cars_ids', JSON.stringify(selectedCarIds));
+    }, [selectedCarIds]);
 
     const addToCompare = (car: Vehicle) => {
-        if (selectedCars.length >= 4) {
+        if (selectedCarIds.length >= 4) {
             alert('You can only compare up to 4 cars at a time.');
             return;
         }
-        if (!selectedCars.find(c => c.id === car.id)) {
-            setSelectedCars(prev => [...prev, car]);
+        if (!selectedCarIds.includes(car.id)) {
+            setSelectedCarIds(prev => [...prev, car.id]);
         }
     };
 
     const removeFromCompare = (id: string) => {
-        setSelectedCars(prev => prev.filter(c => c.id !== id));
+        setSelectedCarIds(prev => prev.filter(carId => carId !== id));
     };
 
     const clearCompare = () => {
-        setSelectedCars([]);
+        setSelectedCarIds([]);
     };
 
     const isInCompare = (id: string) => {
-        return !!selectedCars.find(c => c.id === id);
+        return selectedCarIds.includes(id);
     };
+
+    // Hydrate vehicles securely from RAM
+    const selectedCars = selectedCarIds.map(id => cars[id]).filter(c => !!c);
 
     return (
         <CompareContext.Provider value={{ selectedCars, addToCompare, removeFromCompare, clearCompare, isInCompare }}>

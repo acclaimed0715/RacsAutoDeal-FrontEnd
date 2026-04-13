@@ -1,22 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { type Vehicle, type UserReport, type AppSettings, type AdminNotification, type StaffMember } from '../types';
+import api from '../utils/api';
 
-const API_BASE_URL = 'http://localhost:5000/api';
-
-/** Sent with notification requests so the API can filter IM login alerts (Super Admin only). */
-function staffRoleHeaders(): HeadersInit {
-    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('racs_staff_member') : null;
-    if (!raw) return {};
-    try {
-        const u = JSON.parse(raw) as StaffMember;
-        return { 
-            'X-Staff-Role': u.role,
-            'X-Staff-Name': u.name 
-        };
-    } catch {
-        return {};
-    }
-}
 
 interface InventoryContextType {
     cars: Record<string, Vehicle>;
@@ -50,6 +35,7 @@ interface InventoryContextType {
     reopenReport: (id: string) => Promise<void>;
     deleteReport: (id: string) => Promise<void>;
     addInquiry: (carId: string, carName: string, userEmail: string, message: string) => Promise<void>;
+    sendReply: (inquiryId: string, replyMessage: string) => Promise<void>;
     requestPasswordReset: (email: string) => Promise<{ success: boolean; message: string; error?: string }>;
     resetPassword: (email: string, otp: string, newPassword: string) => Promise<{ success: boolean; message: string; error?: string }>;
     updateSettings: (settings: AppSettings) => Promise<void>;
@@ -83,27 +69,27 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     // Initial Data Fetch
     useEffect(() => {
-        const storedUser = localStorage.getItem('racs_staff_member');
-        if (storedUser) setCurrentUser(JSON.parse(storedUser));
+        const storedUserRaw = localStorage.getItem('racs_staff_member');
+        const parsedUser = storedUserRaw ? JSON.parse(storedUserRaw) : null;
+        if (parsedUser) setCurrentUser(parsedUser);
 
         const fetchData = async () => {
             try {
                 // Fetch admin cars if logged in, otherwise fetch public cars
-                const carsUrl = storedUser ? `${API_BASE_URL}/admin/cars` : `${API_BASE_URL}/cars`;
-                const [carsRes, reportsRes, settingsRes, staffRes] = await Promise.all([
-                    fetch(carsUrl),
-                    fetch(`${API_BASE_URL}/reports`),
-                    fetch(`${API_BASE_URL}/settings`),
-                    storedUser ? fetch(`${API_BASE_URL}/staff`) : Promise.resolve({ json: () => [] })
+                const carsUrl = parsedUser ? `/cars/admin` : `/cars`;
+                const [carsRes, settingsRes, reportsRes, staffRes] = await Promise.all([
+                    api.get(carsUrl),
+                    api.get(`/settings`),
+                    parsedUser && parsedUser.role === 'SUPER_ADMIN' ? api.get(`/reports`) : Promise.resolve({ data: [] }),
+                    parsedUser && parsedUser.role === 'SUPER_ADMIN' ? api.get(`/staff`) : Promise.resolve({ data: [] })
                 ]);
 
-                const carsDataRaw = await carsRes.json();
-                const reportsData: UserReport[] = await reportsRes.json();
-                const settingsData: AppSettings = await settingsRes.json();
-                const staffData: StaffMember[] = await (staffRes as any).json();
+                const carsDataRaw = carsRes.data;
+                const settingsData: AppSettings = settingsRes.data;
+                const reportsData: UserReport[] = reportsRes.data;
+                const staffData: StaffMember[] = staffRes.data;
 
                 const carsMap: Record<string, Vehicle> = {};
-                // Ensure carsData is an array before processing
                 const carsData = Array.isArray(carsDataRaw) ? carsDataRaw : [];
                 carsData.forEach(c => {
                     if (c && c.id) carsMap[c.id] = c;
@@ -114,13 +100,10 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 setSettings(settingsData);
                 setStaff(staffData);
 
-                if (storedUser) {
+                if (parsedUser) {
                     try {
-                        const u = JSON.parse(storedUser) as StaffMember;
-                        const notifRes = await fetch(`${API_BASE_URL}/notifications`, {
-                            headers: { 'X-Staff-Role': u.role },
-                        });
-                        const notifData: AdminNotification[] = await notifRes.json();
+                        const notifRes = await api.get(`/notifications`);
+                        const notifData: AdminNotification[] = notifRes.data;
                         if (Array.isArray(notifData)) setNotifications(notifData);
                     } catch {
                         setNotifications([]);
@@ -136,7 +119,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         fetchData();
     }, []);
 
-    // Poll reports + notifications for Super Admin; notifications only for Inventory Managers.
+    // Local polling
     useEffect(() => {
         if (!currentUser) return;
 
@@ -145,27 +128,22 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             try {
                 if (currentUser.role === 'SUPER_ADMIN') {
                     const [reportsRes, notifRes] = await Promise.all([
-                        fetch(`${API_BASE_URL}/reports`),
-                        fetch(`${API_BASE_URL}/notifications`, { headers: { 'X-Staff-Role': 'SUPER_ADMIN' } }),
+                        api.get(`/reports`),
+                        api.get(`/notifications`),
                     ]);
-                    const [reportsData, notifData]: [UserReport[], AdminNotification[]] = await Promise.all([
-                        reportsRes.json(),
-                        notifRes.json(),
-                    ]);
+                    const reportsData: UserReport[] = reportsRes.data;
+                    const notifData: AdminNotification[] = notifRes.data;
+                    
                     if (!cancelled) {
                         if (Array.isArray(reportsData)) setReports(reportsData);
                         if (Array.isArray(notifData)) setNotifications(notifData);
                     }
                 } else {
-                    const notifRes = await fetch(`${API_BASE_URL}/notifications`, {
-                        headers: { 'X-Staff-Role': 'INVENTORY_MANAGER' },
-                    });
-                    const notifData: AdminNotification[] = await notifRes.json();
+                    const notifRes = await api.get(`/notifications`);
+                    const notifData: AdminNotification[] = notifRes.data;
                     if (!cancelled && Array.isArray(notifData)) setNotifications(notifData);
                 }
-            } catch {
-                /* non-critical */
-            }
+            } catch { /* ignore */ }
         };
 
         const interval = window.setInterval(tick, 8000);
@@ -181,7 +159,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         window.location.href = '/login';
     }, []);
 
-    // Idle session timeout (seconds from settings) — Super Admin & Inventory Manager
+    // Idle session timeout
     useEffect(() => {
         if (!currentUser) return;
         const timeoutSeconds = Math.max(0, Number(settings.sessionTimeout) || 0);
@@ -198,28 +176,14 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         };
 
         const events: (keyof WindowEventMap)[] = [
-            'mousedown',
-            'mousemove',
-            'keydown',
-            'scroll',
-            'touchstart',
-            'click',
-            'wheel',
-            'pointerdown',
+            'mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'
         ];
         events.forEach(ev => window.addEventListener(ev, markActivity, { passive: true }));
-
-        const onVisibility = () => {
-            if (document.visibilityState === 'visible') markActivity();
-        };
-        document.addEventListener('visibilitychange', onVisibility);
 
         const intervalId = window.setInterval(() => {
             const diff = Date.now() - lastActivityRef.current;
             if (diff > timeoutSeconds * 1000) {
                 window.clearInterval(intervalId);
-                events.forEach(ev => window.removeEventListener(ev, markActivity));
-                document.removeEventListener('visibilitychange', onVisibility);
                 logoutStaff();
                 alert('Your session has expired due to inactivity.');
             }
@@ -228,348 +192,209 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return () => {
             window.clearInterval(intervalId);
             events.forEach(ev => window.removeEventListener(ev, markActivity));
-            document.removeEventListener('visibilitychange', onVisibility);
         };
-    }, [currentUser?.id, currentUser?.role, settings.sessionTimeout, logoutStaff]);
+    }, [currentUser?.id, settings.sessionTimeout, logoutStaff]);
 
     const loginStaff = async (username: string, password: string) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                const user = data;
-                setCurrentUser(user);
-                localStorage.setItem('racs_staff_member', JSON.stringify(user));
-                try {
-                    const notifRes = await fetch(`${API_BASE_URL}/notifications`, {
-                        headers: { 'X-Staff-Role': user.role },
-                    });
-                    const notifData: AdminNotification[] = await notifRes.json();
-                    if (Array.isArray(notifData)) setNotifications(notifData);
-                } catch {
-                    /* non-critical */
-                }
-                return { success: true };
-            }
-            return { success: false, error: data.error || 'Invalid username or password' };
-        } catch (error) {
-            console.error('Login error:', error);
-            return { success: false, error: 'Network error. Is the API running?' };
+            const res = await api.post(`/auth/login`, { username, password });
+            const user = res.data;
+            setCurrentUser(user);
+            localStorage.setItem('racs_staff_member', JSON.stringify(user));
+            return { success: true };
+        } catch (error: any) {
+            return { success: false, error: error.response?.data?.error || 'Login failed' };
         }
     };
 
     const addVehicle = async (vehicle: Vehicle) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/cars`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    ...staffRoleHeaders()
-                },
-                body: JSON.stringify(vehicle)
-            });
-            
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.error || `HTTP error! status: ${res.status}`);
-            }
-            
-            const newCar = await res.json();
+            const res = await api.post(`/cars`, vehicle);
+            const newCar = res.data;
             setCars(prev => ({ ...prev, [newCar.id]: newCar }));
-        } catch (error) {
-            console.error('Error adding vehicle:', error);
-            alert(`Could not add vehicle: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } catch (error: any) {
+            console.error('Add vehicle error:', error);
         }
     };
 
     const updateVehicle = async (vehicle: Vehicle) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/cars/${vehicle.id}`, {
-                method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    ...staffRoleHeaders()
-                },
-                body: JSON.stringify(vehicle)
-            });
-            
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.error || `HTTP error! status: ${res.status}`);
-            }
-            
-            const updatedCar = await res.json();
+            const res = await api.put(`/cars/${vehicle.id}`, vehicle);
+            const updatedCar = res.data;
             setCars(prev => ({ ...prev, [updatedCar.id]: updatedCar }));
-        } catch (error) {
-            console.error('Error updating vehicle:', error);
-            alert(`Could not update vehicle: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } catch (error: any) {
+            console.error('Update vehicle error:', error);
         }
     };
 
     const deleteVehicle = async (id: string) => {
         try {
-            await fetch(`${API_BASE_URL}/cars/${id}`, { 
-                method: 'DELETE',
-                headers: staffRoleHeaders()
-            });
+            await api.delete(`/cars/${id}`);
             setCars(prev => {
                 const { [id]: _, ...rest } = prev;
                 return rest;
             });
-        } catch (error) {
-            console.error('Error deleting vehicle:', error);
+        } catch (error: any) {
+            console.error('Delete vehicle error:', error);
         }
     };
 
     const requestDeletionVehicle = async (id: string, requestedBy: string, remarks: string) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/cars/${id}/request-deletion`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ requestedBy, remarks }),
-            });
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error((err as { error?: string }).error || 'Request failed');
-            }
-            const updated = await res.json();
+            const res = await api.post(`/cars/${id}/request-deletion`, { requestedBy, remarks });
+            const updated = res.data;
             setCars(prev => ({ ...prev, [updated.id]: updated }));
-            try {
-                const notifRes = await fetch(`${API_BASE_URL}/notifications`, { headers: staffRoleHeaders() });
-                const notifData: AdminNotification[] = await notifRes.json();
-                if (Array.isArray(notifData)) setNotifications(notifData);
-            } catch { /* non-critical */ }
-        } catch (error) {
-            console.error('Error requesting deletion:', error);
+        } catch (error: any) {
+            console.error('Request deletion error:', error);
             throw error;
         }
     };
 
     const resolveDeletion = async (id: string, action: 'approve' | 'reject') => {
         try {
-            const res = await fetch(`${API_BASE_URL}/cars/${id}/resolve-deletion`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action }),
-            });
-            if (action === 'approve' && res.status === 204) {
+            const res = await api.post(`/cars/${id}/resolve-deletion`, { action });
+            if (action === 'approve') {
                 setCars(prev => {
                     const { [id]: _, ...rest } = prev;
                     return rest;
                 });
-            } else if (action === 'reject' && res.ok) {
-                const updated = await res.json();
+            } else {
+                const updated = res.data;
                 setCars(prev => ({ ...prev, [updated.id]: updated }));
             }
-            try {
-                const notifRes = await fetch(`${API_BASE_URL}/notifications`, { headers: staffRoleHeaders() });
-                const notifData: AdminNotification[] = await notifRes.json();
-                if (Array.isArray(notifData)) setNotifications(notifData);
-            } catch { /* non-critical */ }
-        } catch (error) {
-            console.error('Error resolving deletion:', error);
+        } catch (error: any) {
+            console.error('Resolve deletion error:', error);
         }
     };
 
     const resolveSale = async (id: string, action: 'approve' | 'reject') => {
         try {
-            const res = await fetch(`${API_BASE_URL}/cars/${id}/resolve-sale`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action })
-            });
-            const updatedCar = await res.json();
+            const res = await api.post(`/cars/${id}/resolve-sale`, { action });
+            const updatedCar = res.data;
             setCars(prev => ({ ...prev, [updatedCar.id]: updatedCar }));
-
-            try {
-                const notifRes = await fetch(`${API_BASE_URL}/notifications`, { headers: staffRoleHeaders() });
-                const notifData: AdminNotification[] = await notifRes.json();
-                if (Array.isArray(notifData)) setNotifications(notifData);
-            } catch { /* non-critical */ }
-        } catch (error) {
-            console.error('Error resolving sale:', error);
+        } catch (error: any) {
+            console.error('Resolve sale error:', error);
         }
     };
 
     const addStaff = async (data: Partial<StaffMember>) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/staff`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const payload = await res.json();
-            if (!res.ok) {
-                console.error('Error adding staff:', payload?.error);
-                return { success: false, error: payload?.error ?? 'Could not create user.' };
-            }
-            const {
-                welcomeEmailSent = false,
-                welcomeEmailError,
-                ...newStaff
-            } = payload as StaffMember & { welcomeEmailSent?: boolean; welcomeEmailError?: string };
+            const res = await api.post(`/staff`, data);
+            const payload = res.data;
+            const { welcomeEmailSent = false, welcomeEmailError, ...newStaff } = payload;
             setStaff(prev => [newStaff as StaffMember, ...prev]);
             return { success: true, welcomeEmailSent, welcomeEmailError };
-        } catch (error) {
-            console.error('Error adding staff:', error);
-            return { success: false, error: 'Network error. Is the API running?' };
+        } catch (error: any) {
+            return { success: false, error: error.response?.data?.error || 'Could not create staff' };
         }
     };
 
     const updateStaff = async (id: string, data: Partial<StaffMember>) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/staff/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const updated = await res.json();
+            const res = await api.put(`/staff/${id}`, data);
+            const updated = res.data;
             setStaff(prev => prev.map(s => s.id === id ? updated : s));
-        } catch (error) {
-            console.error('Error updating staff:', error);
+        } catch (error: any) {
+            console.error('Update staff error:', error);
         }
     };
 
     const changePassword = async (id: string, currentPassword: string, newPassword: string) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/staff/${id}/change-password`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ currentPassword, newPassword })
-            });
-            const data = await res.json();
-            if (!res.ok) return { success: false, error: data.error || 'Failed to change password' };
+            await api.put(`/staff/${id}/change-password`, { currentPassword, newPassword });
             return { success: true };
-        } catch (error) {
-            return { success: false, error: 'Network error. Please try again.' };
+        } catch (error: any) {
+            return { success: false, error: error.response?.data?.error || 'Password change failed' };
         }
     };
 
     const deleteStaff = async (id: string) => {
         try {
-            await fetch(`${API_BASE_URL}/staff/${id}`, { method: 'DELETE' });
+            await api.delete(`/staff/${id}`);
             setStaff(prev => prev.filter(s => s.id !== id));
-        } catch (error) {
-            console.error('Error deleting staff:', error);
+        } catch (error: any) {
+            console.error('Delete staff error:', error);
         }
     };
 
     const addReport = async (report: UserReport) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/reports`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(report)
-            });
-            const newReport = await res.json();
-            setReports(prev => [...prev, newReport]);
-        } catch (error) {
-            console.error('Error adding report:', error);
+            const res = await api.post(`/reports`, report);
+            setReports(prev => [...prev, res.data]);
+        } catch (error: any) {
+            console.error('Add report error:', error);
         }
     };
 
     const resolveReport = async (id: string) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/reports/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'RESOLVED' })
-            });
-            const updatedReport = await res.json();
-            setReports(prev => prev.map(r => r.id === id ? updatedReport : r));
-        } catch (error) {
-            console.error('Error resolving report:', error);
+            const res = await api.patch(`/reports/${id}`, { status: 'RESOLVED' });
+            setReports(prev => prev.map(r => r.id === id ? res.data : r));
+        } catch (error: any) {
+            console.error('Resolve report error:', error);
         }
     };
 
     const reopenReport = async (id: string) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/reports/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'REOPENED' })
-            });
-            const updatedReport = await res.json();
-            setReports(prev => prev.map(r => r.id === id ? updatedReport : r));
-        } catch (error) {
-            console.error('Error reopening report:', error);
+            const res = await api.patch(`/reports/${id}`, { status: 'REOPENED' });
+            setReports(prev => prev.map(r => r.id === id ? res.data : r));
+        } catch (error: any) {
+            console.error('Reopen report error:', error);
         }
     };
 
     const deleteReport = async (id: string) => {
         try {
-            await fetch(`${API_BASE_URL}/reports/${id}`, { method: 'DELETE' }); // You'll need to add this endpoint to index.ts
+            await api.delete(`/reports/${id}`);
             setReports(prev => prev.filter(r => r.id !== id));
-        } catch (error) {
-            console.error('Error deleting report:', error);
+        } catch (error: any) {
+            console.error('Delete report error:', error);
         }
     };
 
     const addInquiry = async (carId: string, carName: string, userEmail: string, message: string) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/inquiries`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ carId, carName, userEmail, message })
-            });
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.error || 'Failed to send inquiry');
-            }
-        } catch (error) {
-            console.error('Error adding inquiry:', error);
+            await api.post(`/inquiries`, { carId, carName, userEmail, message });
+        } catch (error: any) {
+            console.error('Add inquiry error:', error);
+            throw error;
+        }
+    };
+
+    const sendReply = async (inquiryId: string, replyMessage: string) => {
+        try {
+            await api.post(`/inquiries/${inquiryId}/reply`, { replyMessage });
+        } catch (error: any) {
+            console.error('Send reply error:', error);
             throw error;
         }
     };
 
     const requestPasswordReset = async (email: string) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
-            const data = await res.json();
-            if (!res.ok) return { success: false, message: data.error || 'Request failed', error: data.error };
-            return { success: true, message: data.message };
-        } catch (error) {
-            return { success: false, message: 'Network error', error: 'Network error' };
+            const res = await api.post(`/auth/forgot-password`, { email });
+            return { success: true, message: res.data.message };
+        } catch (error: any) {
+            return { success: false, message: error.response?.data?.error || 'Request failed' };
         }
     };
 
     const resetPassword = async (email: string, otp: string, newPassword: string) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, otp, newPassword })
-            });
-            const data = await res.json();
-            if (!res.ok) return { success: false, message: data.error || 'Reset failed', error: data.error };
-            return { success: true, message: data.message };
-        } catch (error) {
-            return { success: false, message: 'Network error', error: 'Network error' };
+            const res = await api.post(`/auth/reset-password`, { email, otp, newPassword });
+            return { success: true, message: res.data.message };
+        } catch (error: any) {
+            return { success: false, message: error.response?.data?.error || 'Reset failed' };
         }
     };
 
     const updateSettings = async (newSettings: AppSettings) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/settings`, {
-                method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    ...staffRoleHeaders()
-                },
-                body: JSON.stringify(newSettings)
-            });
-            const savedSettings = await res.json();
-            setSettings(savedSettings);
-        } catch (error) {
-            console.error('Error updating settings:', error);
+            const res = await api.put(`/settings`, newSettings);
+            setSettings(res.data);
+        } catch (error: any) {
+            console.error('Update settings error:', error);
         }
     };
 
@@ -579,22 +404,15 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             title, message, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             isRead: false, type, sender
         };
-        setNotifications(prev => {
-            const updated = [newNotif, ...prev].slice(0, 20);
-            localStorage.setItem('racs_admin_notifications', JSON.stringify(updated));
-            return updated;
-        });
+        setNotifications(prev => [newNotif, ...prev].slice(0, 20));
     };
 
     const markAllNotificationsRead = async () => {
         try {
-            await fetch(`${API_BASE_URL}/notifications/read-all`, {
-                method: 'PATCH',
-                headers: staffRoleHeaders(),
-            });
+            await api.patch(`/notifications/read-all`);
             setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-        } catch (error) {
-            console.error('Error marking notifications read:', error);
+        } catch (error: any) {
+            console.error('Mark read notifications error:', error);
         }
     };
 
@@ -609,7 +427,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             addVehicle, updateVehicle, deleteVehicle, requestDeletionVehicle, resolveDeletion, resolveSale,
             addStaff, updateStaff, changePassword, deleteStaff,
             addReport, resolveReport, reopenReport, deleteReport,
-            addInquiry,
+            addInquiry, sendReply,
             requestPasswordReset, resetPassword,
             updateSettings, addNotification, markAllNotificationsRead, clearNotifications
         }}>
@@ -623,4 +441,3 @@ export const useInventory = () => {
     if (!context) throw new Error('useInventory must be used within an InventoryProvider');
     return context;
 };
-

@@ -39,72 +39,99 @@ import { CompareProvider } from './context/CompareContext';
 import ComparePage from './pages/ComparePage';
 import CompareBar from './components/CompareBar';
 
+class ErrorBoundary extends React.Component<{children: any}, {hasError: boolean, error: any, info: any}> {
+    constructor(props: any) {
+        super(props);
+        this.state = { hasError: false, error: null, info: null };
+    }
+    static getDerivedStateFromError(error: any) {
+        return { hasError: true, error };
+    }
+    componentDidCatch(_error: any, info: any) {
+        this.setState({ info });
+    }
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div style={{ padding: 40, color: 'white', background: 'red', minHeight: '100vh' }}>
+                    <h2>React Crashed!</h2>
+                    <pre>{String(this.state.error)}</pre>
+                    <pre style={{ fontSize: 11, whiteSpace: 'pre-wrap', marginTop: 20 }}>{this.state.info?.componentStack}</pre>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
+
 const App: React.FC = () => {
     return (
-        <CompareProvider>
+        <ErrorBoundary>
             <InventoryProvider>
-                <Router>
-                    <CompareBar />
-                    <Routes>
-                        {/* Public Routes */}
-                        <Route path="/" element={<Home />} />
-                        <Route path="/about" element={<AboutUs />} />
-                        <Route path="/cars" element={<CarsPage />} />
-                        <Route path="/compare" element={<ComparePage />} />
-                        <Route path="/terms" element={<TermsAndPrivacy />} />
-                        <Route path="/car/:id" element={<CarDetail />} />
-                        <Route path="/login" element={<Login />} />
+                <CompareProvider>
+                    <Router>
+                        <CompareBar />
+                        <Routes>
+                            {/* Public Routes */}
+                            <Route path="/" element={<Home />} />
+                            <Route path="/about" element={<AboutUs />} />
+                            <Route path="/cars" element={<CarsPage />} />
+                            <Route path="/compare" element={<ComparePage />} />
+                            <Route path="/terms" element={<TermsAndPrivacy />} />
+                            <Route path="/car/:id" element={<CarDetail />} />
+                            <Route path="/login" element={<Login />} />
 
-                    {/* Admin Routes */}
-                    <Route path="/admin" element={
-                        <ProtectedRoute>
-                            <AdminLayout>
-                                <DashboardView />
-                            </AdminLayout>
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/admin/inventory" element={
-                        <ProtectedRoute>
-                            <AdminLayout>
-                                <InventoryView />
-                            </AdminLayout>
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/admin/account" element={
-                        <ProtectedRoute>
-                            <AdminLayout>
-                                <StaffAccountGate />
-                            </AdminLayout>
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/admin/users" element={
-                        <SuperAdminRoute>
-                            <AdminLayout>
-                                <UsersView />
-                            </AdminLayout>
-                        </SuperAdminRoute>
-                    } />
-                    <Route path="/admin/reports" element={
-                        <SuperAdminRoute>
-                            <AdminLayout>
-                                <ReportsView />
-                            </AdminLayout>
-                        </SuperAdminRoute>
-                    } />
-                    <Route path="/admin/settings" element={
-                        <SuperAdminRoute>
-                            <AdminLayout>
-                                <SettingsView />
-                            </AdminLayout>
-                        </SuperAdminRoute>
-                    } />
+                        {/* Admin Routes */}
+                        <Route path="/admin" element={
+                            <ProtectedRoute>
+                                <AdminLayout>
+                                    <DashboardView />
+                                </AdminLayout>
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/admin/inventory" element={
+                            <ProtectedRoute>
+                                <AdminLayout>
+                                    <InventoryView />
+                                </AdminLayout>
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/admin/account" element={
+                            <ProtectedRoute>
+                                <AdminLayout>
+                                    <StaffAccountGate />
+                                </AdminLayout>
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/admin/users" element={
+                            <SuperAdminRoute>
+                                <AdminLayout>
+                                    <UsersView />
+                                </AdminLayout>
+                            </SuperAdminRoute>
+                        } />
+                        <Route path="/admin/reports" element={
+                            <SuperAdminRoute>
+                                <AdminLayout>
+                                    <ReportsView />
+                                </AdminLayout>
+                            </SuperAdminRoute>
+                        } />
+                        <Route path="/admin/settings" element={
+                            <SuperAdminRoute>
+                                <AdminLayout>
+                                    <SettingsView />
+                                </AdminLayout>
+                            </SuperAdminRoute>
+                        } />
 
-                    {/* Fallback */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-            </Router>
+                        {/* Fallback */}
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                </Router>
+                </CompareProvider>
             </InventoryProvider>
-        </CompareProvider>
+        </ErrorBoundary>
     );
 };
 

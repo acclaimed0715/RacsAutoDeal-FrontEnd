@@ -594,22 +594,25 @@ const InventoryView: React.FC = () => {
                                 }
                                 <strong>{removalModalCar.name}</strong> is removed from the system.
                             </p>
-                            <div className="user-form-row" style={{ marginBottom: 0 }}>
-                                <label htmlFor="removal-remark">Reason / remarks</label>
-                                <textarea
-                                    id="removal-remark"
-                                    className="removal-remark-textarea"
-                                    rows={4}
-                                    placeholder="e.g. Duplicate listing, vehicle no longer available, wrong specs…"
-                                    value={removalRemark}
-                                    onChange={e => setRemovalRemark(e.target.value)}
-                                    required
-                                    minLength={5}
-                                    maxLength={2000}
-                                />
-                                <span className="temp-password-hint" style={{ marginTop: '0.35rem' }}>
-                                    Minimum 5 characters. {isSuperAdmin ? 'This will be recorded for audit purposes.' : 'This will be visible to the Super Admin.'}
-                                </span>
+                            <div className="user-form-row" style={{ marginBottom: 0, alignItems: 'flex-start' }}>
+                                <label htmlFor="removal-remark" style={{ whiteSpace: 'nowrap', paddingTop: '8px' }}>Reason / remarks</label>
+                                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+                                    <textarea
+                                        id="removal-remark"
+                                        className="removal-remark-textarea"
+                                        rows={4}
+                                        placeholder="e.g. Duplicate listing, vehicle no longer available, wrong specs…"
+                                        value={removalRemark}
+                                        onChange={e => setRemovalRemark(e.target.value)}
+                                        required
+                                        minLength={5}
+                                        maxLength={2000}
+                                        style={{ width: '100%' }}
+                                    />
+                                    <span className="temp-password-hint" style={{ marginTop: '0.35rem' }}>
+                                        Minimum 5 characters. {isSuperAdmin ? 'This will be recorded for audit purposes.' : 'This will be visible to the Super Admin.'}
+                                    </span>
+                                </div>
                             </div>
                             <div className="user-modal-footer" style={{ borderTop: '1px solid var(--border)', paddingTop: '1.25rem', marginTop: '1.25rem', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                                 <button

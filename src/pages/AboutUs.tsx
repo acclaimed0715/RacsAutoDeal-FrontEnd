@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from '../components/landing/Navbar';
 import Footer from '../components/landing/Footer';
 import { useInventory } from '../context/InventoryContext';
+import { motion } from 'framer-motion';
 
 const AboutUs: React.FC = () => {
     const { settings } = useInventory();
@@ -10,13 +11,30 @@ const AboutUs: React.FC = () => {
         <div className="landing-page">
             <Navbar />
             
-            <div className="about-hero" style={{ paddingTop: '120px', paddingBottom: '80px', textAlign: 'center', background: 'var(--bg-footer)' }}>
-                <h1 style={{ fontSize: '4rem', fontWeight: '900', marginBottom: '1rem', color: 'white' }}>
-                    About <span style={{ color: 'var(--primary)' }}>{settings.businessName}</span>
-                </h1>
-                <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '800px', margin: '0 auto', padding: '0 2rem' }}>
-                    We specialize in giving you the premium vehicle experience. Redefining quality, performance, and trust on the road.
-                </p>
+            <div className="about-hero" style={{ 
+                paddingTop: '160px', 
+                paddingBottom: '80px', 
+                textAlign: 'center', 
+                background: 'linear-gradient(180deg, #1a1a2e 0%, #0a0a0a 100%)',
+                position: 'relative',
+                overflow: 'hidden'
+            }}>
+                <div className="hero-bg-accent" style={{ opacity: 0.1 }}></div>
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                >
+                    <span className="hero-badge" style={{ display: 'inline-block', marginBottom: '1rem' }}>
+                        {settings.businessName || 'Racs Auto Deal'}
+                    </span>
+                    <h1 style={{ fontSize: '3.5rem', fontWeight: '900', marginBottom: '1rem', color: 'white', textTransform: 'uppercase', letterSpacing: '2px' }}>
+                        About <span style={{ color: 'var(--primary)' }}>Us</span>
+                    </h1>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '800px', margin: '0 auto', padding: '0 2rem' }}>
+                        Redefining the premium vehicle experience. Quality, performance, and trust on every road.
+                    </p>
+                </motion.div>
             </div>
 
             <div className="about-content" style={{ maxWidth: '1200px', margin: '0 auto', padding: '5rem 2rem', display: 'flex', flexDirection: 'column', gap: '4rem' }}>

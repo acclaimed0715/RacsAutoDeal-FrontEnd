@@ -1,43 +1,45 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useInventory } from '../../context/InventoryContext';
 
 const SLIDE_DURATION = 6000; // 6 seconds
 
-const slides = [
-    { 
-        id: 1, 
-        image: '/assets/images/hero-car.png', 
-        badge: 'Racs Auto Deal', 
-        tagline: 'Premium Performance',
-        highlight: 'Starts Here.'
-    },
-    { 
-        id: 2, 
-        image: '/assets/images/hero-car-2.png', 
-        badge: 'Racs Auto Deal', 
-        tagline: 'Elegance & Comfort',
-        highlight: 'Luxury Redefined.'
-    },
-    { 
-        id: 3, 
-        image: '/assets/images/hero-car-3.png', 
-        badge: 'Racs Auto Deal', 
-        tagline: 'Speed & Passion',
-        highlight: 'Unmatched Value.'
-    }
-];
-
 const Hero: React.FC = () => {
+    const { settings } = useInventory();
     const [currentSlide, setCurrentSlide] = useState(0);
+
+    const slides = useMemo(() => [
+        { 
+            id: 1, 
+            image: '/assets/images/hero-car.png', 
+            badge: settings.businessName || 'Racs Auto Deal', 
+            tagline: 'Premium Performance',
+            highlight: 'Starts Here.'
+        },
+        { 
+            id: 2, 
+            image: '/assets/images/hero-car-2.png', 
+            badge: settings.businessName || 'Racs Auto Deal', 
+            tagline: 'Elegance & Comfort',
+            highlight: 'Luxury Redefined.'
+        },
+        { 
+            id: 3, 
+            image: '/assets/images/hero-car-3.png', 
+            badge: settings.businessName || 'Racs Auto Deal', 
+            tagline: 'Speed & Passion',
+            highlight: 'Unmatched Value.'
+        }
+    ], [settings.businessName]);
     
     const nextSlide = useCallback(() => {
         setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, []);
+    }, [slides.length]);
 
     const prevSlide = useCallback(() => {
         setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-    }, []);
+    }, [slides.length]);
 
     useEffect(() => {
         const autoPlayTimer = setInterval(nextSlide, SLIDE_DURATION);
@@ -83,7 +85,7 @@ const Hero: React.FC = () => {
         },
         right: { 
             x: '45%', 
-            y: -40, // Move a little up when behind
+            y: -40, 
             scale: 0.8, 
             zIndex: 5, 
             opacity: 0.4,
@@ -92,7 +94,7 @@ const Hero: React.FC = () => {
         },
         left: { 
             x: '-45%', 
-            y: -40, // Move a little up when behind
+            y: -40, 
             scale: 0.8, 
             zIndex: 5, 
             opacity: 0.4,
@@ -128,7 +130,7 @@ const Hero: React.FC = () => {
                             Your Next Journey <span className="highlight">{slide.highlight}</span>
                         </h1>
                         <p className="hero-sub-description">
-                            Welcome to <strong>Racs Auto Deal</strong>, your premier destination for quality
+                            Welcome to <strong>{settings.businessName}</strong>, your premier destination for quality
                             vehicles. Explore our curated selection of cars designed to
                             fit every lifestyle.
                         </p>
@@ -225,15 +227,10 @@ const Hero: React.FC = () => {
                             );
                         })}
                     </div>
-                    
                 </div>
             </div>
-
-
-
         </main>
     );
 };
-
 
 export default Hero;

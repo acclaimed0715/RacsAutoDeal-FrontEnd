@@ -4,7 +4,7 @@ import { useCompare } from '../context/CompareContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const CompareBar: React.FC = () => {
-    const { selectedCars, removeFromCompare, clearCompare } = useCompare();
+    const { selectedCars, removeFromCompare } = useCompare();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -27,7 +27,7 @@ const CompareBar: React.FC = () => {
                     <div className="compare-items-list">
                         {selectedCars.map((car) => (
                             <div key={car.id} className="compare-item-pill">
-                                <img src={car.images[0]} alt={car.name} className="pill-img" />
+                                <img src={(car.images && car.images.length > 0) ? car.images[0] : ''} alt={car.name} className="pill-img" />
                                 <span className="pill-name">{car.name}</span>
                                 <button 
                                     className="pill-remove" 

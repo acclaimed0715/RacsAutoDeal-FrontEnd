@@ -3,41 +3,59 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { useCompare } from '../context/CompareContext';
 import { formatPrice } from '../utils/format';
 import { motion } from 'framer-motion';
+import { type Vehicle } from '../types';
 
-// ─── Spec definitions (mirrors mobile app exactly) ────────────────────────────
-const SPEC_SECTIONS = [
+// Spec definition with explicit typing to avoid TS errors
+interface SpecDef {
+  label: string;
+  key: keyof Vehicle;
+  icon: string;
+  badge?: boolean;
+  higherBetter?: boolean;
+  lowerBetter?: boolean;
+  color?: boolean;
+}
+
+interface SpecSection {
+  section: string;
+  specs: SpecDef[];
+}
+
+const SPEC_SECTIONS: SpecSection[] = [
   {
     section: 'Overview',
     specs: [
-      { label: 'Model Year',   key: 'modelYear',     icon: '📅' },
-      { label: 'Brand',        key: 'brand',         icon: '⭐' },
-      { label: 'Type',         key: 'type',          icon: '🏷️', badge: true },
+      { label: 'Model Year',   key: 'modelYear' as any,     icon: '📅' },
+      { label: 'Brand',        key: 'brand' as any,         icon: '⭐' },
+      { label: 'Type',         key: 'type' as any,          icon: '🏷️', badge: true },
     ],
   },
   {
     section: 'Performance',
     specs: [
-      { label: 'Engine',       key: 'engine',        icon: '⚙️' },
-      { label: 'Horsepower',   key: 'hp',            icon: '⚡', higherBetter: true },
-      { label: 'Torque',       key: 'torque',        icon: '🔄', higherBetter: true },
-      { label: 'Transmission', key: 'transmission',  icon: '🔧' },
-      { label: 'Fuel Type',    key: 'fuelType',      icon: '⛽' },
+      { label: 'Engine',       key: 'engine' as any,        icon: '⚙️' },
+      { label: 'Horsepower',   key: 'hp' as any,            icon: '⚡', higherBetter: true },
+      { label: 'Torque',       key: 'torque' as any,        icon: '🔄', higherBetter: true },
+      { label: 'Transmission', key: 'transmission' as any,  icon: '🔧' },
+      { label: 'Fuel Type',    key: 'fuelType' as any,      icon: '⛽' },
     ],
   },
   {
     section: 'Details',
     specs: [
-      { label: 'Mileage',      key: 'mileage',       icon: '📍', lowerBetter: true },
-      { label: 'Seating',      key: 'seating',       icon: '💺', higherBetter: true },
-      { label: 'Color',        key: 'color',         icon: '🎨', color: true },
+      { label: 'Mileage',      key: 'mileage' as any,       icon: '📍', lowerBetter: true },
+      { label: 'Seating',      key: 'seating' as any,       icon: '💺', higherBetter: true },
+      { label: 'Color',        key: 'color' as any,         icon: '🎨', color: true },
     ],
   },
 ];
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
-function extractNum(raw: string | undefined): number | null {
-  if (!raw) return null;
+function extractNum(raw: string | number | undefined): number | null {
+  if (raw === undefined || raw === null) return null;
+  if (typeof raw === 'number') return raw;
+  if (typeof raw !== 'string') return null;
   const n = parseFloat(raw.replace(/[^\d.]/g, ''));
   return isNaN(n) ? null : n;
 }
@@ -54,11 +72,11 @@ function parseColorCss(name: string | undefined): string {
 }
 
 function isBestValue(
-  key: string, rawVal: string | undefined,
-  cars: any[], higherBetter?: boolean, lowerBetter?: boolean
+  key: string, rawVal: any,
+  cars: Vehicle[], higherBetter?: boolean, lowerBetter?: boolean
 ): boolean {
-  if (!rawVal || cars.length < 2) return false;
-  const nums = cars.map(c => extractNum(String(c[key] ?? ''))).filter(n => n !== null) as number[];
+  if (rawVal === undefined || cars.length < 2) return false;
+  const nums = cars.map(c => extractNum((c as any)[key])).filter(n => n !== null) as number[];
   if (nums.length < 2) return false;
   const myNum = extractNum(rawVal);
   if (myNum === null) return false;
@@ -68,254 +86,111 @@ function isBestValue(
 }
 
 // ─── Layout constants ────────────────────────────────────────────────────────────────
-const HEADER_H  = 332; // car header card height
-const SECTION_H = 40;  // section label row height
-const ROW_H     = 64;  // each spec row height
-const LABEL_W   = 160; // fixed left label column width (px)
-
-// ─── Component ────────────────────────────────────────────────────────────────
+const HEADER_H  = 332; 
+const SECTION_H = 40;  
+const ROW_H     = 64;  
+const LABEL_W   = 160; 
 
 const ComparePage: React.FC = () => {
   const { selectedCars, removeFromCompare, clearCompare } = useCompare();
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // ── Empty State ─────────────────────────────────────────────────────────────
   if (selectedCars.length < 2) {
     return <Navigate to="/cars" replace />;
   }
 
-  // ── Table ───────────────────────────────────────────────────────────────────
-  let rowIdx = 0;
+  let rowIdxGlobal = 0;
 
   return (
-    <div className="compare-page-container" style={{ width: '100%', boxSizing: 'border-box' }}>
-      {/* Header */}
+    <div className="compare-page-container" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg-dark)', minHeight: '100vh', padding: '120px 20px 100px' }}>
       <motion.div
         className="compare-header"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        style={{ width: '100%' }}
+        style={{ width: '100%', textAlign: 'center', marginBottom: '40px' }}
       >
-        <h1 className="compare-title">Vehicle Comparison</h1>
-        <p className="compare-subtitle">
+        <h1 className="compare-title" style={{ fontSize: '3rem', fontWeight: 900, color: 'white' }}>Vehicle Comparison</h1>
+        <p className="compare-subtitle" style={{ color: 'var(--text-muted)' }}>
           {selectedCars.length} of 4 vehicles · Side-by-side analysis
         </p>
       </motion.div>
 
-      {/* Table area */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', width: '100%' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', maxWidth: '1400px', margin: '0 auto', width: '100%', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
 
-        {/* ── FIXED LEFT LABEL COLUMN ───────────────────────────────────── */}
-        <div style={{
-          width: LABEL_W,
-          flexShrink: 0,
-          marginTop: 0,
-        }}>
-          {/* Spacer matching EXACT car header card height */}
+        {/* FIXED LEFT LABEL COLUMN */}
+        <div style={{ width: LABEL_W, flexShrink: 0, borderRight: '1px solid rgba(255,255,255,0.05)' }}>
           <div style={{ height: HEADER_H }} />
-
           {SPEC_SECTIONS.map(({ section, specs }) => (
             <div key={section}>
-              {/* Section header */}
               <div style={{
                 height: SECTION_H,
                 display: 'flex',
                 alignItems: 'flex-end',
                 paddingBottom: 8,
-                paddingLeft: 16,
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                paddingLeft: 20,
+                borderBottom: '1px solid rgba(255,255,255,0.05)',
               }}>
-                <span style={{
-                  color: '#cc0000',
-                  fontSize: 10,
-                  fontWeight: 900,
-                  letterSpacing: '1.4px',
-                  textTransform: 'uppercase',
-                }}>{section}</span>
+                <span style={{ color: 'var(--primary)', fontSize: 10, fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase' }}>{section}</span>
               </div>
-
-              {/* Spec labels */}
-              {specs.map((spec, si) => {
-                const even = rowIdx++ % 2 === 0;
+              {specs.map((spec) => {
+                const even = rowIdxGlobal++ % 2 === 0;
                 return (
                   <div key={spec.key} style={{
                     height: ROW_H,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 8,
-                    paddingLeft: 16,
-                    paddingRight: 8,
-                    background: even ? 'rgba(255,255,255,0.025)' : 'transparent',
-                    boxSizing: 'border-box',
+                    gap: 10,
+                    paddingLeft: 20,
+                    background: even ? 'rgba(255,255,255,0.02)' : 'transparent',
                   }}>
-                    <span style={{ fontSize: 11, lineHeight: 1 }}>{spec.icon}</span>
-                    <span style={{
-                      color: '#9ca3af',
-                      fontSize: 11,
-                      fontWeight: 700,
-                      lineHeight: 1.3,
-                    }}>{spec.label}</span>
+                    <span style={{ fontSize: 14 }}>{spec.icon}</span>
+                    <span style={{ color: '#9ca3af', fontSize: 12, fontWeight: 700 }}>{spec.label}</span>
                   </div>
                 );
               })}
             </div>
           ))}
-
-          {/* Actions label */}
-          <div style={{
-            height: ROW_H,
-            display: 'flex',
-            alignItems: 'center',
-            paddingLeft: 16,
-            background: 'rgba(255,255,255,0.025)',
-          }}>
-            <span style={{
-              color: '#cc0000',
-              fontSize: 10,
-              fontWeight: 900,
-              letterSpacing: '1.4px',
-              textTransform: 'uppercase',
-            }}>Actions</span>
+          <div style={{ height: ROW_H, display: 'flex', alignItems: 'center', paddingLeft: 20, background: 'rgba(255,255,255,0.02)' }}>
+            <span style={{ color: 'var(--primary)', fontSize: 10, fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase' }}>Actions</span>
           </div>
         </div>
 
-        {/* ── SCROLLABLE CAR COLUMNS ────────────────────────────────────── */}
-        <div ref={scrollRef} style={{
-          flex: 1,
-          overflowX: 'auto',
-          overflowY: 'visible',
-          scrollbarWidth: 'thin',
-          scrollbarColor: 'rgba(204,0,0,0.4) transparent',
-        }}>
-          <div style={{
-            display: 'flex',
-            gap: 12,
-            width: '100%',
-          }}>
+        {/* SCROLLABLE CAR COLUMNS */}
+        <div ref={scrollRef} style={{ flex: 1, overflowX: 'auto' }}>
+          <div style={{ display: 'flex', width: '100%' }}>
             {selectedCars.map((car) => {
               let valRowIdx = 0;
               return (
-                <motion.div
-                  key={car.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4 }}
-                  style={{ flex: 1, minWidth: 0 }}
-                >
-                  {/* ── Car Header Card ──────────────────────────────────── */}
-                  <div style={{
-                    background: '#14141f',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 18,
-                    overflow: 'hidden',
-                    marginBottom: 0,
-                    boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
-                    height: HEADER_H,
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}>
-                    {/* Image */}
-                    <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
-                      <img
-                        src={car.images?.[0] ?? car.image}
-                        alt={car.name}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          transition: 'transform 0.5s ease',
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.07)')}
-                        onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-                        onError={e => {
-                          e.currentTarget.src = '';
-                          e.currentTarget.style.background = '#1e1e2e';
-                        }}
+                <motion.div key={car.id} style={{ flex: 1, minWidth: '300px', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+                  {/* Car Header */}
+                  <div style={{ height: HEADER_H, padding: '20px', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ height: '180px', borderRadius: '16px', overflow: 'hidden', marginBottom: '15px' }}>
+                      <img 
+                        src={(car.images && car.images.length > 0) ? car.images[0] : ''} 
+                        alt={car.name} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                       />
-                      {/* Gradient */}
-                      <div style={{
-                        position: 'absolute', inset: 0,
-                        background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.55))',
-                      }} />
-                      {/* Best deal badge */}
-                      {car.isBestDeal && (
-                        <div style={{
-                          position: 'absolute', bottom: 10, left: 10,
-                          background: '#cc0000',
-                          color: '#fff',
-                          fontSize: 8,
-                          fontWeight: 900,
-                          letterSpacing: '0.5px',
-                          padding: '3px 8px',
-                          borderRadius: 20,
-                          textTransform: 'uppercase',
-                        }}>BEST DEAL</div>
-                      )}
-                      {/* Remove button */}
-                      <button
-                        onClick={() => removeFromCompare(car.id)}
-                        style={{
-                          position: 'absolute', top: 10, right: 10,
-                          background: 'rgba(0,0,0,0.6)',
-                          border: 'none',
-                          borderRadius: '50%',
-                          width: 28, height: 28,
-                          color: '#fff',
-                          fontSize: 14,
-                          cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          transition: 'background 0.2s',
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#cc0000')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.6)')}
-                        title="Remove"
-                      >✕</button>
                     </div>
-
-                    {/* Name + Price */}
-                    <div style={{
-                      padding: '12px 14px',
-                      textAlign: 'center',
-                    }}>
-                      <div style={{
-                        color: '#fff',
-                        fontSize: 14,
-                        fontWeight: 800,
-                        lineHeight: 1.3,
-                        marginBottom: 8,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}>{car.name}</div>
-                      <div style={{
-                        display: 'inline-block',
-                        background: 'rgba(204,0,0,0.1)',
-                        border: '1px solid rgba(204,0,0,0.3)',
-                        borderRadius: 8,
-                        padding: '3px 12px',
-                        color: '#cc0000',
-                        fontSize: 15,
-                        fontWeight: 900,
-                      }}>{formatPrice(car.price)}</div>
+                    <div style={{ textAlign: 'center' }}>
+                      <h3 style={{ color: 'white', fontSize: '1.2rem', marginBottom: '8px' }}>{car.name}</h3>
+                      <div style={{ color: 'var(--primary)', fontWeight: 900, fontSize: '1.4rem' }}>{formatPrice(car.price)}</div>
+                      <button 
+                        onClick={() => removeFromCompare(car.id)}
+                        style={{ marginTop: '10px', background: 'transparent', border: 'none', color: '#ff4444', cursor: 'pointer', fontSize: '0.8rem' }}
+                      >Remove</button>
                     </div>
                   </div>
 
-                  {/* ── Spec value rows ───────────────────────────────────── */}
+                  {/* Spec Values */}
                   {SPEC_SECTIONS.map(({ section, specs }) => (
                     <div key={section}>
-                      {/* Section spacer */}
-                      <div style={{ height: 40 }} />
-
+                      <div style={{ height: SECTION_H }} />
                       {specs.map((spec) => {
                         const even = valRowIdx++ % 2 === 0;
                         const rawVal = (car as any)[spec.key];
                         const displayVal = rawVal ?? '—';
-                        const best = isBestValue(
-                          spec.key, String(rawVal ?? ''),
-                          selectedCars, spec.higherBetter, spec.lowerBetter
-                        );
+                        const best = isBestValue(spec.key, rawVal, selectedCars, spec.higherBetter, spec.lowerBetter);
 
                         return (
                           <div key={spec.key} style={{
@@ -323,66 +198,29 @@ const ComparePage: React.FC = () => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            padding: '0 12px',
-                            background: even ? 'rgba(255,255,255,0.025)' : 'transparent',
-                            borderBottom: best ? '2px solid #4caf50' : '2px solid transparent',
-                            boxSizing: 'border-box',
-                            gap: 6,
+                            background: even ? 'rgba(255,255,255,0.02)' : 'transparent',
+                            gap: 8,
+                            padding: '0 15px'
                           }}>
-                            {/* Color swatch */}
-                            {spec.color && rawVal && rawVal !== '—' && (
-                              <div style={{
-                                width: 12, height: 12,
-                                borderRadius: '50%',
-                                background: parseColorCss(String(rawVal)),
-                                border: '1px solid rgba(255,255,255,0.2)',
-                                flexShrink: 0,
-                              }} />
+                            {spec.color && rawVal && (
+                              <div style={{ width: 14, height: 14, borderRadius: '50%', background: parseColorCss(String(rawVal)), border: '1px solid white' }} />
                             )}
-
-                            {/* Badge for type */}
-                            {spec.badge && rawVal ? (
-                              <span className="feature-pill-small">{String(rawVal)}</span>
-                            ) : (
-                              <span style={{
-                                color: best ? '#4caf50' : '#cbd5e1',
-                                fontSize: 14,
-                                fontWeight: best ? 800 : 600,
-                                textAlign: 'center',
-                                lineHeight: 1.3,
-                              }}>{String(displayVal)}</span>
-                            )}
-
-                            {/* Best badge */}
-                            {best && (
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                stroke="#4caf50" strokeWidth="2.5" strokeLinecap="round"
-                                strokeLinejoin="round">
-                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                                <polyline points="17 6 23 6 23 12" />
-                              </svg>
-                            )}
+                            <span style={{ color: best ? '#4caf50' : 'white', fontWeight: best ? 800 : 500 }}>
+                              {String(displayVal)}
+                            </span>
                           </div>
                         );
                       })}
                     </div>
                   ))}
 
-                  {/* ── View Details button ───────────────────────────────── */}
-                  <div style={{
-                    height: ROW_H,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '0 12px',
-                    background: 'rgba(255,255,255,0.025)',
-                  }}>
-                    <button
-                      className="compare-now-btn"
-                      style={{ width: '100%', padding: '10px 16px', fontSize: 12 }}
+                  <div style={{ height: ROW_H, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px', background: 'rgba(255,255,255,0.02)' }}>
+                    <button 
+                      className="message-dealer-btn" 
+                      style={{ width: '100%', padding: '8px', fontSize: '0.9rem' }}
                       onClick={() => navigate(`/car/${car.id}`)}
                     >
-                      View Details
+                      View
                     </button>
                   </div>
                 </motion.div>
@@ -392,37 +230,8 @@ const ComparePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom CTA */}
-      <div style={{
-        textAlign: 'center',
-        marginTop: 60,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 16,
-        width: '100%'
-      }}>
-        {selectedCars.length < 4 ? (
-          <button className="compare-now-btn" onClick={() => navigate('/cars')}>
-            <i className="fa-solid fa-chart-simple" style={{ marginRight: '10px' }}></i> Add More Vehicles
-          </button>
-        ) : (
-          <div style={{ 
-            color: '#cc0000', 
-            fontSize: '0.9rem', 
-            fontWeight: 700,
-            background: 'rgba(204,0,0,0.1)',
-            padding: '10px 20px',
-            borderRadius: '10px',
-            border: '1px solid rgba(204,0,0,0.2)'
-          }}>
-            Maximum limit of 4 vehicles reached
-          </div>
-        )}
-        <button className="clear-btn" onClick={clearCompare}
-          style={{ fontSize: '0.75rem', opacity: 0.5 }}>
-          Clear All
-        </button>
+      <div style={{ textAlign: 'center', marginTop: '40px' }}>
+        <button className="clear-btn" onClick={clearCompare} style={{ opacity: 0.6 }}>Clear All</button>
       </div>
     </div>
   );

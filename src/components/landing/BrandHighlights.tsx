@@ -63,7 +63,7 @@ const BrandCard: React.FC<{ brand: typeof brands[0] }> = ({ brand }) => {
                 border: '1px solid rgba(0, 0, 0, 0.08)',
                 padding: '12px',
                 borderRadius: '16px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+                boxShadow: '0 0 20px rgba(255, 255, 255, 0.1)',
                 cursor: 'pointer',
                 height: '115px', 
                 width: '160px',

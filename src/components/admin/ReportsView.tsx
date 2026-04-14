@@ -119,7 +119,7 @@ const ReportsView: React.FC = () => {
 
             {selectedReport && (
                 <>
-                    <div className="admin-modal-overlay active" onClick={() => setSelectedReport(null)}></div>
+                    <div className="admin-modal-overlay active"></div>
                     <div className="user-modal active" style={{ display: 'block', maxWidth: '600px', width: '95%' }}>
                         <div className="user-modal-header">
                             <h3>Report Details</h3>

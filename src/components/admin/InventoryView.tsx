@@ -543,10 +543,6 @@ const InventoryView: React.FC = () => {
                 <>
                     <div
                         className="admin-modal-overlay active removal-modal-overlay"
-                        onClick={() => {
-                            setRemovalModalCar(null);
-                            setRemovalRemark('');
-                        }}
                     />
                     <div className="user-modal active removal-request-modal" style={{ display: 'block', maxWidth: '480px', width: '95%' }}>
                         <div className="user-modal-header">
@@ -637,7 +633,7 @@ const InventoryView: React.FC = () => {
 
             {isModalOpen && (
                 <>
-                    <div className="admin-modal-overlay active" onClick={() => setIsModalOpen(false)}></div>
+                    <div className="admin-modal-overlay active"></div>
                     <div className="user-modal active" style={{ display: 'block', maxWidth: '900px', width: '95%', maxHeight: '90vh', overflowY: 'auto' }}>
                         <div className="user-modal-header">
                             <h3>{editingCar ? 'Edit Vehicle Deal' : 'Register New Vehicle'}</h3>

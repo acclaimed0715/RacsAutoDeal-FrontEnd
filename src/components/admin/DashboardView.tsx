@@ -27,6 +27,7 @@ ChartJS.register(
 const DashboardView: React.FC = () => {
     const { cars, reports, currentUser, resolveSale, settings } = useInventory();
     const inventory = Object.values(cars);
+    const openVehiclesCount = inventory.filter(car => car.status === 'open').length;
     const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
 
     const totalValue = inventory.reduce((sum, car) => sum + (parseInt(car.price.replace(/[^0-9]/g, '')) || 0), 0);
@@ -248,7 +249,7 @@ const DashboardView: React.FC = () => {
                     <div className="stat-icon" style={{ background: 'rgba(39, 174, 96, 0.1)', color: '#27ae60' }}><i className="fa-solid fa-car"></i></div>
                     <div className="stat-info">
                         <h3>Total Vehicles</h3>
-                        <p>{inventory.length}</p>
+                        <p>{openVehiclesCount}</p>
                     </div>
                 </div>
                 <div className="stat-card">

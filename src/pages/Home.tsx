@@ -8,14 +8,16 @@ import Footer from '../components/landing/Footer';
 import CustomerReviews from '../components/landing/CustomerReviews';
 
 import CompareHighlight from '../components/landing/CompareHighlight';
+import ServicesSection from '../components/landing/ServicesSection';
 
 const Home: React.FC = () => {
     return (
         <div className="landing-page">
             <Navbar />
             <Hero />
-            <StatsAndServices />
             <BrandHighlights />
+            <StatsAndServices />
+            <ServicesSection />
             <CompareHighlight />
             <CustomerReviews />
             <SupportSection />

@@ -121,7 +121,8 @@ const Inventory: React.FC = () => {
                             paginatedCars.map(car => (
                                 <CarCard 
                                     key={car.id} 
-                                    car={car} 
+                                    car={car}
+                                    viewMode={view}
                                 />
                             ))
                         )}

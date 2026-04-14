@@ -246,7 +246,7 @@ const UsersView: React.FC = () => {
             {/* ── Add User Modal ── */}
             {isAddOpen && (
                 <>
-                    <div className="admin-modal-overlay active" onClick={() => setIsAddOpen(false)}></div>
+                    <div className="admin-modal-overlay active"></div>
                     <div className="user-modal active">
                         <div className="user-modal-header">
                             <h3>Add New Staff User</h3>
@@ -302,7 +302,7 @@ const UsersView: React.FC = () => {
             {/* ── Edit User Modal ── */}
             {isEditOpen && (
                 <>
-                    <div className="admin-modal-overlay active" onClick={() => setIsEditOpen(false)}></div>
+                    <div className="admin-modal-overlay active"></div>
                     <div className="user-modal active">
                         <div className="user-modal-header">
                             <h3>Edit Staff User</h3>

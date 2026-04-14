@@ -1,3 +1,4 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { type Vehicle } from '../../types';
 import { formatListingPosted } from '../../utils/listingTime';
@@ -6,9 +7,10 @@ import { useCompare } from '../../context/CompareContext';
 
 interface CarCardProps {
     car: Vehicle;
+    viewMode?: 'list' | 'grid';
 }
 
-const CarCard: React.FC<CarCardProps> = ({ car }) => {
+const CarCard: React.FC<CarCardProps> = ({ car, viewMode = 'list' }) => {
     const navigate = useNavigate();
     const { isInCompare, addToCompare, removeFromCompare } = useCompare();
     
@@ -70,6 +72,77 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
 
     const isAuto = car.transmission.toLowerCase().includes('auto') || car.transmission.toLowerCase().includes('cvt');
 
+    if (viewMode === 'grid') {
+        return (
+            <div className="car-card car-card--grid" onClick={() => navigate(`/car/${car.id}`)}>  
+                {/* Image */}
+                <div className="car-image-wrapper">
+                    {getBadges()}
+                    <button 
+                        className={`card-compare-btn ${isSelected ? 'active' : ''} ${!isSelected ? 'pulse-on-idle' : ''}`}
+                        onClick={handleCompareClick}
+                        title="Compare this vehicle"
+                    >
+                        {isSelected ? <i className="fa-solid fa-right-left"></i> : <i className="fa-solid fa-chart-simple"></i>}
+                    </button>
+                    <img src={car.images[0]} alt={car.name} className="car-image" />
+                </div>
+
+                {/* Info */}
+                <div className="grid-card-body">
+                    {/* Name + Color + Price row */}
+                    <div className="grid-card-top">
+                        <div className="grid-card-name-row">
+                            <h3 className="card-name">{car.name}</h3>
+                            {car.color && (
+                                <div
+                                    style={{
+                                        width: '10px', height: '10px', borderRadius: '50%',
+                                        background: car.color.toLowerCase(),
+                                        border: '1px solid rgba(255,255,255,0.2)',
+                                        boxShadow: `0 0 5px ${car.color.toLowerCase()}`,
+                                        flexShrink: 0,
+                                    }}
+                                    title={`Color: ${car.color}`}
+                                />
+                            )}
+                        </div>
+                        <div className="grid-card-price">{formatPrice(car.price)}</div>
+                    </div>
+
+                    {/* Spec chips */}
+                    <div className="grid-spec-row">
+                        <span className="grid-spec-chip">
+                            <i className="fa-solid fa-gears"></i>
+                            {isAuto ? 'Automatic' : 'Manual'}
+                        </span>
+                        <span className="grid-spec-chip">
+                            <i className="fa-solid fa-gas-pump"></i>
+                            {car.fuelType.split(' ')[0]}
+                        </span>
+                        <span className="grid-spec-chip">
+                            <i className="fa-regular fa-calendar"></i>
+                            {car.modelYear}
+                        </span>
+                        <span className="grid-spec-chip">
+                            <i className="fa-solid fa-gauge"></i>
+                            {car.mileage ? `${car.mileage} km` : 'N/A'}
+                        </span>
+                    </div>
+
+                    {/* Posted time */}
+                    <div className="grid-card-footer">
+                        <span className="card-posted-compact">
+                            <i className="fa-regular fa-clock"></i>
+                            {formatListingPosted(car)}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // --- List view (original layout) ---
     return (
 <div className="car-card" onClick={() => navigate(`/car/${car.id}`)}>
             <div className="car-image-wrapper">

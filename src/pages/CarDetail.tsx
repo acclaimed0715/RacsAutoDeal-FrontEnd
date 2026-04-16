@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useInventory } from '../context/InventoryContext';
+import { useInquiry } from '../context/InquiryContext';
 import Navbar from '../components/landing/Navbar';
 import Footer from '../components/landing/Footer';
 import { type Vehicle } from '../types';
@@ -10,14 +11,22 @@ import { formatPrice } from '../utils/format';
 const CarDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { cars, isLoading, addInquiry } = useInventory();
+    const { cars, isLoading, addReport } = useInventory();
+    const { openInquiry } = useInquiry();
     
     const [car, setCar] = useState<Vehicle | null>(null);
-    const [activeTab, setActiveTab] = useState<'description' | 'otherFeatures'>('description');
+    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const [currentImgIdx, setCurrentImgIdx] = useState(0);
-    const [isEmailOpen, setIsEmailOpen] = useState(false);
-    const [emailFrom, setEmailFrom] = useState('');
-    const [isSending, setIsSending] = useState(false);
+
+    // Report States
+    const [isReportOpen, setIsReportOpen] = useState(false);
+    const [reportEmail, setReportEmail] = useState('');
+    const [reportReason, setReportReason] = useState('');
+    const [reportIssue, setReportIssue] = useState('');
+    const [reportPhoto, setReportPhoto] = useState<File | null>(null);
+    const [reportPhotoError, setReportPhotoError] = useState('');
+    const [isReportSubmitting, setIsReportSubmitting] = useState(false);
+    const [showReportSuccess, setShowReportSuccess] = useState(false);
 
 
     useEffect(() => {
@@ -50,28 +59,65 @@ const CarDetail: React.FC = () => {
     const prevImg = () => setCurrentImgIdx((currentImgIdx - 1 + car.images.length) % car.images.length);
 
     const handleInquire = () => {
-        setIsEmailOpen(true);
+        if (car) openInquiry(car);
     };
 
-    const sendInquiry = async () => {
-        if (!emailFrom) {
-            alert('Please provide your email address.');
-            return;
+    const handleReportPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setReportPhotoError('');
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            if (file.size > 5 * 1024 * 1024) {
+                setReportPhotoError('Photo must be less than 5MB');
+                setReportPhoto(null);
+                e.target.value = '';
+            } else {
+                setReportPhoto(file);
+            }
         }
-        if (!car) return;
+    };
 
-        setIsSending(true);
-        try {
-            const message = `Hi, I'm interested in this ${car.name}. Is it still available for viewing?`;
-            await addInquiry(car.id, car.name, emailFrom, message);
-            alert(`Inquiry for ${car.name} sent! Please check your email for confirmation.`);
-            setIsEmailOpen(false);
-            setEmailFrom('');
-        } catch (error) {
-            alert('Failed to send inquiry. Please try again later.');
-        } finally {
-            setIsSending(false);
+    const readFileAsDataURL = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const handleSubmitReport = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!car) return;
+        setIsReportSubmitting(true);
+        
+        let photoData = '';
+        if (reportPhoto) {
+            try {
+                photoData = await readFileAsDataURL(reportPhoto);
+            } catch (err) {
+                console.error("Failed to read photo", err);
+            }
         }
+
+        const newReport = {
+            id: 'rep_' + Date.now(),
+            userName: reportEmail.split('@')[0],
+            userEmail: reportEmail,
+            reason: reportReason,
+            description: `[CAR: ${car.name} (${car.id})] ${reportIssue}`,
+            photoData: photoData || undefined,
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+            status: 'PENDING' as const
+        };
+
+        await addReport(newReport);
+        setIsReportSubmitting(false);
+        setIsReportOpen(false);
+        setReportEmail('');
+        setReportReason('');
+        setReportIssue('');
+        setReportPhoto(null);
+        setShowReportSuccess(true);
     };
 
     return (
@@ -88,22 +134,26 @@ const CarDetail: React.FC = () => {
                         <i className="fa-solid fa-arrow-left"></i> Back to Listing
                     </button>
 
-                    <div className="car-detail-header" style={{ marginBottom: '30px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '20px', flexWrap: 'wrap' }}>
-                            <div>
-                                <h1 style={{ fontSize: '3rem', fontWeight: '800', margin: 0, color: 'white' }}>{car.name} {car.modelYear}</h1>
-                                <div style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                    <span><i className="fa-regular fa-clock" style={{ marginRight: '6px' }}></i> {formatListingPosted(car)}</span>
-                                </div>
+
+
+                    <div className="main-title-section">
+                        <div className="main-header-flex">
+                            <h1>{car.name}</h1>
+                            <div className="main-price">{formatPrice(car.price)}</div>
+                        </div>
+                        <div className="main-subtitle-row">
+                            <div className="main-subtitle">
+                                <i className="fa-solid fa-shield-check" style={{ color: '#22c55e', marginRight: '8px' }}></i> 
+                                Verified Listing • <span style={{ color: '#fff', fontWeight: 700 }}>Racs Auto Deal</span>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <div style={{ fontSize: '2.8rem', color: 'var(--primary)', fontWeight: '900', lineHeight: 1 }}>{formatPrice(car.price)}</div>
-                                <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '5px' }}>Excluding Registration & Fees</div>
+                            <div className="main-meta">
+                                <div className="meta-item"><i className="fa-regular fa-clock"></i> Listed {formatListingPosted(car)}</div>
+                                <div className="meta-item">Excluding Registration & Fees</div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="detail-main-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.8fr) minmax(0, 1fr)', gap: '30px', alignItems: 'start' }}>
+                    <div className="detail-main-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.8fr) minmax(0, 1fr)', gap: '50px', alignItems: 'start' }}>
                         <div className="detail-media-section">
                             <div className="preview-image-wrapper" style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', background: '#1a1a1a', border: '1px solid var(--border)' }}>
                                 <div className="carousel-container" style={{ position: 'relative', height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -129,153 +179,214 @@ const CarDetail: React.FC = () => {
                                     ))}
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="detail-info-section" style={{ background: 'var(--card-bg)', padding: '35px', borderRadius: '24px', border: '1px solid var(--border)', position: 'sticky', top: '100px' }}>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <div style={{ height: '2px', width: '20px', background: 'var(--primary)' }}></div>
-                                Specifications
-                            </div>
-                            <div className="main-features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px', marginBottom: '35px' }}>
-                                <div className="feature-block">
-                                    <i className="fa-solid fa-calendar-days" style={{ color: 'var(--primary)' }}></i>
-                                    <span>{car.modelYear} Model</span>
-                                </div>
-                                <div className="feature-block">
-                                    <i className="fa-solid fa-gauge-high" style={{ color: 'var(--primary)' }}></i>
-                                    <span>{car.mileage || 'N/A' }</span>
-                                </div>
-                                <div className="feature-block">
-                                    <i className="fa-solid fa-gear" style={{ color: 'var(--primary)' }}></i>
-                                    <span>{car.transmission}</span>
-                                </div>
-                                <div className="feature-block">
-                                    <i className="fa-solid fa-gas-pump" style={{ color: 'var(--primary)' }}></i>
-                                    <span>{car.fuelType}</span>
-                                </div>
-                            </div>
 
-                            <div className="tabs-header" style={{ marginBottom: '25px' }}>
-                                <div className={`tab-item ${activeTab === 'description' ? 'active' : ''}`} onClick={() => setActiveTab('description')}>
-                                    Overview
-                                    <div className="tab-underline"></div>
-                                </div>
-                                <div className={`tab-item ${activeTab === 'otherFeatures' ? 'active' : ''}`} onClick={() => setActiveTab('otherFeatures')}>
-                                    Technical Specs
-                                    <div className="tab-underline"></div>
-                                </div>
-                            </div>
 
-                            <div className="detail-tab-content" style={{ minHeight: '200px' }}>
-                                <div className={`tab-content ${activeTab === 'description' ? 'active' : ''}`}>
+                            <div className="detail-description-section" style={{ marginTop: '40px' }}>
+                                <div className="section-title-premium">
+                                    <div className="title-dash"></div>
+                                    Vehicle Overview
+                                </div>
+                                <div className={`description-wrapper ${isDescriptionExpanded ? 'expanded' : ''}`}>
                                     <p style={{ lineHeight: '1.8', color: 'var(--text-secondary)', fontSize: '1.05rem', margin: 0 }}>
                                         {car.description || 'No description available for this vehicle.'}
                                     </p>
+                                    {!isDescriptionExpanded && car.description && car.description.length > 450 && (
+                                        <div className="description-fade"></div>
+                                    )}
                                 </div>
-
-                                <div className={`tab-content ${activeTab === 'otherFeatures' ? 'active' : ''}`}>
-                                    <ul className="car-specs-list" style={{ margin: 0 }}>
-                                        <li><strong>Engine</strong> <span>{car.engine || 'Standard'}</span></li>
-                                        <li><strong>Horsepower</strong> <span>{car.hp || 'Standard'}</span></li>
-                                        <li><strong>Torque</strong> <span>{car.torque || 'Standard'}</span></li>
-                                        <li><strong>Transmission</strong> <span>{car.transmission}</span></li>
-                                        <li><strong>Seating</strong> <span>{car.seating || 'Standard'}</span></li>
-                                    </ul>
-                                </div>
+                                {car.description && car.description.length > 450 && (
+                                    <button 
+                                        className="read-more-btn" 
+                                        onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                                        style={{ marginTop: '15px' }}
+                                    >
+                                        {isDescriptionExpanded ? (
+                                            <>Show less <i className="fa-solid fa-chevron-up"></i></>
+                                        ) : (
+                                            <>Read more <i className="fa-solid fa-chevron-down"></i></>
+                                        )}
+                                    </button>
+                                )}
                             </div>
+                        </div>
 
-                            <div className="inquiry-card" style={{ marginTop: '40px', paddingTop: '30px', borderTop: '1px solid var(--border)' }}>
+                        <div className="detail-info-section">
+                            <div className="inquiry-card" style={{ marginBottom: '50px', paddingBottom: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
                                 <button className="message-dealer-btn" onClick={handleInquire} style={{ width: '100%', height: '65px', borderRadius: '15px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                                     <i className="fa-solid fa-envelope"></i> Inquire Now
                                 </button>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '20px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                                    <i className="fa-solid fa-shield-check" style={{ color: '#22c55e' }}></i>
-                                    <span>Verified Dealer • Racs Auto Deal</span>
+                                <button className="report-listing-link" onClick={() => setIsReportOpen(true)} style={{ 
+                                    background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: '0.85rem', cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, transition: 'color 0.3s ease'
+                                }}>
+                                    <i className="fa-solid fa-flag"></i> Submit Report / Report Listing
+                                </button>
+                            </div>
+
+                            <div className="section-title-premium">
+                                <div className="title-dash"></div>
+                                Quick Specifications
+                            </div>
+                            <div className="main-features-grid">
+                                <div className="feature-card-premium">
+                                    <div className="feature-icon"><i className="fa-solid fa-calendar-days"></i></div>
+                                    <div className="feature-info">
+                                        <span className="feature-label">Model Year</span>
+                                        <span className="feature-value">{car.modelYear}</span>
+                                    </div>
+                                </div>
+                                <div className="feature-card-premium">
+                                    <div className="feature-icon"><i className="fa-solid fa-gauge-high"></i></div>
+                                    <div className="feature-info">
+                                        <span className="feature-label">Mileage</span>
+                                        <span className="feature-value">{car.mileage || 'N/A'}</span>
+                                    </div>
+                                </div>
+                                <div className="feature-card-premium">
+                                    <div className="feature-icon"><i className="fa-solid fa-gear"></i></div>
+                                    <div className="feature-info">
+                                        <span className="feature-label">Transmission</span>
+                                        <span className="feature-value">{car.transmission}</span>
+                                    </div>
+                                </div>
+                                <div className="feature-card-premium">
+                                    <div className="feature-icon"><i className="fa-solid fa-gas-pump"></i></div>
+                                    <div className="feature-info">
+                                        <span className="feature-label">Fuel Type</span>
+                                        <span className="feature-value">{car.fuelType}</span>
+                                    </div>
                                 </div>
                             </div>
+
+                            <div className="section-title-premium" style={{ marginTop: '40px' }}>
+                                <div className="title-dash"></div>
+                                Technical Detail
+                            </div>
+                            <ul className="car-specs-list" style={{ marginTop: '20px' }}>
+                                <li><strong>Engine</strong> <span>{car.engine || 'Standard'}</span></li>
+                                <li><strong>Horsepower</strong> <span>{car.hp || 'Standard'}</span></li>
+                                <li><strong>Torque</strong> <span>{car.torque || 'Standard'}</span></li>
+                                <li><strong>Seat</strong> <span>{car.seating || 'Standard'}</span></li>
+                                <li><strong>Safety Features</strong> <span>{car.safety || 'Standard'}</span></li>
+                                <li><strong>Other Features</strong> <span>{car.otherFeatures?.join(', ') || 'Standard'}</span></li>
+                            </ul>
                         </div>
                     </div>
                 </div>
             </main>
 
-            {/* Email Composer Modal */}
-            {isEmailOpen && (
-                <div className="email-composer active" id="emailComposer" style={{ display: 'flex' }}>
-                    <div className="composer-header">
-                        <span>New Message</span>
-                        <div className="composer-actions">
-                            <i className="fa-solid fa-minus"></i>
-                            <i className="fa-solid fa-expand"></i>
-                            <i className="fa-solid fa-xmark" onClick={() => setIsEmailOpen(false)}></i>
-                        </div>
-                    </div>
-                    <div className="composer-body">
-                        <div className="composer-field">
-                            <span>From</span>
-                            <input type="email" value={emailFrom} onChange={e => setEmailFrom(e.target.value)} placeholder="Your Email" />
-                        </div>
-                        <div className="composer-field">
-                            <span>To</span>
-                            <input type="text" value="sales@racsautodeal.com" readOnly />
-                        </div>
-                        <div className="composer-field">
-                            <span>Subject</span>
-                            <input type="text" value={`Inquiry: ${car.name}`} readOnly />
-                        </div>
-                        
-                        <div className="composer-content-area" style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                            <div 
-                                className="composer-textarea" 
-                                contentEditable={true}
-                                onInput={() => {
-                                }}
-                                style={{ 
-                                    flex: 1, 
-                                    padding: '20px',
-                                    paddingBottom: '100px',
-                                    outline: 'none',
-                                    color: '#333',
-                                    whiteSpace: 'pre-wrap',
-                                    overflowY: 'auto',
-                                    fontSize: '15px',
-                                    lineHeight: '1.6',
-                                    background: '#fff',
-                                    textAlign: 'left',
-                                    display: 'block'
-                                }}
-                            >
-                                <b>{car.name.toUpperCase()}</b> Inquiry
-                                <br/><br/>
-                                <b>Details:</b>
-                                <br/>
-                                • Price: {formatPrice(car.price)}
-                                <br/>
-                                • Model Year: {car.modelYear}
-                                <br/>
-                                • Mileage: {car.mileage || 'N/A'}
-                                <br/>
-                                • Transmission: {car.transmission}
-                                <br/><br/>
+            {/* Report Modal */}
+            {isReportOpen && (
+                <>
+                    <div className="report-modal-overlay active" onClick={() => setIsReportOpen(false)}></div>
+                    <div className="report-modal active premium-variant" style={{ display: 'block' }}>
+                        <div className="report-modal-content">
+                            <span className="close-report-btn" onClick={() => setIsReportOpen(false)}><i className="fa-solid fa-xmark"></i></span>
+                            <h2>Report Listing</h2>
+                            <span className="modal-subtitle">
+                                Helping us maintain high quality listings. Please describe the issue with <strong>{car.name}</strong>.
+                            </span>
+                            <form id="reportForm" onSubmit={handleSubmitReport}>
+                                <div className="form-row-premium" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                        <label>Email Address *</label>
+                                        <input type="email" value={reportEmail} onChange={e => setReportEmail(e.target.value)} placeholder="Your email" required />
+                                    </div>
 
-                                <br/><br/>
-                                Hi, I'm interested in this {car.name}. Is it still available for viewing?
+                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                        <label>Reason *</label>
+                                        <div className="select-wrapper">
+                                            <select value={reportReason} onChange={e => setReportReason(e.target.value)} required>
+                                                <option value="" disabled>Select Reason</option>
+                                                <option value="Sold Vehicle Still Listed">Sold Vehicle</option>
+                                                <option value="Price Discrepancy">Price Issue</option>
+                                                <option value="Incorrect Specifications">Spec Error</option>
+                                                <option value="Suspicious/Fake Listing">Fake/Scam</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                            <i className="fa-solid fa-chevron-down"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="form-group" style={{ marginBottom: '15px' }}>
+                                    <label>Briefly describe the issue</label>
+                                    <textarea value={reportIssue} onChange={e => setReportIssue(e.target.value)} placeholder="What's wrong?" rows={2}></textarea>
+                                </div>
+
+                                <div className="form-group" style={{ marginBottom: '10px' }}>
+                                    <label>Add Photo (Optional)</label>
+                                    <div className="file-upload-wrapper" style={{ position: 'relative' }}>
+                                        <input 
+                                            type="file" 
+                                            accept="image/*" 
+                                            onChange={handleReportPhotoChange} 
+                                            style={{ 
+                                                opacity: 0,
+                                                position: 'absolute',
+                                                top: 0, left: 0, bottom: 0, right: 0, 
+                                                width: '100%', 
+                                                cursor: 'pointer',
+                                                zIndex: 2
+                                            }}
+                                        />
+                                        <div style={{
+                                            background: 'rgba(255, 255, 255, 0.02)', 
+                                            padding: '0.8rem 1rem', 
+                                            borderRadius: '10px', 
+                                            border: '1px dashed rgba(255, 255, 255, 0.1)', 
+                                            color: 'rgba(255,255,255,0.4)',
+                                            textAlign: 'center',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '10px',
+                                            transition: 'border-color 0.3s ease',
+                                            position: 'relative',
+                                            zIndex: 1
+                                        }}>
+                                            <i className="fa-solid fa-image" style={{ fontSize: '1.2rem', color: reportPhoto ? '#10b981' : 'var(--primary)' }}></i>
+                                            <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                                                {reportPhoto ? reportPhoto.name : 'Upload Proof'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {reportPhotoError && <p style={{ color: 'var(--primary)', fontSize: '0.75rem', marginTop: '5px' }}>{reportPhotoError}</p>}
+                                </div>
+
+                                <button type="submit" className="report-submit-btn" disabled={isReportSubmitting}>
+                                    {isReportSubmitting ? 'Sending...' : 'Submit'}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </>
+            )}
+
+            {/* Success Modal */}
+            {showReportSuccess && (
+                <>
+                    <div className="report-modal-overlay active" onClick={() => setShowReportSuccess(false)}></div>
+                    <div className="report-modal active" style={{ display: 'block', maxWidth: '400px', textAlign: 'center' }}>
+                        <div className="report-modal-content" style={{ padding: '3rem 2rem' }}>
+                            <div style={{ width: '80px', height: '80px', background: 'rgba(225, 29, 72, 0.1)', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', margin: '0 auto 1.5rem' }}>
+                                <i className="fa-solid fa-check"></i>
                             </div>
+                            <h2 style={{ marginBottom: '1rem' }}>Report Submitted</h2>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
+                                Thank you for letting us know. Our team will review your report for <strong>{car.name}</strong> and get back to you shortly.
+                            </p>
+                            <button 
+                                type="button" 
+                                className="report-submit-btn" 
+                                onClick={() => setShowReportSuccess(false)}
+                            >
+                                Done
+                            </button>
                         </div>
                     </div>
-                    <div className="composer-footer">
-                        <button className="compose-send-btn" onClick={sendInquiry} disabled={isSending}>
-                            {isSending ? 'Sending...' : 'Send'}
-                        </button>
-                        <div className="footer-icons">
-                            <i className="fa-solid fa-font"></i>
-                            <i className="fa-solid fa-link" style={{ color: '#38bdf8' }}></i>
-                            <i className="fa-solid fa-paperclip"></i>
-                            <i className="fa-solid fa-face-smile"></i>
-                            <i className="fa-solid fa-image"></i>
-                        </div>
-                        <i className="fa-solid fa-trash-can composer-delete" onClick={() => setIsEmailOpen(false)}></i>
-                    </div>
-                </div>
+                </>
             )}
 
             <Footer />

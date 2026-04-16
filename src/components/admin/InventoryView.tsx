@@ -634,67 +634,71 @@ const InventoryView: React.FC = () => {
             {isModalOpen && (
                 <>
                     <div className="admin-modal-overlay active"></div>
-                    <div className="user-modal active" style={{ display: 'block', maxWidth: '900px', width: '95%', maxHeight: '90vh', overflowY: 'auto' }}>
+                    <div className="user-modal active" style={{ display: 'block', maxWidth: '1400px', width: '95%', maxHeight: '90vh', overflowY: 'auto' }}>
                         <div className="user-modal-header">
                             <h3>{editingCar ? 'Edit Vehicle Deal' : 'Register New Vehicle'}</h3>
                             <span className="close-user-modal" onClick={() => setIsModalOpen(false)}><i className="fa-solid fa-circle-xmark"></i></span>
                         </div>
                         
                         <form onSubmit={handleSubmit} className="user-modal-body">
-                            {/* IMAGES SECTION AT TOP */}
-                            <div className="deal-section" style={{ marginBottom: '2rem' }}>
-                                <label className="section-label">Vehicle Media (Drag & Drop or Multi-Select)</label>
-                                <div 
-                                    className={`image-upload-zone ${isDragging ? 'dragging' : ''}`}
-                                    onDragOver={onDragOver}
-                                    onDragLeave={onDragLeave}
-                                    onDrop={onDrop}
-                                    onClick={() => fileInputRef.current?.click()}
-                                    style={{
-                                        border: `2px dashed ${isDragging ? 'var(--primary)' : 'var(--border)'}`,
-                                        borderRadius: '12px',
-                                        padding: '2rem',
-                                        textAlign: 'center',
-                                        background: 'rgba(255,255,255,0.02)',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.3s'
-                                    }}
-                                >
-                                    <input 
-                                        type="file" 
-                                        multiple 
-                                        accept="image/*" 
-                                        ref={fileInputRef} 
-                                        onChange={handleFileChange} 
-                                        style={{ display: 'none' }} 
-                                    />
-                                    <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: '2.5rem', color: 'var(--primary)', marginBottom: '1rem' }}></i>
-                                    <p style={{ fontWeight: '600' }}>Drop your images here or click to browse</p>
-                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                                        <strong>Requirements:</strong> Min 5, Max 10 images. Max 10MB per file.
-                                    </p>
-                                </div>
-
-                                {images.length > 0 && (
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '12px', marginTop: '1.5rem' }}>
-                                        {images.map((img, idx) => (
-                                            <div key={idx} style={{ position: 'relative', height: '100px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)' }}>
-                                                <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                <button 
-                                                    type="button" 
-                                                    onClick={(e) => { e.stopPropagation(); removeImage(idx); }}
-                                                    style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '10px' }}
-                                                >
-                                                    <i className="fa-solid fa-times"></i>
-                                                </button>
-                                                {idx === 0 && <div style={{ position: 'absolute', bottom: '0', width: '100%', background: 'var(--primary)', color: 'white', fontSize: '8px', textAlign: 'center', padding: '2px 0' }}>MAIN COVER</div>}
-                                            </div>
-                                        ))}
+                            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(350px, 1fr) 1.25fr 1.25fr', gap: '1.5rem', alignItems: 'start' }}>
+                                {/* IMAGES SECTION AT LEFT */}
+                                <div className="deal-section">
+                                    <label className="section-label">Vehicle Media</label>
+                                    <div 
+                                        className={`image-upload-zone ${isDragging ? 'dragging' : ''}`}
+                                        onDragOver={onDragOver}
+                                        onDragLeave={onDragLeave}
+                                        onDrop={onDrop}
+                                        onClick={() => fileInputRef.current?.click()}
+                                        style={{
+                                            border: `2px dashed ${isDragging ? 'var(--primary)' : 'var(--border)'}`,
+                                            borderRadius: '12px',
+                                            padding: '2rem 1rem',
+                                            textAlign: 'center',
+                                            background: 'rgba(255,255,255,0.02)',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            minHeight: '220px'
+                                        }}
+                                    >
+                                        <input 
+                                            type="file" 
+                                            multiple 
+                                            accept="image/*" 
+                                            ref={fileInputRef} 
+                                            onChange={handleFileChange} 
+                                            style={{ display: 'none' }} 
+                                        />
+                                        <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: '2.5rem', color: 'var(--primary)', marginBottom: '1rem' }}></i>
+                                        <p style={{ fontWeight: '600' }}>Drop your images here or click to browse</p>
+                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                            <strong>Requirements:</strong> Min 5, Max 10 images. Max 10MB per file.
+                                        </p>
                                     </div>
-                                )}
-                            </div>
 
-                            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                    {images.length > 0 && (
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '10px', marginTop: '1.5rem', maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }}>
+                                            {images.map((img, idx) => (
+                                                <div key={idx} style={{ position: 'relative', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                                                    <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={(e) => { e.stopPropagation(); removeImage(idx); }}
+                                                        style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '10px' }}
+                                                    >
+                                                        <i className="fa-solid fa-times"></i>
+                                                    </button>
+                                                    {idx === 0 && <div style={{ position: 'absolute', bottom: '0', width: '100%', background: 'var(--primary)', color: 'white', fontSize: '8px', textAlign: 'center', padding: '2px 0' }}>MAIN COVER</div>}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                                 <div className="deal-section">
                                     <label className="section-label">General Information</label>
                                     <div className="deal-form-group">

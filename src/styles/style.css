@@ -2187,7 +2187,7 @@ body {
 }
 
 .report-modal-content {
-    padding: 2.5rem;
+    padding: 2rem;
     position: relative;
 }
 
@@ -2206,18 +2206,18 @@ body {
     font-weight: 800;
     color: #2c3141;
     /* Darker blue/grey from screenshot */
-    margin-bottom: 1.2rem;
+    margin-bottom: 0.8rem;
 }
 
 #reportForm .form-group {
-    margin-bottom: 1.2rem;
+    margin-bottom: 1rem;
 }
 
 #reportForm label {
     display: block;
     font-weight: 700;
     color: #121212;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.25rem;
     font-size: 0.95rem;
 }
 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { type Vehicle, type UserReport, type AppSettings, type AdminNotification, type StaffMember } from '../types';
+import { type Vehicle, type UserReport, type AppSettings, type AdminNotification, type StaffMember, type Inquiry } from '../types';
 import api from '../utils/api';
 
 
@@ -10,6 +10,7 @@ interface InventoryContextType {
     staff: StaffMember[];
     currentUser: StaffMember | null;
     notifications: AdminNotification[];
+    inquiries: Inquiry[];
     isLoading: boolean;
     loginStaff: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
     logoutStaff: () => void;
@@ -36,6 +37,7 @@ interface InventoryContextType {
     deleteReport: (id: string) => Promise<void>;
     addInquiry: (carId: string, carName: string, userEmail: string, message: string) => Promise<void>;
     sendReply: (inquiryId: string, replyMessage: string) => Promise<void>;
+    fetchInquiries: () => Promise<void>;
     requestPasswordReset: (email: string) => Promise<{ success: boolean; message: string; error?: string }>;
     resetPassword: (email: string, otp: string, newPassword: string) => Promise<{ success: boolean; message: string; error?: string }>;
     updateSettings: (settings: AppSettings) => Promise<void>;
@@ -65,6 +67,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         vehicleTypes: ['SUV', 'Sedan', 'Electric Car', 'Hatchback', 'Van', 'Sports Car', 'Coupe']
     });
     const [notifications, setNotifications] = useState<AdminNotification[]>([]);
+    const [inquiries, setInquiries] = useState<Inquiry[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     // Initial Data Fetch
@@ -77,17 +80,19 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             try {
                 // Fetch admin cars if logged in, otherwise fetch public cars
                 const carsUrl = parsedUser ? `/cars/admin` : `/cars`;
-                const [carsRes, settingsRes, reportsRes, staffRes] = await Promise.all([
+                const [carsRes, settingsRes, reportsRes, staffRes, inquiriesRes] = await Promise.all([
                     api.get(carsUrl),
                     api.get(`/settings`),
                     parsedUser && parsedUser.role === 'SUPER_ADMIN' ? api.get(`/reports`) : Promise.resolve({ data: [] }),
-                    parsedUser && parsedUser.role === 'SUPER_ADMIN' ? api.get(`/staff`) : Promise.resolve({ data: [] })
+                    parsedUser && parsedUser.role === 'SUPER_ADMIN' ? api.get(`/staff`) : Promise.resolve({ data: [] }),
+                    parsedUser ? api.get(`/inquiries`) : Promise.resolve({ data: [] })
                 ]);
 
                 const carsDataRaw = carsRes.data;
                 const settingsData: AppSettings = settingsRes.data;
                 const reportsData: UserReport[] = reportsRes.data;
                 const staffData: StaffMember[] = staffRes.data;
+                const inquiriesData: Inquiry[] = inquiriesRes.data;
 
                 const carsMap: Record<string, Vehicle> = {};
                 const carsData = Array.isArray(carsDataRaw) ? carsDataRaw : [];
@@ -99,6 +104,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 setReports(reportsData);
                 setSettings(settingsData);
                 setStaff(staffData);
+                if (Array.isArray(inquiriesData)) setInquiries(inquiriesData);
 
                 if (parsedUser) {
                     try {
@@ -127,21 +133,31 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const tick = async () => {
             try {
                 if (currentUser.role === 'SUPER_ADMIN') {
-                    const [reportsRes, notifRes] = await Promise.all([
+                    const [reportsRes, notifRes, inquiriesRes] = await Promise.all([
                         api.get(`/reports`),
                         api.get(`/notifications`),
+                        api.get(`/inquiries`),
                     ]);
                     const reportsData: UserReport[] = reportsRes.data;
                     const notifData: AdminNotification[] = notifRes.data;
+                    const inquiriesData: Inquiry[] = inquiriesRes.data;
                     
                     if (!cancelled) {
                         if (Array.isArray(reportsData)) setReports(reportsData);
                         if (Array.isArray(notifData)) setNotifications(notifData);
+                        if (Array.isArray(inquiriesData)) setInquiries(inquiriesData);
                     }
                 } else {
-                    const notifRes = await api.get(`/notifications`);
+                    const [notifRes, inquiriesRes] = await Promise.all([
+                        api.get(`/notifications`),
+                        api.get(`/inquiries`),
+                    ]);
                     const notifData: AdminNotification[] = notifRes.data;
-                    if (!cancelled && Array.isArray(notifData)) setNotifications(notifData);
+                    const inquiriesData: Inquiry[] = inquiriesRes.data;
+                    if (!cancelled) {
+                        if (Array.isArray(notifData)) setNotifications(notifData);
+                        if (Array.isArray(inquiriesData)) setInquiries(inquiriesData);
+                    }
                 }
             } catch { /* ignore */ }
         };
@@ -364,10 +380,21 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     const sendReply = async (inquiryId: string, replyMessage: string) => {
         try {
-            await api.post(`/inquiries/${inquiryId}/reply`, { replyMessage });
+            const res = await api.post(`/inquiries/${inquiryId}/reply`, { replyMessage });
+            const updated = res.data;
+            setInquiries(prev => prev.map(i => i.id === inquiryId ? updated : i));
         } catch (error: any) {
             console.error('Send reply error:', error);
             throw error;
+        }
+    };
+
+    const fetchInquiries = async () => {
+        try {
+            const res = await api.get(`/inquiries`);
+            if (Array.isArray(res.data)) setInquiries(res.data);
+        } catch (error) {
+            console.error('Fetch inquiries error:', error);
         }
     };
 
@@ -422,12 +449,12 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     return (
         <InventoryContext.Provider value={{
-            cars, reports, settings, staff, currentUser, notifications, isLoading,
+            cars, reports, settings, staff, currentUser, notifications, inquiries, isLoading,
             loginStaff, logoutStaff,
             addVehicle, updateVehicle, deleteVehicle, requestDeletionVehicle, resolveDeletion, resolveSale,
             addStaff, updateStaff, changePassword, deleteStaff,
             addReport, resolveReport, reopenReport, deleteReport,
-            addInquiry, sendReply,
+            addInquiry, sendReply, fetchInquiries,
             requestPasswordReset, resetPassword,
             updateSettings, addNotification, markAllNotificationsRead, clearNotifications
         }}>

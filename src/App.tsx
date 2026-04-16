@@ -1,6 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { InventoryProvider } from './context/InventoryContext';
+import { InquiryProvider } from './context/InquiryContext';
+import { CompareProvider } from './context/CompareContext';
+import ComparePage from './pages/ComparePage';
+import CompareBar from './components/CompareBar';
+import GlobalInquiryStack from './components/GlobalInquiryStack';
 import Home from './pages/Home';
 import AboutUs from './pages/AboutUs';
 import CarsPage from './pages/CarsPage';
@@ -10,6 +15,7 @@ import DashboardView from './components/admin/DashboardView';
 import InventoryView from './components/admin/InventoryView';
 import UsersView from './components/admin/UsersView';
 import ReportsView from './components/admin/ReportsView';
+import InquiriesView from './components/admin/InquiriesView';
 import SettingsView from './components/admin/SettingsView';
 import StaffAccountGate from './components/admin/StaffAccountGate';
 import TermsAndPrivacy from './pages/TermsAndPrivacy';
@@ -34,10 +40,6 @@ const SuperAdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) 
     }
     return <>{children}</>;
 };
-
-import { CompareProvider } from './context/CompareContext';
-import ComparePage from './pages/ComparePage';
-import CompareBar from './components/CompareBar';
 
 class ErrorBoundary extends React.Component<{children: any}, {hasError: boolean, error: any, info: any}> {
     constructor(props: any) {
@@ -68,68 +70,78 @@ const App: React.FC = () => {
     return (
         <ErrorBoundary>
             <InventoryProvider>
-                <CompareProvider>
-                    <Router>
-                        <CompareBar />
-                        <Routes>
-                            {/* Public Routes */}
-                            <Route path="/" element={<Home />} />
-                            <Route path="/about" element={<AboutUs />} />
-                            <Route path="/cars" element={<CarsPage />} />
-                            <Route path="/compare" element={<ComparePage />} />
-                            <Route path="/terms" element={<TermsAndPrivacy />} />
-                            <Route path="/car/:id" element={<CarDetail />} />
-                            <Route path="/login" element={<Login />} />
+                <InquiryProvider>
+                    <CompareProvider>
+                        <Router>
+                            <CompareBar />
+                            <GlobalInquiryStack />
+                            <Routes>
+                                {/* Public Routes */}
+                                <Route path="/" element={<Home />} />
+                                <Route path="/about" element={<AboutUs />} />
+                                <Route path="/cars" element={<CarsPage />} />
+                                <Route path="/compare" element={<ComparePage />} />
+                                <Route path="/terms" element={<TermsAndPrivacy />} />
+                                <Route path="/car/:id" element={<CarDetail />} />
+                                <Route path="/login" element={<Login />} />
 
-                        {/* Admin Routes */}
-                        <Route path="/admin" element={
-                            <ProtectedRoute>
-                                <AdminLayout>
-                                    <DashboardView />
-                                </AdminLayout>
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/admin/inventory" element={
-                            <ProtectedRoute>
-                                <AdminLayout>
-                                    <InventoryView />
-                                </AdminLayout>
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/admin/account" element={
-                            <ProtectedRoute>
-                                <AdminLayout>
-                                    <StaffAccountGate />
-                                </AdminLayout>
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/admin/users" element={
-                            <SuperAdminRoute>
-                                <AdminLayout>
-                                    <UsersView />
-                                </AdminLayout>
-                            </SuperAdminRoute>
-                        } />
-                        <Route path="/admin/reports" element={
-                            <SuperAdminRoute>
-                                <AdminLayout>
-                                    <ReportsView />
-                                </AdminLayout>
-                            </SuperAdminRoute>
-                        } />
-                        <Route path="/admin/settings" element={
-                            <SuperAdminRoute>
-                                <AdminLayout>
-                                    <SettingsView />
-                                </AdminLayout>
-                            </SuperAdminRoute>
-                        } />
+                            {/* Admin Routes */}
+                            <Route path="/admin" element={
+                                <ProtectedRoute>
+                                    <AdminLayout>
+                                        <DashboardView />
+                                    </AdminLayout>
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/admin/inquiries" element={
+                                <ProtectedRoute>
+                                    <AdminLayout>
+                                        <InquiriesView />
+                                    </AdminLayout>
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/admin/inventory" element={
+                                <ProtectedRoute>
+                                    <AdminLayout>
+                                        <InventoryView />
+                                    </AdminLayout>
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/admin/account" element={
+                                <ProtectedRoute>
+                                    <AdminLayout>
+                                        <StaffAccountGate />
+                                    </AdminLayout>
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/admin/users" element={
+                                <SuperAdminRoute>
+                                    <AdminLayout>
+                                        <UsersView />
+                                    </AdminLayout>
+                                </SuperAdminRoute>
+                            } />
+                            <Route path="/admin/reports" element={
+                                <SuperAdminRoute>
+                                    <AdminLayout>
+                                        <ReportsView />
+                                    </AdminLayout>
+                                </SuperAdminRoute>
+                            } />
+                            <Route path="/admin/settings" element={
+                                <SuperAdminRoute>
+                                    <AdminLayout>
+                                        <SettingsView />
+                                    </AdminLayout>
+                                </SuperAdminRoute>
+                            } />
 
-                        {/* Fallback */}
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                </Router>
-                </CompareProvider>
+                            {/* Fallback */}
+                            <Route path="*" element={<Navigate to="/" replace />} />
+                        </Routes>
+                    </Router>
+                    </CompareProvider>
+                </InquiryProvider>
             </InventoryProvider>
         </ErrorBoundary>
     );

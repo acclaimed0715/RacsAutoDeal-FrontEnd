@@ -39,6 +39,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const getViewTitle = () => {
         const path = location.pathname;
         if (path.includes('inventory')) return 'Car Inventory';
+        if (path.includes('inquiries')) return 'Customer Inquiries';
         if (path.includes('users')) return 'Manage Staff Users';
         if (path.includes('reports')) return 'User Reports';
         if (path.includes('settings')) return 'System Settings';
@@ -58,6 +59,11 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         <li>
                             <NavLink to="/admin" end className={({ isActive }) => isActive ? 'active' : ''}>
                                 <i className="fa-solid fa-chart-line"></i> Dashboard
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink to="/admin/inquiries" className={({ isActive }) => isActive ? 'active' : ''}>
+                                <i className="fa-solid fa-envelope"></i> Manage Inquiries
                             </NavLink>
                         </li>
                         <li>

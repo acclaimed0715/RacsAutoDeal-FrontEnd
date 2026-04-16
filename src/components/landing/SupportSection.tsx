@@ -1,9 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useInventory } from '../../context/InventoryContext';
 
 const SupportSection: React.FC = () => {
     const { addReport } = useInventory();
+    const location = useLocation();
     const [isReportOpen, setIsReportOpen] = useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        if (params.get('report') === 'true') {
+            setIsReportOpen(true);
+            // Optional: Scroll to section if hash exists
+            if (location.hash === '#support') {
+                const element = document.getElementById('support');
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        }
+    }, [location]);
+
     const [email, setEmail] = useState('');
     const [reason, setReason] = useState('');
     const [issue, setIssue] = useState('');

@@ -12,6 +12,7 @@ interface CarPreviewModalProps {
 
 const CarPreviewModal: React.FC<CarPreviewModalProps> = ({ car, isOpen, onClose }) => {
     const [activeTab, setActiveTab] = useState<'description' | 'otherFeatures'>('description');
+    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const [currentImgIdx, setCurrentImgIdx] = useState(0);
     const [isEmailOpen, setIsEmailOpen] = useState(false);
     const [emailFrom, setEmailFrom] = useState('');
@@ -138,9 +139,25 @@ Hi, I'm interested in this ${car.name}. Is it still available for viewing?`;
                             </div>
 
                             <div className={`tab-content ${activeTab === 'description' ? 'active' : ''}`}>
-                                <div className="description-wrapper">
+                                <div className={`description-wrapper ${isDescriptionExpanded ? 'expanded' : ''}`}>
                                     <p className="modal-description">{car.description}</p>
+                                    {!isDescriptionExpanded && car.description && car.description.length > 450 && (
+                                        <div className="description-fade"></div>
+                                    )}
                                 </div>
+                                {car.description && car.description.length > 450 && (
+                                    <button 
+                                        className="read-more-btn" 
+                                        onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                                        style={{ marginTop: '15px' }}
+                                    >
+                                        {isDescriptionExpanded ? (
+                                            <>Show less <i className="fa-solid fa-chevron-up"></i></>
+                                        ) : (
+                                            <>Read more <i className="fa-solid fa-chevron-down"></i></>
+                                        )}
+                                    </button>
+                                )}
                             </div>
 
                             <div className={`tab-content ${activeTab === 'otherFeatures' ? 'active' : ''}`}>
@@ -154,7 +171,10 @@ Hi, I'm interested in this ${car.name}. Is it still available for viewing?`;
                             </div>
 
                             <div className="dealer-action">
-                                <button className="message-dealer-btn" onClick={handleInquire}>Inquire</button>
+                                <button className="message-dealer-btn" onClick={handleInquire}>Inquire Now</button>
+                                <div className="dealer-footer-note">
+                                    Verified Dealer • Racs Auto Deal
+                                </div>
                             </div>
                         </div>
                     </div>

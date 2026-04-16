@@ -255,26 +255,24 @@ const UsersView: React.FC = () => {
                             </span>
                         </div>
                         <form onSubmit={handleAdd}>
-                            <div className="user-modal-body">
-                                <div className="user-form-row">
-                                    <div className="user-form-group">
-                                        <input type="text" placeholder="First Name" className="user-input"
-                                            value={addForm.firstName} onChange={e => setAddForm({ ...addForm, firstName: e.target.value })} required />
-                                    </div>
-                                    <div className="user-form-group">
-                                        <input type="text" placeholder="Last Name" className="user-input"
-                                            value={addForm.lastName} onChange={e => setAddForm({ ...addForm, lastName: e.target.value })} required />
-                                    </div>
+                            <div className="user-modal-body" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', alignItems: 'start' }}>
+                                <div className="user-form-group">
+                                    <input type="text" placeholder="First Name" className="user-input"
+                                        value={addForm.firstName} onChange={e => setAddForm({ ...addForm, firstName: e.target.value })} required />
                                 </div>
-                                <div className="user-form-group full-width">
+                                <div className="user-form-group">
+                                    <input type="text" placeholder="Last Name" className="user-input"
+                                        value={addForm.lastName} onChange={e => setAddForm({ ...addForm, lastName: e.target.value })} required />
+                                </div>
+                                <div className="user-form-group full-width" style={{ gridColumn: '1 / -1' }}>
                                     <input type="email" placeholder="Email Address" className="user-input"
                                         value={addForm.email} onChange={e => setAddForm({ ...addForm, email: e.target.value })} required />
                                 </div>
-                                <div className="user-form-group full-width">
+                                <div className="user-form-group full-width" style={{ gridColumn: '1 / -1' }}>
                                     <input type="text" placeholder="Username" className="user-input"
                                         value={addForm.username} onChange={e => setAddForm({ ...addForm, username: e.target.value })} required />
                                 </div>
-                                <div className="user-form-group full-width">
+                                <div className="user-form-group full-width" style={{ gridColumn: '1 / -1' }}>
                                     <div className="temp-password-field">
                                         <i className="fa-solid fa-key temp-password-icon"></i>
                                         <input type="text" className="user-input temp-password-input"
@@ -285,7 +283,7 @@ const UsersView: React.FC = () => {
                                         <i className="fa-solid fa-circle-info"></i> This is the temporary password. Share it with the new user.
                                     </p>
                                 </div>
-                                <div className="user-form-group full-width">
+                                <div className="user-form-group full-width" style={{ gridColumn: '1 / -1' }}>
                                     <label className="field-label">Role</label>
                                     <RoleRadios value={addForm.role} onChange={r => setAddForm({ ...addForm, role: r })} />
                                 </div>
@@ -311,26 +309,24 @@ const UsersView: React.FC = () => {
                             </span>
                         </div>
                         <form onSubmit={handleEdit}>
-                            <div className="user-modal-body">
-                                <div className="user-form-row">
-                                    <div className="user-form-group">
-                                        <input type="text" placeholder="First Name" className="user-input"
-                                            value={editForm.firstName} onChange={e => setEditForm({ ...editForm, firstName: e.target.value })} required />
-                                    </div>
-                                    <div className="user-form-group">
-                                        <input type="text" placeholder="Last Name" className="user-input"
-                                            value={editForm.lastName} onChange={e => setEditForm({ ...editForm, lastName: e.target.value })} required />
-                                    </div>
+                            <div className="user-modal-body" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', alignItems: 'start' }}>
+                                <div className="user-form-group">
+                                    <input type="text" placeholder="First Name" className="user-input"
+                                        value={editForm.firstName} onChange={e => setEditForm({ ...editForm, firstName: e.target.value })} required />
                                 </div>
-                                <div className="user-form-group full-width">
+                                <div className="user-form-group">
+                                    <input type="text" placeholder="Last Name" className="user-input"
+                                        value={editForm.lastName} onChange={e => setEditForm({ ...editForm, lastName: e.target.value })} required />
+                                </div>
+                                <div className="user-form-group full-width" style={{ gridColumn: '1 / -1' }}>
                                     <input type="email" placeholder="Email Address" className="user-input"
                                         value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} required />
                                 </div>
-                                <div className="user-form-group full-width">
+                                <div className="user-form-group full-width" style={{ gridColumn: '1 / -1' }}>
                                     <input type="text" placeholder="Username" className="user-input"
                                         value={editForm.username} onChange={e => setEditForm({ ...editForm, username: e.target.value })} required />
                                 </div>
-                                <div className="user-form-group full-width">
+                                <div className="user-form-group full-width" style={{ gridColumn: '1 / -1' }}>
                                     <label className="field-label">Role</label>
                                     {editForm.role === 'SUPER_ADMIN' ? (
                                         <div className="role-locked-notice">

@@ -80,3 +80,14 @@ export interface AdminNotification {
     isRead: boolean;
     sender: string;
 }
+export interface Inquiry {
+    id: string;
+    carId: string;
+    carName: string;
+    userEmail: string;
+    message: string;
+    status: 'PENDING' | 'REPLIED';
+    replyMessage?: string;
+    repliedAt?: string;
+    createdAt: string;
+}

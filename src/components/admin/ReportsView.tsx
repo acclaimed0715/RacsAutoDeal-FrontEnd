@@ -120,29 +120,31 @@ const ReportsView: React.FC = () => {
             {selectedReport && (
                 <>
                     <div className="admin-modal-overlay active"></div>
-                    <div className="user-modal active" style={{ display: 'block', maxWidth: '600px', width: '95%' }}>
+                    <div className="user-modal active" style={{ display: 'block', maxWidth: '1000px', width: '95%' }}>
                         <div className="user-modal-header">
                             <h3>Report Details</h3>
                             <span className="close-user-modal" onClick={() => setSelectedReport(null)}>
                                 <i className="fa-solid fa-circle-xmark"></i>
                             </span>
                         </div>
-                        <div className="user-modal-body" style={{ color: 'var(--text-secondary)' }}>
-                            <p style={{ marginBottom: '1rem' }}><strong>Email:</strong> {selectedReport.userEmail}</p>
-                            <p style={{ marginBottom: '1rem' }}><strong>Reason:</strong> {selectedReport.reason}</p>
-                            
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <strong style={{ color: 'white', display: 'block', marginBottom: '0.5rem' }}>Description:</strong>
-                                <div style={{ background: 'var(--input-bg)', padding: '1rem', borderRadius: '8px', minHeight: '80px', whiteSpace: 'pre-wrap' }}>
-                                    {selectedReport.description || 'No description provided.'}
+                        <div className="user-modal-body" style={{ color: 'var(--text-secondary)', display: 'grid', gridTemplateColumns: selectedReport.photoData ? '1fr 1fr' : '1fr', gap: '2rem', alignItems: 'start' }}>
+                            <div className="report-text-side">
+                                <p style={{ marginBottom: '1rem' }}><strong>Email:</strong> <span style={{ color: 'white' }}>{selectedReport.userEmail}</span></p>
+                                <p style={{ marginBottom: '1rem' }}><strong>Reason:</strong> <span style={{ color: 'white' }}>{selectedReport.reason}</span></p>
+                                
+                                <div>
+                                    <strong style={{ color: 'var(--primary)', display: 'block', marginBottom: '0.5rem' }}>Description:</strong>
+                                    <div style={{ background: 'var(--input-bg)', padding: '1rem', borderRadius: '8px', minHeight: '150px', whiteSpace: 'pre-wrap', color: 'white', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        {selectedReport.description || 'No description provided.'}
+                                    </div>
                                 </div>
                             </div>
 
                             {selectedReport.photoData && (
-                                <div style={{ marginBottom: '1rem' }}>
-                                    <strong style={{ color: 'white', display: 'block', marginBottom: '0.5rem' }}>Attached Photo:</strong>
-                                    <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)', background: '#000' }}>
-                                        <img src={selectedReport.photoData} alt="Report Attachment" style={{ width: '100%', maxHeight: '400px', objectFit: 'contain', display: 'block' }} />
+                                <div className="report-photo-side" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                    <strong style={{ color: 'var(--primary)', display: 'block', marginBottom: '0.5rem' }}>Attached Photo:</strong>
+                                    <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', background: '#0b0f19', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <img src={selectedReport.photoData} alt="Report Attachment" style={{ width: '100%', maxHeight: '350px', objectFit: 'contain', display: 'block' }} />
                                     </div>
                                 </div>
                             )}

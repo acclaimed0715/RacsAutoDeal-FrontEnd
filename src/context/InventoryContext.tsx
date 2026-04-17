@@ -37,6 +37,8 @@ interface InventoryContextType {
     deleteReport: (id: string) => Promise<void>;
     addInquiry: (carId: string, carName: string, userEmail: string, message: string) => Promise<void>;
     sendReply: (inquiryId: string, replyMessage: string) => Promise<void>;
+    archiveInquiry: (id: string) => Promise<void>;
+    deleteInquiry: (id: string) => Promise<void>;
     fetchInquiries: () => Promise<void>;
     requestPasswordReset: (email: string) => Promise<{ success: boolean; message: string; error?: string }>;
     resetPassword: (email: string, otp: string, newPassword: string) => Promise<{ success: boolean; message: string; error?: string }>;
@@ -382,7 +384,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         try {
             const res = await api.post(`/inquiries/${inquiryId}/reply`, { replyMessage });
             const updated = res.data;
-            setInquiries(prev => prev.map(i => i.id === inquiryId ? updated : i));
+            setInquiries(prev => prev.map(i => i.id === inquiryId ? { ...i, ...updated } : i));
         } catch (error: any) {
             console.error('Send reply error:', error);
             throw error;
@@ -395,6 +397,25 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             if (Array.isArray(res.data)) setInquiries(res.data);
         } catch (error) {
             console.error('Fetch inquiries error:', error);
+        }
+    };
+
+    const archiveInquiry = async (id: string) => {
+        try {
+            const res = await api.post(`/inquiries/${id}/archive`);
+            const updated = res.data;
+            setInquiries(prev => prev.map(i => i.id === id ? { ...i, ...updated } : i));
+        } catch (error: any) {
+            console.error('Archive inquiry error:', error);
+        }
+    };
+
+    const deleteInquiry = async (id: string) => {
+        try {
+            await api.delete(`/inquiries/${id}`);
+            setInquiries(prev => prev.filter(i => i.id !== id));
+        } catch (error: any) {
+            console.error('Delete inquiry error:', error);
         }
     };
 
@@ -454,7 +475,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             addVehicle, updateVehicle, deleteVehicle, requestDeletionVehicle, resolveDeletion, resolveSale,
             addStaff, updateStaff, changePassword, deleteStaff,
             addReport, resolveReport, reopenReport, deleteReport,
-            addInquiry, sendReply, fetchInquiries,
+            addInquiry, sendReply, archiveInquiry, deleteInquiry, fetchInquiries,
             requestPasswordReset, resetPassword,
             updateSettings, addNotification, markAllNotificationsRead, clearNotifications
         }}>

@@ -1,28 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useInventory } from '../../context/InventoryContext';
 import { type Inquiry } from '../../types';
 
 const InquiriesView: React.FC = () => {
-    const { inquiries, sendReply } = useInventory();
-    const [activeTab, setActiveTab] = useState<'PENDING' | 'REPLIED'>('PENDING');
+    const { inquiries, sendReply, archiveInquiry, deleteInquiry } = useInventory();
+    const [activeTab, setActiveTab] = useState<'PENDING' | 'REPLIED' | 'ARCHIVED'>('PENDING');
     const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
     const [replyText, setReplyText] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const threadEndRef = useRef<HTMLDivElement>(null);
+
+    const scrollToBottom = () => {
+        threadEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
 
     // Keep the opened modal fresh using the global context heartbeat (live updates)
     useEffect(() => {
         if (selectedInquiry) {
             const fresh = inquiries.find(i => i.id === selectedInquiry.id);
-            if (fresh && (fresh.replyMessage !== selectedInquiry.replyMessage || fresh.status !== selectedInquiry.status)) {
-                setSelectedInquiry(fresh);
+            if (fresh) {
+                if (fresh.replyMessage !== selectedInquiry.replyMessage || fresh.status !== selectedInquiry.status) {
+                    setSelectedInquiry(fresh);
+                    // Scroll to bottom when new message arrives in open modal
+                    setTimeout(scrollToBottom, 100);
+                }
             }
         }
     }, [inquiries, selectedInquiry]);
 
+    // Initial scroll when opening
+    useEffect(() => {
+        if (selectedInquiry) {
+            setTimeout(scrollToBottom, 200);
+        }
+    }, [selectedInquiry?.id]);
+
     const pending = inquiries.filter(i => (i.status || 'PENDING') === 'PENDING');
     const replied = inquiries.filter(i => i.status === 'REPLIED');
+    const archived = inquiries.filter(i => i.status === 'ARCHIVED');
 
-    const visible = activeTab === 'PENDING' ? pending : replied;
+    const visible = activeTab === 'PENDING' ? pending : activeTab === 'REPLIED' ? replied : archived;
 
     const handleSendReply = async () => {
         if (!selectedInquiry || !replyText.trim()) return;
@@ -31,8 +48,11 @@ const InquiriesView: React.FC = () => {
         try {
             await sendReply(selectedInquiry.id, replyText);
             setReplyText('');
-            setSelectedInquiry(null);
-            setActiveTab('REPLIED');
+            // We no longer close the modal (setSelectedInquiry(null))
+            // This allows for follow-up messages instantly
+            if (activeTab === 'PENDING') {
+                setActiveTab('REPLIED');
+            }
         } catch (error: any) {
             console.error('Send Reply Error:', error);
             const msg = error.response?.data?.details || error.response?.data?.error || error.message || 'Unknown error';
@@ -79,6 +99,13 @@ const InquiriesView: React.FC = () => {
                 >
                     Replied <span className="report-tab-count">{replied.length}</span>
                 </button>
+                <button
+                    type="button"
+                    className={`report-tab${activeTab === 'ARCHIVED' ? ' active' : ''}`}
+                    onClick={() => setActiveTab('ARCHIVED')}
+                >
+                    Archived <span className="report-tab-count">{archived.length}</span>
+                </button>
             </div>
 
             <div className="table-container">
@@ -103,9 +130,9 @@ const InquiriesView: React.FC = () => {
                             <tr key={inquiry.id}>
                                 <td>
                                     <div className="user-profile">
-                                        <div className="user-avatar">{inquiry.userEmail[0].toUpperCase()}</div>
+                                        <div className="user-avatar">{(inquiry.userEmail?.[0] || 'U').toUpperCase()}</div>
                                         <div className="user-info-text">
-                                            <span className="fullname">{inquiry.userEmail}</span>
+                                            <span className="fullname">{inquiry.userEmail || 'Unknown User'}</span>
                                         </div>
                                     </div>
                                 </td>
@@ -114,22 +141,43 @@ const InquiriesView: React.FC = () => {
                                 </td>
                                 <td>{formatDate(inquiry.createdAt)}</td>
                                 <td>
-                                    <span className={`status-badge ${inquiry.status === 'PENDING' ? 'pending' : 'resolved'}`}>
+                                    <span className={`status-badge ${inquiry.status === 'PENDING' ? 'pending' : inquiry.status === 'ARCHIVED' ? 'archived' : 'resolved'}`}>
                                         {inquiry.status}
                                     </span>
                                 </td>
                                 <td>
-                                    <div className="action-row">
+                                    <div className="action-row" style={{ display: 'flex', gap: '5px' }}>
                                         <button
                                             className="icon-btn"
                                             title={inquiry.status === 'PENDING' ? "Reply" : "View History"}
                                             onClick={() => {
                                                 setSelectedInquiry(inquiry);
-                                                setReplyText(''); // Always start with blank reply box
+                                                setReplyText(''); 
+                                            }}
+                                            style={{ 
+                                                color: inquiry.status === 'PENDING' ? 'var(--primary)' : 'var(--text-secondary)',
+                                                background: inquiry.status === 'PENDING' ? 'rgba(225, 29, 72, 0.1)' : 'transparent',
+                                                borderRadius: '8px',
+                                                padding: '6px 10px'
                                             }}
                                         >
-                                            <i className={`fa-solid ${inquiry.status === 'PENDING' ? 'fa-reply' : 'fa-clock-rotate-left'}`}></i>
+                                            <i className={`fa-solid ${inquiry.status === 'PENDING' ? 'fa-reply' : 'fa-comment-dots'}`}></i>
                                         </button>
+                                        {inquiry.status !== 'ARCHIVED' && (
+                                            <button
+                                                className="icon-btn"
+                                                title="Archive"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (window.confirm('Archive this inquiry?')) {
+                                                        archiveInquiry(inquiry.id);
+                                                    }
+                                                }}
+                                                style={{ color: 'var(--text-secondary)', borderRadius: '8px', padding: '6px 10px' }}
+                                            >
+                                                <i className="fa-solid fa-box-archive"></i>
+                                            </button>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
@@ -143,20 +191,20 @@ const InquiriesView: React.FC = () => {
                     <div className="admin-modal-overlay active" onClick={() => setSelectedInquiry(null)}></div>
                     <div className="user-modal active" style={{ display: 'block', maxWidth: '1000px', width: '95%' }}>
                         <div className="user-modal-header">
-                            <h3>{selectedInquiry.status === 'PENDING' ? 'Reply to Inquiry' : 'Inquiry History'}</h3>
+                            <h3>{selectedInquiry.status === 'PENDING' ? 'Reply to Inquiry' : 'Conversation History'}</h3>
                             <span className="close-user-modal" onClick={() => setSelectedInquiry(null)}>
                                 <i className="fa-solid fa-circle-xmark"></i>
                             </span>
                         </div>
-                        <div className="user-modal-body" style={{ color: 'var(--text-secondary)' }}>
+                        <div className="user-modal-body" style={{ color: 'var(--text-secondary)', maxHeight: '65vh', overflowY: 'auto', paddingRight: '10px' }}>
                             <div className="inquiry-thread" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 {/* Customer Message */}
-                                <div className="inquiry-message customer" style={{ alignSelf: 'flex-start', maxWidth: '90%' }}>
+                                <div className="inquiry-message customer" style={{ alignSelf: 'flex-start', maxWidth: '85%' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' }}>
                                         <strong style={{ color: 'white' }}>{selectedInquiry.userEmail}</strong>
                                         <span>{formatDate(selectedInquiry.createdAt)}</span>
                                     </div>
-                                    <div style={{ background: 'var(--border)', padding: '15px', borderRadius: '12px 12px 12px 0', color: 'var(--text-secondary)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '15px 15px 15px 0', color: '#eee', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
                                         {selectedInquiry.message}
                                     </div>
                                 </div>
@@ -167,17 +215,6 @@ const InquiriesView: React.FC = () => {
                                         {(() => {
                                             const history = selectedInquiry.replyMessage;
                                             
-                                            // Ensure there's a delimiter match, otherwise fallback to simple text block
-                                            if (!history.includes('] Admin:') && !history.includes('] Customer:')) {
-                                                return (
-                                                    <div className="inquiry-message admin" style={{ alignSelf: 'flex-end', maxWidth: '90%' }}>
-                                                        <div style={{ background: 'var(--primary)', color: 'white', padding: '15px', borderRadius: '12px 12px 0 12px', opacity: 0.9, whiteSpace: 'pre-wrap' }}>
-                                                            {history}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            }
-
                                             // Split text block by timestamps and parse
                                             const segments = history.split(/(?=\[[A-Z][a-z]{2,8} \d{1,2}, \d{2}:\d{2} [AP]M\] (?:Admin|Customer):)/);
                                             
@@ -192,22 +229,23 @@ const InquiriesView: React.FC = () => {
                                                     const body = metaMatch[3];
                                                     
                                                     return (
-                                                        <div key={idx} className={`inquiry-message ${isCustomer ? 'customer' : 'admin'}`} style={{ alignSelf: isCustomer ? 'flex-start' : 'flex-end', maxWidth: '90%' }}>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12px', opacity: 0.8 }}>
+                                                        <div key={idx} className={`inquiry-message ${isCustomer ? 'customer' : 'admin'}`} style={{ alignSelf: isCustomer ? 'flex-start' : 'flex-end', maxWidth: '85%' }}>
+                                                            <div style={{ display: 'flex', justifyContent: isCustomer ? 'space-between' : 'flex-end', marginBottom: '8px', fontSize: '12px', opacity: 0.8, gap: '10px' }}>
                                                                 {!isCustomer && <span style={{ color: 'var(--text-secondary)' }}>{date}</span>}
-                                                                <strong style={{ color: isCustomer ? 'white' : 'var(--primary)', marginLeft: isCustomer ? 0 : '10px' }}>
+                                                                <strong style={{ color: isCustomer ? 'white' : 'var(--primary)' }}>
                                                                     {isCustomer ? 'Customer' : 'You (Admin)'}
                                                                 </strong>
-                                                                {isCustomer && <span style={{ color: 'var(--text-secondary)', marginLeft: '10px' }}>{date}</span>}
+                                                                {isCustomer && <span style={{ color: 'var(--text-secondary)' }}>{date}</span>}
                                                             </div>
                                                             <div style={{ 
-                                                                background: isCustomer ? 'var(--border)' : 'var(--primary)', 
-                                                                color: isCustomer ? 'var(--text-secondary)' : 'white', 
+                                                                background: isCustomer ? 'rgba(255,255,255,0.05)' : 'var(--primary)', 
+                                                                color: 'white', 
                                                                 padding: '15px', 
-                                                                borderRadius: isCustomer ? '12px 12px 12px 0' : '12px 12px 0 12px', 
+                                                                borderRadius: isCustomer ? '15px 15px 15px 0' : '15px 15px 0 15px', 
                                                                 border: isCustomer ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                                                                opacity: 0.9, 
-                                                                whiteSpace: 'pre-wrap' 
+                                                                opacity: 0.95, 
+                                                                whiteSpace: 'pre-wrap',
+                                                                boxShadow: isCustomer ? '0 4px 15px rgba(0,0,0,0.1)' : '0 4px 15px rgba(225, 29, 72, 0.2)' 
                                                             }}>
                                                                 {body.trim()}
                                                             </div>
@@ -219,43 +257,67 @@ const InquiriesView: React.FC = () => {
                                         })()}
                                     </div>
                                 )}
-
-                                {/* Writing Reply (Always available now) */}
-                                <div className="reply-editor" style={{ marginTop: '20px' }}>
-                                    <label style={{ color: 'white', display: 'block', marginBottom: '10px', fontWeight: 600 }}>
-                                        {selectedInquiry.status === 'REPLIED' ? 'Send another email:' : 'Your Response:'}
-                                    </label>
+                                <div ref={threadEndRef} />
+                            </div>
+                        </div>
+                        
+                        <div className="user-modal-footer" style={{ borderTop: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', padding: '25px' }}>
+                            <div style={{ width: '100%' }}>
+                                <div className="reply-editor" style={{ marginBottom: '20px' }}>
                                     <textarea
                                         value={replyText}
                                         onChange={(e) => setReplyText(e.target.value)}
-                                        placeholder="Write your professional response here..."
+                                        placeholder="Type your professional response here..."
                                         style={{
                                             width: '100%',
-                                            height: '120px',
-                                            background: 'rgba(255,255,255,0.02)',
+                                            height: '100px',
+                                            background: 'rgba(0,0,0,0.2)',
                                             border: '1px solid var(--border)',
                                             borderRadius: '12px',
                                             padding: '15px',
                                             color: 'white',
                                             outline: 'none',
-                                            resize: 'none'
+                                            resize: 'none',
+                                            fontSize: '14px'
                                         }}
                                     />
                                 </div>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                                    <button type="button" className="user-cancel-btn" onClick={() => setSelectedInquiry(null)} style={{ background: 'transparent', border: '1px solid var(--border)', padding: '10px 20px', borderRadius: '10px' }}>
+                                        Close
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        className="resolve-btn" 
+                                        onClick={handleSendReply}
+                                        disabled={isSubmitting || !replyText.trim()}
+                                        style={{ 
+                                            background: 'linear-gradient(135deg, var(--primary), var(--primary-hover))',
+                                            color: '#fff',
+                                            border: 'none',
+                                            padding: '10px 25px',
+                                            borderRadius: '10px',
+                                            fontWeight: '700',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                            boxShadow: '0 4px 15px rgba(225, 29, 72, 0.2)'
+                                        }}
+                                    >
+                                        {isSubmitting ? (
+                                            <>
+                                                <i className="fa-solid fa-circle-notch fa-spin"></i>
+                                                Sending...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <i className="fa-solid fa-paper-plane"></i>
+                                                {selectedInquiry.status === 'REPLIED' ? 'Send Follow-up' : 'Send Reply'}
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <div className="user-modal-footer">
-                            <button type="button" className="user-cancel-btn" onClick={() => setSelectedInquiry(null)}>
-                                Close
-                            </button>
-                            <button 
-                                type="button" 
-                                className="resolve-btn" 
-                                onClick={handleSendReply}
-                                disabled={isSubmitting || !replyText.trim()}
-                            >
-                                {isSubmitting ? 'Sending...' : (selectedInquiry.status === 'REPLIED' ? 'Send Follow-up' : 'Send Reply')}
-                            </button>
                         </div>
                     </div>
                 </>

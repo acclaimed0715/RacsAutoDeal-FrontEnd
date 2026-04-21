@@ -126,7 +126,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, viewMode = 'list' }) => {
                         </span>
                         <span className="grid-spec-chip">
                             <i className="fa-solid fa-gauge"></i>
-                            {car.mileage ? `${car.mileage} km` : 'N/A'}
+                            {car.mileage ? car.mileage : 'N/A'}
                         </span>
                     </div>
 

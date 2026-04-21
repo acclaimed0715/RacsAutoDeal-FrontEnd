@@ -30,10 +30,10 @@ const CarsPage: React.FC = () => {
                     <span className="hero-badge" style={{ display: 'inline-block', marginBottom: '1rem' }}>
                         {settings.businessName || 'Racs Auto Deal'}
                     </span>
-                    <h1 style={{ fontSize: '3.5rem', fontWeight: '900', marginBottom: '1rem', color: 'white', textTransform: 'uppercase', letterSpacing: '2px' }}>
+                    <h1 className="inventory-hero-title" style={{ fontSize: '3.5rem', fontWeight: '900', marginBottom: '1rem', color: 'white', textTransform: 'uppercase', letterSpacing: '2px' }}>
                         Our <span style={{ color: 'var(--primary)' }}>Inventory</span>
                     </h1>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '700px', margin: '0 auto', padding: '0 2rem' }}>
+                    <p className="inventory-hero-desc" style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '700px', margin: '0 auto', padding: '0 2rem' }}>
                         Explore our curated selection of premium vehicles. From luxury sedans to powerful SUVs, find your perfect match today.
                     </p>
                 </motion.div>

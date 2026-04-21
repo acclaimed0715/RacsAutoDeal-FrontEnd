@@ -8,6 +8,8 @@ const Navbar: React.FC = () => {
     const location = useLocation();
     const isHome = location.pathname === '/';
 
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
     useEffect(() => {
         const handleScroll = () => {
             // Show brand name in navbar after scrolling past hero content
@@ -25,10 +27,15 @@ const Navbar: React.FC = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Close menu when route changes
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+    }, [location.pathname]);
+
     return (
         <header className={`navbar smart-nav ${isScrolled ? 'scrolled' : ''}`}>
             <div className="nav-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: '1400px', padding: '0 2rem' }}>
-                <div className="logo-container">
+                <div className="logo-container" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', textDecoration: 'none' }}>
                     <NavLink to="/" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', textDecoration: 'none' }}>
                         <img src="/assets/logo.png" alt="Racs Auto Deal Logo" className="logo-img" style={{ cursor: 'pointer' }} />
                         <span className="navbar-brand-name" style={{
@@ -49,14 +56,17 @@ const Navbar: React.FC = () => {
                     </NavLink>
                 </div>
                 
-                <div className="nav-links" style={{ 
-                    display: 'flex', 
+                <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                    <i className={`fa-solid ${isMobileMenuOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
+                </button>
+                
+                <div className={`nav-links ${isMobileMenuOpen ? 'open' : ''}`} style={{ 
                     gap: '2rem', 
                     alignItems: 'center',
-                    opacity: isHome && !isScrolled ? 0 : 1,
-                    transform: isHome && !isScrolled ? 'translateY(-10px)' : 'translateY(0)',
-                    pointerEvents: isHome && !isScrolled ? 'none' : 'auto',
-                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                    opacity: (isHome && !isScrolled && !isMobileMenuOpen) ? 0 : 1,
+                    transform: (isHome && !isScrolled && !isMobileMenuOpen) ? 'translateY(-10px)' : 'translateY(0)',
+                    pointerEvents: (isHome && !isScrolled && !isMobileMenuOpen) ? 'none' : 'auto',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}>
                     <NavLink to="/cars" style={{ color: 'white', textDecoration: 'none', fontWeight: '600', fontSize: '1.1rem', transition: 'color 0.3s' }} className={({ isActive }) => isActive ? 'active-nav-link' : ''}>
                         Car Listing

@@ -171,6 +171,7 @@ const Hero: React.FC = () => {
                             return (
                                 <motion.div
                                     key={s.id}
+                                    className={`hero-slide ${pos}`}
                                     variants={variants}
                                     animate={pos}
                                     transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}

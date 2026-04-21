@@ -1,0 +1,520 @@
+/* ============================================================
+   MOBILE RESPONSIVENESS OVERRIDES: POLISHED AESTHETICS
+   Targeting standard tablets (<768px) and mobile phones
+============================================================ */
+
+/* Hide mobile menu button on Desktop */
+.mobile-menu-btn {
+    display: none;
+}
+
+/* Ensure Nav Links are horizontal on Desktop */
+.nav-links {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 2rem !important;
+    align-items: center !important;
+}
+
+/* Ensure no horizontal overflow on ANY device */
+html, body, #root {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative;
+}
+
+@media (max-width: 900px) {
+    .nav-container, .hero-main-container, .container {
+        padding: 0 1.25rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    /* GLOBAL TYPOGRAPHY & SPACING */
+    html, body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        position: relative;
+    }
+    #root {
+        overflow-x: hidden !important;
+        width: 100% !important;
+    }
+    body {
+        font-size: 0.95rem;
+    }
+    
+    /* 1. NAVBAR (Sleek stack & Hamburger Support) */
+    .nav-container {
+        flex-direction: column !important;
+        /* Revert to row for mobile header, we will absolutely position links */
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        justify-content: space-between !important;
+        padding: 1rem 1.25rem !important;
+        background: rgba(8, 8, 9, 0.95) !important;
+        backdrop-filter: blur(10px) !important;
+    }
+    .navbar-brand-name {
+        font-size: 1rem !important;
+        letter-spacing: 0px !important;
+    }
+    .mobile-menu-btn {
+        display: block !important;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+    .nav-links {
+        display: none !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 1rem !important;
+        padding-top: 1rem !important;
+        border-top: 1px solid rgba(255,255,255,0.05);
+        margin-top: 0.5rem;
+    }
+    .nav-links.open {
+        display: flex !important;
+    }
+    .nav-links a {
+        font-size: 1rem !important;
+        padding: 0.5rem 0 !important;
+    }
+    
+    /* 2. HERO SECTION */
+    .hero-main-container {
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important; /* Just in case it's a grid */
+        gap: 1.5rem !important;
+        width: 100% !important;
+    }
+    .hero-content, .hero-left-content {
+        padding: 2.5rem 0 0 0 !important; /* Increased top padding to clear navbar */
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        width: 100% !important;
+    }
+    .hero-left-content > div {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        width: 100% !important;
+    }
+    .hero-badge {
+        margin: 1.5rem auto 1rem !important; /* Added explicit top margin */
+    }
+    .hero-title, .hero-main-title {
+        font-size: 2rem !important;
+        line-height: 1.2 !important;
+        margin-bottom: 1rem !important;
+        white-space: normal !important;
+        text-align: center !important;
+        width: 100% !important;
+    }
+    .hero-sub-description {
+        text-align: center !important;
+        margin: 0 auto 1.5rem !important;
+        font-size: 0.9rem !important;
+    }
+    .hero-stack-container {
+        height: 280px !important;
+        margin-top: 1rem !important;
+    }
+    .hero-right-visual {
+        width: 100% !important;
+        overflow: hidden !important; /* Prevents framer side-cards from breaking horizontal bounds */
+        display: flex;
+        justify-content: center;
+    }
+    .hero-slide.left, .hero-slide.right, .hero-slide.hidden {
+        display: none !important; /* Hide background slider cars for stability on mobile */
+    }
+    .hero-action-group {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        width: 100% !important;
+        max-width: 300px !important;
+    }
+    .hero-primary-btn, .hero-secondary-btn {
+        width: 100% !important;
+        justify-content: center !important;
+        font-size: 0.95rem !important;
+        padding: 0.8rem 1.5rem !important;
+    }
+    .hero-stats-row {
+        justify-content: center !important;
+        gap: 1rem !important;
+        margin-top: 2rem !important;
+    }
+    .stat-pill {
+        padding: 0.5rem 1rem !important;
+    }
+    
+    /* 3. INVENTORY & CAR CARDS */
+    .inventory-content {
+        flex-direction: column !important;
+        gap: 1rem !important;
+        width: 100% !important;
+    }
+    .filter-sidebar {
+        width: 100% !important;
+        position: static !important;
+        margin-bottom: 1rem !important;
+        padding: 1rem !important;
+    }
+    .filter-content {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.25rem !important;
+    }
+    .inventory-hero-title {
+        font-size: 1.8rem !important;
+        line-height: 1.2 !important;
+        padding: 0 1rem !important;
+        text-align: center !important;
+    }
+    .inventory-hero-desc {
+        font-size: 0.95rem !important;
+        padding: 0 1.5rem !important;
+        text-align: center !important;
+        max-width: 100% !important;
+    }
+    .filter-group {
+        margin-bottom: 0 !important;
+    }
+    .price-range-inputs {
+        flex-direction: column !important;
+    }
+    .inventory-main {
+        width: 100% !important;
+        min-width: 0 !important; /* fix flex overflow */
+    }
+    .car-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .inventory-grid,
+    .featured-grid,
+    .car-cards-container {
+        grid-template-columns: 1fr !important;
+        gap: 1.25rem !important;
+    }
+    .car-card, .car-card--grid {
+        flex-direction: column !important;
+        height: auto !important;
+        border-radius: 16px !important;
+        width: 100% !important; /* ensure it stays within bounds */
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+    .car-image-wrapper {
+        border-radius: 16px 16px 0 0 !important;
+        height: 200px !important;
+        width: 100% !important;
+    }
+    .car-image {
+        height: 100% !important;
+        object-fit: cover !important;
+    }
+    .car-card-middle {
+        padding: 1.25rem !important;
+    }
+    .card-name {
+        font-size: 1.2rem !important;
+    }
+    .card-features-row {
+        gap: 0.5rem !important;
+    }
+    .card-feat-compact {
+        background: rgba(255,255,255,0.03) !important;
+        padding: 0.5rem !important;
+        border-radius: 8px !important;
+        flex: 1 1 calc(50% - 0.5rem) !important;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+    .car-card-right {
+        width: 100% !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        border-left: none !important;
+        border-top: 1px solid rgba(255,255,255,0.05) !important;
+        padding: 1rem 1.25rem !important;
+        background: rgba(0,0,0,0.2);
+    }
+
+    /* 4. CAR DETAILS PAGE */
+    .car-detail-page {
+        padding-top: 70px !important;
+    }
+    .detail-main-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+    .main-header-flex {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    .main-header-flex h1 {
+        font-size: 1.75rem !important;
+        line-height: 1.2 !important;
+    }
+    .main-price {
+        font-size: 1.5rem !important;
+    }
+    .main-subtitle-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.75rem !important;
+    }
+    .main-meta {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+    }
+    .carousel-container {
+        height: 250px !important;
+        border-radius: 16px !important;
+    }
+    .preview-image-wrapper {
+        border-radius: 16px !important;
+    }
+    .main-features-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.75rem !important;
+    }
+    .feature-card-premium {
+        padding: 1rem !important;
+    }
+    .car-specs-list li {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.25rem !important;
+        padding: 0.75rem 0 !important;
+    }
+    .message-dealer-btn {
+        font-size: 1.1rem !important;
+        height: 55px !important;
+    }
+    
+    /* 5. COMPARISON PAGE */
+    .compare-container {
+        padding: 1rem !important;
+        margin-top: 60px !important;
+    }
+    .compare-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+    }
+    .compare-title {
+        font-size: 1.75rem !important;
+    }
+    .comparison-table-wrapper {
+        overflow-x: auto !important;
+        padding-bottom: 1rem !important;
+    }
+    
+    /* 6. LANDING SECTIONS */
+    .brand-highlights,
+    .services-grid,
+    .stats-grid,
+    .reviews-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.25rem !important;
+    }
+    .section-title {
+        font-size: 1.8rem !important;
+        line-height: 1.2 !important;
+    }
+
+    /* 7. COMPARE BAR (FLOATING PANEL) - HIGH SPECIFICITY OVERRIDES */
+    div.compare-bar-container {
+        width: 95% !important;
+        height: auto !important;
+        bottom: 20px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        padding: 1.25rem !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+        border-radius: 20px !important;
+        background: rgba(10, 10, 10, 0.98) !important;
+        border: 1px solid rgba(230, 57, 70, 0.4) !important;
+        box-shadow: 0 -10px 40px rgba(0,0,0,0.8) !important;
+        display: flex !important;
+        z-index: 10000 !important;
+    }
+    div.compare-bar-content {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.25rem !important;
+        width: 100% !important;
+        align-items: center !important;
+    }
+    div.compare-bar-info {
+        margin-right: 0 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: baseline !important;
+        gap: 10px !important;
+        justify-content: center !important;
+        width: 100% !important;
+    }
+    span.compare-count {
+        font-size: 2.2rem !important;
+        line-height: 1 !important;
+        color: var(--primary) !important;
+    }
+    span.compare-text {
+        font-size: 0.85rem !important;
+        letter-spacing: 1.5px !important;
+        font-weight: 800 !important;
+        color: #fff !important;
+        text-transform: uppercase !important;
+    }
+    div.compare-items-list {
+        display: none !important; /* Hide pills on mobile to save vertical space */
+    }
+    div.compare-bar-actions {
+        margin-left: 0 !important;
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        align-items: center !important;
+    }
+    button.clear-btn {
+        font-size: 0.9rem !important;
+        color: #aaa !important;
+        text-decoration: underline !important;
+        background: transparent !important;
+        border: none !important;
+        order: 2 !important; /* Move 'Back' to the bottom */
+    }
+    button.compare-now-btn {
+        width: 100% !important;
+        padding: 16px !important;
+        font-size: 1.1rem !important;
+        font-weight: 900 !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, #C0392B 0%, #E74C3C 100%) !important;
+        color: #fff !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        border: none !important;
+        order: 1 !important; /* Main action on top */
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-links flex {
+        flex-wrap: wrap !important;
+    }
+    .hero-title, .hero-main-title {
+        font-size: 1.8rem !important;
+    }
+    .hero-stats-row {
+        flex-wrap: wrap !important;
+    }
+    .filter-content {
+        grid-template-columns: 1fr !important; /* Single column for very small phones, but compact */
+    }
+    .main-features-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .global-inquiry-stack {
+        bottom: 10px !important;
+        right: 10px !important;
+        width: calc(100% - 20px) !important;
+    }
+    .carousel-container {
+        height: 200px !important;
+    }
+
+    /* 8. COMPARISON MOBILE OVERHAUL */
+    .compare-outer-container {
+        padding: 0 0 100px !important;
+    }
+    .compare-title {
+        font-size: 2rem !important;
+        margin-top: 20px !important;
+    }
+    .compare-subtitle {
+        font-size: 0.9rem !important;
+        padding: 0 20px !important;
+    }
+    .comparison-viewport {
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+    }
+    .comparison-table {
+        min-width: 600px !important; /* Allow two cars side-by-side on mobile swipe */
+    }
+    .comparison-header-row {
+        top: 0 !important; /* Fixed header follows main navbar scroll point */
+    }
+    .sticky-label-cell {
+        width: 100px !important;
+        padding: 12px 15px !important;
+        font-size: 0.75rem !important;
+    }
+    .shadow-indicators::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 100px;
+        bottom: 0;
+        width: 15px;
+        background: linear-gradient(to right, rgba(0,0,0,0.5), transparent);
+        z-index: 50;
+        pointer-events: none;
+    }
+    .spec-icon { font-size: 0.9rem !important; }
+    .spec-name { font-size: 0.7rem !important; }
+    .car-header-cell {
+        min-width: 200px !important;
+        padding: 20px 10px !important;
+    }
+    .car-header-image {
+        height: 100px !important;
+        margin-bottom: 10px !important;
+    }
+    .car-header-name { font-size: 0.95rem !important; }
+    .car-header-price { font-size: 1.1rem !important; }
+    .spec-value-cell {
+        min-width: 200px !important;
+        padding: 12px 10px !important;
+    }
+    .spec-value { font-size: 0.85rem !important; }
+    .spec-value.best { font-size: 1rem !important; }
+    .clear-all-mobile-btn {
+        display: inline-block !important;
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        color: #ff4444 !important;
+        padding: 6px 15px !important;
+        border-radius: 20px !important;
+        font-size: 0.75rem !important;
+        font-weight: 800 !important;
+        margin-top: 15px !important;
+    }
+}
+

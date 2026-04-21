@@ -8,7 +8,7 @@ const CompareBar: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    if (selectedCars.length === 0 || location.pathname === '/compare') return null;
+    if (selectedCars.length === 0 || location.pathname.startsWith('/compare')) return null;
 
     return (
         <AnimatePresence>

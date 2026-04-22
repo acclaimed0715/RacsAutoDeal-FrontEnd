@@ -25,27 +25,27 @@ const SPEC_SECTIONS: SpecSection[] = [
   {
     section: 'Overview',
     specs: [
-      { label: 'Model Year',   key: 'modelYear' as any,     icon: '📅' },
-      { label: 'Brand',        key: 'brand' as any,         icon: '⭐' },
-      { label: 'Type',         key: 'type' as any,          icon: '🏷️', badge: true },
+      { label: 'Model Year',   key: 'modelYear' as any,     icon: 'fa-solid fa-calendar-days' },
+      { label: 'Brand',        key: 'brand' as any,         icon: 'fa-solid fa-car' },
+      { label: 'Type',         key: 'type' as any,          icon: 'fa-solid fa-layer-group', badge: true },
     ],
   },
   {
     section: 'Performance',
     specs: [
-      { label: 'Engine',       key: 'engine' as any,        icon: '⚙️' },
-      { label: 'Horsepower',   key: 'hp' as any,            icon: '⚡', higherBetter: true },
-      { label: 'Torque',       key: 'torque' as any,        icon: '🔄', higherBetter: true },
-      { label: 'Transmission', key: 'transmission' as any,  icon: '🔧' },
-      { label: 'Fuel Type',    key: 'fuelType' as any,      icon: '⛽' },
+      { label: 'Engine',       key: 'engine' as any,        icon: 'fa-solid fa-gears' },
+      { label: 'Horsepower',   key: 'hp' as any,            icon: 'fa-solid fa-bolt', higherBetter: true },
+      { label: 'Torque',       key: 'torque' as any,        icon: 'fa-solid fa-gauge-high', higherBetter: true },
+      { label: 'Transmission', key: 'transmission' as any,  icon: 'fa-solid fa-screwdriver-wrench' },
+      { label: 'Fuel Type',    key: 'fuelType' as any,      icon: 'fa-solid fa-gas-pump' },
     ],
   },
   {
     section: 'Details',
     specs: [
-      { label: 'Mileage',      key: 'mileage' as any,       icon: '📍', lowerBetter: true },
-      { label: 'Seating',      key: 'seating' as any,       icon: '💺', higherBetter: true },
-      { label: 'Color',        key: 'color' as any,         icon: '🎨', color: true },
+      { label: 'Mileage',      key: 'mileage' as any,       icon: 'fa-solid fa-road', lowerBetter: true },
+      { label: 'Seating',      key: 'seating' as any,       icon: 'fa-solid fa-users', higherBetter: true },
+      { label: 'Color',        key: 'color' as any,         icon: 'fa-solid fa-palette', color: true },
     ],
   },
 ];
@@ -123,7 +123,7 @@ const ComparePage: React.FC = () => {
 
           {/* SPECIFICATION SECTIONS */}
           {SPEC_SECTIONS.map(section => (
-            <React.Fragment key={section.section}>
+            <div key={section.section} className="comparison-section-group">
               <div className="comparison-section-divider">
                 <div className="sticky-label-cell section-label">{section.section}</div>
                 {selectedCars.map(car => <div key={car.id} className="section-spacer-cell"></div>)}
@@ -132,7 +132,7 @@ const ComparePage: React.FC = () => {
               {section.specs.map((spec, sIdx) => (
                 <div key={spec.key} className={`comparison-row ${sIdx % 2 === 0 ? 'even' : 'odd'}`}>
                   <div className="sticky-label-cell spec-label">
-                    <span className="spec-icon">{spec.icon}</span>
+                    <i className={`spec-icon ${spec.icon}`}></i>
                     <span className="spec-name">{spec.label}</span>
                   </div>
                   {selectedCars.map(car => {
@@ -152,7 +152,7 @@ const ComparePage: React.FC = () => {
                   })}
                 </div>
               ))}
-            </React.Fragment>
+            </div>
           ))}
 
           {/* BOTTOM ACTIONS ROW */}

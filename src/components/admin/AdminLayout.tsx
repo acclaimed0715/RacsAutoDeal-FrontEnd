@@ -1,11 +1,25 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useInventory } from '../../context/InventoryContext';
+import ConfirmModal from './ConfirmModal';
 
 const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { notifications, currentUser, logoutStaff, markAllNotificationsRead } = useInventory();
     const location = useLocation();
     const [notifOpen, setNotifOpen] = useState(false);
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        confirmText?: string;
+        isDestructive?: boolean;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {},
+    });
     const notifRef = useRef<HTMLDivElement>(null);
 
     const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -99,7 +113,19 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                 </NavLink>
                             </li>
                         )}
-                        <li className="logout-link" onClick={logoutStaff}>
+                        <li className="logout-link" onClick={() => {
+                            setConfirmModal({
+                                isOpen: true,
+                                title: 'Confirm Logout',
+                                message: 'Are you sure you want to log out? You will need to sign in again to access the dashboard.',
+                                confirmText: 'Logout',
+                                isDestructive: true,
+                                onConfirm: () => {
+                                    logoutStaff();
+                                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                }
+                            });
+                        }}>
                             <a href="#"><i className="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
                         </li>
                     </ul>
@@ -164,6 +190,15 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     </div>
                 </main>
             </div>
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                confirmText={confirmModal.confirmText}
+                onConfirm={confirmModal.onConfirm}
+                onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                isDestructive={confirmModal.isDestructive}
+            />
         </div>
     );
 };

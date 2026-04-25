@@ -1,17 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useInventory } from '../../context/InventoryContext';
 import { type UserReport } from '../../types';
+import ConfirmModal from './ConfirmModal';
 
 const ReportsView: React.FC = () => {
     const { reports, resolveReport, reopenReport, deleteReport } = useInventory();
 
     const [activeTab, setActiveTab] = useState<'PENDING' | 'RESOLVED' | 'REOPENED'>('PENDING');
     const [selectedReport, setSelectedReport] = useState<UserReport | null>(null);
+    const [openActionDropdownId, setOpenActionDropdownId] = useState<string | null>(null);
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        isDestructive?: boolean;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {},
+    });
+    const dropdownRef = useRef<HTMLDivElement>(null);
     const pending = reports.filter(r => r.status === 'PENDING');
     const resolved = reports.filter(r => r.status === 'RESOLVED');
     const reopened = reports.filter(r => r.status === 'REOPENED');
 
     const visible = activeTab === 'PENDING' ? pending : activeTab === 'RESOLVED' ? resolved : reopened;
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setOpenActionDropdownId(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     return (
         <div className="reports-view">
@@ -37,7 +63,7 @@ const ReportsView: React.FC = () => {
                 </button>
                 <button
                     type="button"
-                    className={`report-tab${activeTab === 'RESOLVED' ? ' active' : ''}`}
+                    className={`report-tab${activeTab === 'RESOLVED' ? ' active' : ''} archive-tab`}
                     onClick={() => setActiveTab('RESOLVED')}
                 >
                     Resolved <span className="report-tab-count">{resolved.length}</span>
@@ -52,7 +78,7 @@ const ReportsView: React.FC = () => {
                             <th>Reason</th>
                             <th>Date</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th style={{ textAlign: 'center' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -74,41 +100,89 @@ const ReportsView: React.FC = () => {
                                         {report.status}
                                     </span>
                                 </td>
-                                <td>
-                                    <div className="action-row">
+                                <td style={{ textAlign: 'center' }}>
+                                    <div className="inquiry-actions-container" ref={openActionDropdownId === report.id ? dropdownRef : null}>
                                         <button
-                                            className="icon-btn"
-                                            title="View Details"
-                                            onClick={() => setSelectedReport(report)}
+                                            className={`action-trigger-btn ${openActionDropdownId === report.id ? 'active' : ''}`}
+                                            onClick={() => setOpenActionDropdownId(openActionDropdownId === report.id ? null : report.id)}
+                                            title="Actions"
                                         >
-                                            <i className="fa-solid fa-eye"></i>
+                                            <i className="fa-solid fa-bars"></i>
                                         </button>
-                                        {(report.status === 'PENDING' || report.status === 'REOPENED') && (
+                                        
+                                        <div className={`inquiry-actions-dropdown ${openActionDropdownId === report.id ? 'open' : ''}`}>
                                             <button
-                                                className="resolve-btn"
-                                                type="button"
                                                 onClick={() => {
-                                                    resolveReport(report.id);
-                                                    setActiveTab('RESOLVED');
+                                                    setSelectedReport(report);
+                                                    setOpenActionDropdownId(null);
                                                 }}
                                             >
-                                                Resolve
+                                                <i className="fa-solid fa-eye"></i>
+                                                View Details
                                             </button>
-                                        )}
-                                        {report.status === 'RESOLVED' && (
+                                            
+                                            {(report.status === 'PENDING' || report.status === 'REOPENED') && (
+                                                <button
+                                                    onClick={() => {
+                                                        setConfirmModal({
+                                                            isOpen: true,
+                                                            title: 'Resolve Report',
+                                                            message: 'Are you sure you want to mark this report as resolved?',
+                                                            onConfirm: () => {
+                                                                resolveReport(report.id);
+                                                                setActiveTab('RESOLVED');
+                                                                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                                            }
+                                                        });
+                                                        setOpenActionDropdownId(null);
+                                                    }}
+                                                >
+                                                    <i className="fa-solid fa-check-circle"></i>
+                                                    Mark as Resolved
+                                                </button>
+                                            )}
+                                            
+                                            {report.status === 'RESOLVED' && (
+                                                <button
+                                                    onClick={() => {
+                                                        setConfirmModal({
+                                                            isOpen: true,
+                                                            title: 'Re-open Report',
+                                                            message: 'Are you sure you want to re-open this report for further investigation?',
+                                                            onConfirm: () => {
+                                                                reopenReport(report.id);
+                                                                setActiveTab('REOPENED');
+                                                                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                                            }
+                                                        });
+                                                        setOpenActionDropdownId(null);
+                                                    }}
+                                                >
+                                                    <i className="fa-solid fa-rotate-left"></i>
+                                                    Re-open Report
+                                                </button>
+                                            )}
+                                            
                                             <button
-                                                className="resolve-btn"
-                                                style={{ background: 'var(--primary)', color: 'white' }}
-                                                type="button"
+                                                className="archive-item"
                                                 onClick={() => {
-                                                    reopenReport(report.id);
-                                                    setActiveTab('REOPENED');
+                                                    setConfirmModal({
+                                                        isOpen: true,
+                                                        title: 'Delete Report',
+                                                        message: 'Are you sure you want to delete this report? This action cannot be undone.',
+                                                        isDestructive: true,
+                                                        onConfirm: () => {
+                                                            deleteReport(report.id);
+                                                            setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                                        }
+                                                    });
+                                                    setOpenActionDropdownId(null);
                                                 }}
                                             >
-                                                Re-open
+                                                <i className="fa-solid fa-trash"></i>
+                                                Delete Report
                                             </button>
-                                        )}
-                                        <button className="icon-btn" title="Delete" onClick={() => deleteReport(report.id)}><i className="fa-solid fa-trash"></i></button>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -155,6 +229,15 @@ const ReportsView: React.FC = () => {
                     </div>
                 </>
             )}
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                onConfirm={confirmModal.onConfirm}
+                onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                isDestructive={confirmModal.isDestructive}
+            />
         </div>
     );
 };

@@ -25,6 +25,10 @@ const InventoryView: React.FC = () => {
     const [removalModalCar, setRemovalModalCar] = useState<Vehicle | null>(null);
     const [removalRemark, setRemovalRemark] = useState('');
     const [newCategory, setNewCategory] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(10);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
 
@@ -78,6 +82,21 @@ const InventoryView: React.FC = () => {
         setImages(car.images || []);
         setIsModalOpen(true);
     };
+
+    const handleTabChange = (tab: 'active' | 'sold') => {
+        setActiveTab(tab);
+        setCurrentPage(1);
+    };
+
+    const displayedCars = useMemo(() => {
+        const source = activeTab === 'active' ? inventory : soldArchived;
+        if (itemsPerPage === 'all') return source;
+        const start = (currentPage - 1) * itemsPerPage;
+        return source.slice(start, start + (itemsPerPage as number));
+    }, [activeTab, inventory, soldArchived, currentPage, itemsPerPage]);
+
+    const totalItems = activeTab === 'active' ? inventory.length : soldArchived.length;
+    const totalPages = itemsPerPage === 'all' ? 1 : Math.ceil(totalItems / (itemsPerPage as number));
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -134,9 +153,30 @@ const InventoryView: React.FC = () => {
             }
         });
     };
+    
+    // Close dropdown on click outside
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const removeImage = (index: number) => {
         setImages(images.filter((_, i) => i !== index));
+    };
+
+    const setAsMainCover = (index: number) => {
+        if (index === 0) return;
+        const newImages = [...images];
+        const selectedImage = newImages[index];
+        // Move selected image to the first position
+        newImages.splice(index, 1);
+        newImages.unshift(selectedImage);
+        setImages(newImages);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -279,7 +319,7 @@ const InventoryView: React.FC = () => {
             <div className="inv-tabs">
                 <button
                     className={`inv-tab${activeTab === 'active' ? ' active' : ''}`}
-                    onClick={() => setActiveTab('active')}
+                    onClick={() => handleTabChange('active')}
                 >
                     <i className="fa-solid fa-car"></i> Active Listings
                     {isSuperAdmin && pendingDeletionReqs.length > 0 && (
@@ -288,7 +328,7 @@ const InventoryView: React.FC = () => {
                 </button>
                 <button
                     className={`inv-tab${activeTab === 'sold' ? ' active' : ''}`}
-                    onClick={() => setActiveTab('sold')}
+                    onClick={() => handleTabChange('sold')}
                 >
                     <i className="fa-solid fa-box-archive"></i> Sold Cars
                     {pendingApproval.length > 0 && (
@@ -296,6 +336,92 @@ const InventoryView: React.FC = () => {
                     )}
                 </button>
             </div>
+
+            {/* Pagination Controls (Top) */}
+            {totalItems > 0 && (
+                <div className="inventory-pagination-wrap" style={{ marginBottom: '1.5rem', marginTop: '0.5rem' }}>
+                    <div className="pagination-info">
+                        Showing <strong>{itemsPerPage === 'all' ? 1 : (currentPage - 1) * itemsPerPage + 1}</strong> to <strong>{itemsPerPage === 'all' ? totalItems : Math.min(currentPage * itemsPerPage, totalItems)}</strong> of <strong>{totalItems}</strong> entries
+                    </div>
+
+                    <div className="pagination-controls-right">
+                        <div className="rows-per-page">
+                            <span>Rows per page:</span>
+                            <div className="custom-dropdown-container" ref={dropdownRef}>
+                                <button 
+                                    className={`custom-dropdown-trigger ${isDropdownOpen ? 'open' : ''}`}
+                                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                >
+                                    {itemsPerPage === 'all' ? 'All' : itemsPerPage}
+                                    <i className="fa-solid fa-chevron-down"></i>
+                                </button>
+                                <div className={`custom-dropdown-menu ${isDropdownOpen ? 'open' : ''}`}>
+                                    {[10, 25, 50, 100, 'all'].map(val => (
+                                        <div 
+                                            key={val}
+                                            className={`custom-dropdown-item ${itemsPerPage === val ? 'active' : ''}`}
+                                            onClick={() => {
+                                                setItemsPerPage(val as number | 'all');
+                                                setCurrentPage(1);
+                                                setIsDropdownOpen(false);
+                                            }}
+                                        >
+                                            {val === 'all' ? 'See All' : val}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {itemsPerPage !== 'all' && totalPages > 1 && (
+                            <div className="pagination-buttons">
+                                <button 
+                                    className="pag-btn" 
+                                    disabled={currentPage === 1}
+                                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                    title="Previous Page"
+                                >
+                                    <i className="fa-solid fa-chevron-left"></i>
+                                </button>
+                                
+                                {[...Array(totalPages)].map((_, i) => {
+                                    const pageNum = i + 1;
+                                    if (
+                                        pageNum === 1 || 
+                                        pageNum === totalPages || 
+                                        (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                                    ) {
+                                        return (
+                                            <button 
+                                                key={pageNum}
+                                                className={`pag-btn ${currentPage === pageNum ? 'active' : ''}`}
+                                                onClick={() => setCurrentPage(pageNum)}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    } else if (
+                                        (pageNum === 2 && currentPage > 3) || 
+                                        (pageNum === totalPages - 1 && currentPage < totalPages - 2)
+                                    ) {
+                                        return <span key={pageNum} className="pagination-ellipsis">...</span>;
+                                    }
+                                    return null;
+                                })}
+
+                                <button 
+                                    className="pag-btn" 
+                                    disabled={currentPage === totalPages}
+                                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                    title="Next Page"
+                                >
+                                    <i className="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* ── Active Listings Tab ── */}
             {activeTab === 'active' && (
@@ -311,7 +437,7 @@ const InventoryView: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {inventory.map(car => (
+                            {displayedCars.map(car => (
                                 <tr key={car.id}>
                                     <td>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -514,7 +640,7 @@ const InventoryView: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {soldArchived.map(car => (
+                                    {displayedCars.map(car => (
                                         <tr key={car.id}>
                                             <td>
                                                 <div className="car-info-cell">
@@ -538,6 +664,7 @@ const InventoryView: React.FC = () => {
                     )}
                 </div>
             )}
+
 
             {removalModalCar && (
                 <>
@@ -682,18 +809,103 @@ const InventoryView: React.FC = () => {
                                     </div>
 
                                     {images.length > 0 && (
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '10px', marginTop: '1.5rem', maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '12px', marginTop: '1.5rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }}>
                                             {images.map((img, idx) => (
-                                                <div key={idx} style={{ position: 'relative', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)' }}>
-                                                    <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                <div 
+                                                    key={idx} 
+                                                    style={{ 
+                                                        position: 'relative', 
+                                                        height: '100px', 
+                                                        borderRadius: '10px', 
+                                                        overflow: 'hidden', 
+                                                        border: idx === 0 ? '2px solid var(--primary)' : '1px solid var(--border)',
+                                                        boxShadow: idx === 0 ? '0 0 10px rgba(225, 29, 72, 0.3)' : 'none',
+                                                        transition: 'all 0.3s ease',
+                                                        cursor: idx === 0 ? 'default' : 'pointer'
+                                                    }}
+                                                    onClick={() => idx !== 0 && setAsMainCover(idx)}
+                                                    title={idx === 0 ? 'Main Cover Image' : 'Click to set as Main Cover'}
+                                                >
+                                                    <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: idx === 0 ? 1 : 0.8 }} />
+                                                    
+                                                    {/* Hover Overlay for non-main images */}
+                                                    {idx !== 0 && (
+                                                        <div className="img-hover-overlay" style={{
+                                                            position: 'absolute',
+                                                            top: 0, left: 0, right: 0, bottom: 0,
+                                                            background: 'rgba(0,0,0,0.4)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            opacity: 0,
+                                                            transition: 'opacity 0.2s',
+                                                            color: 'white',
+                                                            fontSize: '0.7rem',
+                                                            fontWeight: 'bold'
+                                                        }}>
+                                                            <i className="fa-solid fa-star" style={{ marginRight: '4px' }}></i> SET COVER
+                                                        </div>
+                                                    )}
+
                                                     <button 
                                                         type="button" 
                                                         onClick={(e) => { e.stopPropagation(); removeImage(idx); }}
-                                                        style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '10px' }}
+                                                        style={{ 
+                                                            position: 'absolute', 
+                                                            top: '6px', 
+                                                            right: '6px', 
+                                                            background: 'rgba(239, 68, 68, 0.9)', 
+                                                            color: 'white', 
+                                                            border: 'none', 
+                                                            borderRadius: '50%', 
+                                                            width: '22px', 
+                                                            height: '22px', 
+                                                            cursor: 'pointer', 
+                                                            fontSize: '10px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            zIndex: 2,
+                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                                        }}
+                                                        title="Remove Image"
                                                     >
                                                         <i className="fa-solid fa-times"></i>
                                                     </button>
-                                                    {idx === 0 && <div style={{ position: 'absolute', bottom: '0', width: '100%', background: 'var(--primary)', color: 'white', fontSize: '8px', textAlign: 'center', padding: '2px 0' }}>MAIN COVER</div>}
+
+                                                    {idx === 0 ? (
+                                                        <div style={{ 
+                                                            position: 'absolute', 
+                                                            bottom: '0', 
+                                                            width: '100%', 
+                                                            background: 'var(--primary)', 
+                                                            color: 'white', 
+                                                            fontSize: '9px', 
+                                                            fontWeight: '800',
+                                                            textAlign: 'center', 
+                                                            padding: '4px 0',
+                                                            letterSpacing: '0.5px'
+                                                        }}>
+                                                            MAIN COVER
+                                                        </div>
+                                                    ) : (
+                                                        <div 
+                                                            className="set-cover-hint"
+                                                            style={{
+                                                                position: 'absolute',
+                                                                bottom: '4px',
+                                                                left: '4px',
+                                                                background: 'rgba(0,0,0,0.6)',
+                                                                color: 'rgba(255,255,255,0.8)',
+                                                                padding: '2px 6px',
+                                                                borderRadius: '4px',
+                                                                fontSize: '8px',
+                                                                fontWeight: '600'
+                                                            }}
+                                                        >
+                                                            #{idx + 1}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>

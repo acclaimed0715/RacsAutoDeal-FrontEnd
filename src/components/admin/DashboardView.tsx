@@ -25,9 +25,10 @@ ChartJS.register(
 );
 
 const DashboardView: React.FC = () => {
-    const { cars, reports, currentUser, resolveSale, settings } = useInventory();
+    const { cars, reports, currentUser, resolveSale, settings, inquiries } = useInventory();
     const inventory = Object.values(cars);
     const openVehiclesCount = inventory.filter(car => car.status === 'open').length;
+    const pendingInquiriesCount = inquiries.filter(i => i.status === 'PENDING').length;
     const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
 
     const totalValue = inventory.reduce((sum, car) => sum + (parseInt(car.price.replace(/[^0-9]/g, '')) || 0), 0);
@@ -267,12 +268,12 @@ const DashboardView: React.FC = () => {
                     </div>
                 </div>
                 <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}><i className="fa-solid fa-box-archive"></i></div>
+                    <div className="stat-icon" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}><i className="fa-solid fa-envelope-open-text"></i></div>
                     <div className="stat-info">
-                        <h3>Sold & Archived</h3>
-                        <p>{soldArchived.length}</p>
-                        <p style={{ marginTop: '0.25rem', fontSize: '1.05rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
-                            ₱{soldValue.toLocaleString()}
+                        <h3>Pending Inquiries</h3>
+                        <p>{pendingInquiriesCount}</p>
+                        <p style={{ marginTop: '0.25rem', fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                            Awaiting Reply
                         </p>
                     </div>
                 </div>
@@ -456,6 +457,16 @@ const DashboardView: React.FC = () => {
             <div className="dashboard-table-card" style={{ marginTop: '2rem', padding: '1.5rem' }}>
                 <div className="table-header" style={{ marginBottom: '1.2rem' }}>
                     <h2 style={{ fontSize: '1.1rem' }}>Sold Cars by Date</h2>
+                    {isSuperAdmin && (
+                        <button 
+                            className="add-user-btn" 
+                            style={{ background: 'var(--primary)', height: '36px', padding: '0 1.2rem', fontSize: '0.85rem' }}
+                            onClick={() => window.print()}
+                        >
+                            <i className="fa-solid fa-file-invoice-dollar" style={{ marginRight: '8px' }}></i>
+                            Generate Sales Report
+                        </button>
+                    )}
                 </div>
 
                 <div className="dashboard-controls" style={{ marginTop: 0, marginBottom: '1rem' }}>
@@ -604,6 +615,76 @@ const DashboardView: React.FC = () => {
                         )}
                     </div>
                 )}
+            </div>
+
+            {/* Hidden Printable Report */}
+            <div className="printable-report-container">
+                <div className="report-print-header">
+                    <div className="report-print-logo">
+                        <img src="/assets/logo.png" alt="Logo" style={{ height: '50px' }} />
+                        <div className="report-print-title">
+                            <h1>Sales & Revenue Report</h1>
+                            <p>{settings.businessName} • {new Date().toLocaleDateString()}</p>
+                        </div>
+                    </div>
+                    <div className="report-print-meta">
+                        <div className="meta-item">
+                            <span className="label">Period:</span>
+                            <span className="value">
+                                {soldGranularity === 'year' ? `Year ${safeSoldYear}` : 
+                                 soldGranularity === 'month' ? `${MONTH_LABELS[soldMonth-1]} ${safeSoldYear}` : 
+                                 `Date ${soldDay}`}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="report-print-stats">
+                    <div className="print-stat">
+                        <span className="label">Total Units Sold</span>
+                        <span className="value">{soldCountTotal}</span>
+                    </div>
+                    <div className="print-stat">
+                        <span className="label">Total Revenue</span>
+                        <span className="value">₱{soldValueTotal.toLocaleString()}</span>
+                    </div>
+                    <div className="print-stat">
+                        <span className="label">Avg. Sale Price</span>
+                        <span className="value">₱{(soldCountTotal > 0 ? soldValueTotal / soldCountTotal : 0).toLocaleString()}</span>
+                    </div>
+                </div>
+
+                <div className="report-print-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Vehicle Details</th>
+                                <th>Brand</th>
+                                <th>Model Year</th>
+                                <th>Sold Price</th>
+                                <th>Sold Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {(soldGranularity === 'year' ? soldForYear : 
+                              soldGranularity === 'month' ? soldForMonth : 
+                              soldForDay).map(car => (
+                                <tr key={car.id}>
+                                    <td>{car.name}</td>
+                                    <td>{car.brand}</td>
+                                    <td>{car.modelYear}</td>
+                                    <td style={{ fontWeight: 700 }}>{formatPrice(car.price)}</td>
+                                    <td>{new Date(car.updatedAt || car.date).toLocaleDateString()}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div className="report-print-footer">
+                    <p>Generated by {currentUser?.name} (@{currentUser?.username})</p>
+                    <p>© {new Date().getFullYear()} {settings.businessName}. All rights reserved.</p>
+                </div>
             </div>
 
             {currentUser?.role === 'SUPER_ADMIN' && pendingSales.length > 0 && (

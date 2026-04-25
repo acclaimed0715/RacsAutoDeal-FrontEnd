@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useInventory } from '../../context/InventoryContext';
 import { type StaffMember } from '../../types';
+import ConfirmModal from './ConfirmModal';
 
 interface UserForm {
     firstName: string;
@@ -39,6 +40,20 @@ const UsersView: React.FC = () => {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [editId, setEditId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<UserForm>(defaultForm);
+    const [openActionDropdownId, setOpenActionDropdownId] = useState<string | null>(null);
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        isDestructive?: boolean;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {},
+    });
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const hasSuperAdmin = staff.some(s => s.role === 'SUPER_ADMIN');
 
@@ -62,9 +77,16 @@ const UsersView: React.FC = () => {
 
     const handleDelete = (id: string, role: string) => {
         if (role === 'SUPER_ADMIN') return alert('Cannot delete the Super Admin account.');
-        if (window.confirm('Are you sure you want to delete this user?')) {
-            deleteStaff(id);
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: 'Delete User',
+            message: 'Are you sure you want to delete this staff user? This action cannot be undone.',
+            isDestructive: true,
+            onConfirm: () => {
+                deleteStaff(id);
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+            }
+        });
     };
 
     const handleAdd = async (e: React.FormEvent) => {
@@ -122,6 +144,17 @@ const UsersView: React.FC = () => {
         setIsEditOpen(false);
         setEditId(null);
     };
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setOpenActionDropdownId(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const RoleRadios = ({
         value,
@@ -189,7 +222,7 @@ const UsersView: React.FC = () => {
                             <th>Role</th>
                             <th>Contact Info</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th style={{ textAlign: 'center' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -215,25 +248,41 @@ const UsersView: React.FC = () => {
                                     </div>
                                 </td>
                                 <td><span className="status-dot active"></span> Active</td>
-                                <td>
+                                <td style={{ textAlign: 'center' }}>
                                     {currentUser?.role === 'SUPER_ADMIN' && (
-                                        <div className="action-row">
+                                        <div className="inquiry-actions-container" ref={openActionDropdownId === user.id ? dropdownRef : null}>
                                             <button
-                                                className="icon-btn"
-                                                onClick={() => openEdit(user)}
-                                                title="Edit user"
+                                                className={`action-trigger-btn ${openActionDropdownId === user.id ? 'active' : ''}`}
+                                                onClick={() => setOpenActionDropdownId(openActionDropdownId === user.id ? null : user.id)}
+                                                title="Actions"
                                             >
-                                                <i className="fa-solid fa-pen-to-square"></i>
+                                                <i className="fa-solid fa-bars"></i>
                                             </button>
-                                            {user.role !== 'SUPER_ADMIN' && (
+                                            
+                                            <div className={`inquiry-actions-dropdown ${openActionDropdownId === user.id ? 'open' : ''}`}>
                                                 <button
-                                                    className="icon-btn"
-                                                    onClick={() => handleDelete(user.id, user.role)}
-                                                    title="Delete user"
+                                                    onClick={() => {
+                                                        openEdit(user);
+                                                        setOpenActionDropdownId(null);
+                                                    }}
                                                 >
-                                                    <i className="fa-solid fa-trash"></i>
+                                                    <i className="fa-solid fa-pen-to-square"></i>
+                                                    Edit User
                                                 </button>
-                                            )}
+                                                
+                                                {user.role !== 'SUPER_ADMIN' && (
+                                                    <button
+                                                        className="archive-item"
+                                                        onClick={() => {
+                                                            handleDelete(user.id, user.role);
+                                                            setOpenActionDropdownId(null);
+                                                        }}
+                                                    >
+                                                        <i className="fa-solid fa-trash"></i>
+                                                        Delete User
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     )}
                                 </td>
@@ -350,6 +399,15 @@ const UsersView: React.FC = () => {
                     </div>
                 </>
             )}
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                onConfirm={confirmModal.onConfirm}
+                onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                isDestructive={confirmModal.isDestructive}
+            />
         </div>
     );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useInventory } from '../../context/InventoryContext';
 import { type Inquiry } from '../../types';
+import ConfirmModal from './ConfirmModal';
 
 const InquiriesView: React.FC = () => {
     const { inquiries, sendReply, archiveInquiry, deleteInquiry } = useInventory();
@@ -8,6 +9,20 @@ const InquiriesView: React.FC = () => {
     const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
     const [replyText, setReplyText] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [openActionDropdownId, setOpenActionDropdownId] = useState<string | null>(null);
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        isDestructive?: boolean;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {},
+    });
+    const dropdownRef = useRef<HTMLDivElement>(null);
     const threadEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -34,6 +49,17 @@ const InquiriesView: React.FC = () => {
             setTimeout(scrollToBottom, 200);
         }
     }, [selectedInquiry?.id]);
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setOpenActionDropdownId(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const pending = inquiries.filter(i => (i.status || 'PENDING') === 'PENDING');
     const replied = inquiries.filter(i => i.status === 'REPLIED');
@@ -101,7 +127,7 @@ const InquiriesView: React.FC = () => {
                 </button>
                 <button
                     type="button"
-                    className={`report-tab${activeTab === 'ARCHIVED' ? ' active' : ''}`}
+                    className={`report-tab${activeTab === 'ARCHIVED' ? ' active' : ''} archive-tab`}
                     onClick={() => setActiveTab('ARCHIVED')}
                 >
                     Archived <span className="report-tab-count">{archived.length}</span>
@@ -116,7 +142,7 @@ const InquiriesView: React.FC = () => {
                             <th>Vehicle</th>
                             <th>Received At</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th style={{ textAlign: 'center' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -145,39 +171,50 @@ const InquiriesView: React.FC = () => {
                                         {inquiry.status}
                                     </span>
                                 </td>
-                                <td>
-                                    <div className="action-row" style={{ display: 'flex', gap: '5px' }}>
+                                <td style={{ textAlign: 'center' }}>
+                                    <div className="inquiry-actions-container" ref={openActionDropdownId === inquiry.id ? dropdownRef : null}>
                                         <button
-                                            className="icon-btn"
-                                            title={inquiry.status === 'PENDING' ? "Reply" : "View History"}
-                                            onClick={() => {
-                                                setSelectedInquiry(inquiry);
-                                                setReplyText(''); 
-                                            }}
-                                            style={{ 
-                                                color: inquiry.status === 'PENDING' ? 'var(--primary)' : 'var(--text-secondary)',
-                                                background: inquiry.status === 'PENDING' ? 'rgba(225, 29, 72, 0.1)' : 'transparent',
-                                                borderRadius: '8px',
-                                                padding: '6px 10px'
-                                            }}
+                                            className={`action-trigger-btn ${openActionDropdownId === inquiry.id ? 'active' : ''}`}
+                                            onClick={() => setOpenActionDropdownId(openActionDropdownId === inquiry.id ? null : inquiry.id)}
+                                            title="Actions"
                                         >
-                                            <i className={`fa-solid ${inquiry.status === 'PENDING' ? 'fa-reply' : 'fa-comment-dots'}`}></i>
+                                            <i className="fa-solid fa-bars"></i>
                                         </button>
-                                        {inquiry.status !== 'ARCHIVED' && (
+                                        
+                                        <div className={`inquiry-actions-dropdown ${openActionDropdownId === inquiry.id ? 'open' : ''}`}>
                                             <button
-                                                className="icon-btn"
-                                                title="Archive"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (window.confirm('Archive this inquiry?')) {
-                                                        archiveInquiry(inquiry.id);
-                                                    }
+                                                onClick={() => {
+                                                    setSelectedInquiry(inquiry);
+                                                    setReplyText('');
+                                                    setOpenActionDropdownId(null);
                                                 }}
-                                                style={{ color: 'var(--text-secondary)', borderRadius: '8px', padding: '6px 10px' }}
                                             >
-                                                <i className="fa-solid fa-box-archive"></i>
+                                                <i className={`fa-solid ${inquiry.status === 'PENDING' ? 'fa-reply' : 'fa-comment-dots'}`}></i>
+                                                {inquiry.status === 'PENDING' ? 'Reply' : 'View History'}
                                             </button>
-                                        )}
+                                            
+                                            {inquiry.status !== 'ARCHIVED' && (
+                                                <button
+                                                    className="archive-item"
+                                                    onClick={() => {
+                                                        setConfirmModal({
+                                                            isOpen: true,
+                                                            title: 'Archive Inquiry',
+                                                            message: 'Are you sure you want to archive this inquiry? It will be moved to the Archived tab.',
+                                                            isDestructive: true,
+                                                            onConfirm: () => {
+                                                                archiveInquiry(inquiry.id);
+                                                                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                                            }
+                                                        });
+                                                        setOpenActionDropdownId(null);
+                                                    }}
+                                                >
+                                                    <i className="fa-solid fa-box-archive"></i>
+                                                    Archive
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -322,6 +359,15 @@ const InquiriesView: React.FC = () => {
                     </div>
                 </>
             )}
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                onConfirm={confirmModal.onConfirm}
+                onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                isDestructive={confirmModal.isDestructive}
+            />
         </div>
     );
 };

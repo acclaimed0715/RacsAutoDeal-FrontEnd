@@ -66,6 +66,8 @@ class ErrorBoundary extends React.Component<{children: any}, {hasError: boolean,
     }
 }
 
+import ScrollToTop from './components/ScrollToTop';
+
 const App: React.FC = () => {
     return (
         <ErrorBoundary>
@@ -73,6 +75,7 @@ const App: React.FC = () => {
                 <InquiryProvider>
                     <CompareProvider>
                         <Router>
+                            <ScrollToTop />
                             <CompareBar />
                             <GlobalInquiryStack />
                             <Routes>

@@ -18,6 +18,10 @@ const CarDetail: React.FC = () => {
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const [currentImgIdx, setCurrentImgIdx] = useState(0);
 
+    // Swipe state
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
     // Report States
     const [isReportOpen, setIsReportOpen] = useState(false);
     const [reportEmail, setReportEmail] = useState('');
@@ -55,8 +59,39 @@ const CarDetail: React.FC = () => {
         </div>
     );
 
-    const nextImg = () => setCurrentImgIdx((currentImgIdx + 1) % car.images.length);
-    const prevImg = () => setCurrentImgIdx((currentImgIdx - 1 + car.images.length) % car.images.length);
+    const nextImg = () => setCurrentImgIdx((prev) => (prev + 1) % car.images.length);
+    const prevImg = () => setCurrentImgIdx((prev) => (prev - 1 + car.images.length) % car.images.length);
+
+    const onTouchStart = (e: React.TouchEvent) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
+
+    const onTouchEndAction = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        if (distance > 50) nextImg();
+        if (distance < -50) prevImg();
+    };
+
+    const navBtnStyle = {
+        position: 'absolute' as const,
+        zIndex: 10,
+        background: 'transparent',
+        color: 'rgba(255,255,255,0.6)',
+        border: 'none',
+        width: '50px',
+        height: '50px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        transition: 'color 0.3s',
+        fontSize: '1.8rem',
+        filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.8))'
+    };
 
     const handleInquire = () => {
         if (car) openInquiry(car);
@@ -124,12 +159,13 @@ const CarDetail: React.FC = () => {
         <div className="landing-page dark-mode">
             <Navbar />
             
-            <main className="car-detail-page" style={{ paddingTop: '100px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--surface)' }}>
+            <main className="car-detail-page" style={{ paddingTop: '140px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--surface)' }}>
                 <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
                     
                     <button onClick={() => navigate('/cars')} className="back-link" style={{ 
                         background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontSize: '1rem'
+                        display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontSize: '1rem',
+                        position: 'relative', zIndex: 10
                     }}>
                         <i className="fa-solid fa-arrow-left"></i> Back to Listing
                     </button>
@@ -156,18 +192,28 @@ const CarDetail: React.FC = () => {
                     <div className="detail-main-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.8fr) minmax(0, 1fr)', gap: '50px', alignItems: 'start' }}>
                         <div className="detail-media-section">
                             <div className="preview-image-wrapper" style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', background: '#1a1a1a', border: '1px solid var(--border)' }}>
-                                <div className="carousel-container" style={{ position: 'relative', height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <button className="carousel-btn prev-btn" onClick={prevImg} disabled={car.images.length <= 1} style={{ position: 'absolute', left: '20px', zIndex: 10 }}>
-                                        <i className="fa-solid fa-chevron-left"></i>
-                                    </button>
+                                <div 
+                                    className="carousel-container" 
+                                    onTouchStart={onTouchStart}
+                                    onTouchMove={onTouchMove}
+                                    onTouchEnd={onTouchEndAction}
+                                    style={{ position: 'relative', height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                    {car.images.length > 1 && (
+                                        <button className="carousel-btn prev-btn" onClick={prevImg} style={{ ...navBtnStyle, left: '20px' }}>
+                                            <i className="fa-solid fa-chevron-left"></i>
+                                        </button>
+                                    )}
                                     <img 
                                         src={car.images[currentImgIdx]} 
                                         alt={car.name} 
-                                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', padding: '20px' }} 
+                                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', padding: '20px', userSelect: 'none' }} 
                                     />
-                                    <button className="carousel-btn next-btn" onClick={nextImg} disabled={car.images.length <= 1} style={{ position: 'absolute', right: '20px', zIndex: 10 }}>
-                                        <i className="fa-solid fa-chevron-right"></i>
-                                    </button>
+                                    {car.images.length > 1 && (
+                                        <button className="carousel-btn next-btn" onClick={nextImg} style={{ ...navBtnStyle, right: '20px' }}>
+                                            <i className="fa-solid fa-chevron-right"></i>
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="carousel-dots" style={{ position: 'absolute', bottom: '25px', width: '100%', display: 'flex', justifyContent: 'center', gap: '8px' }}>
                                     {car.images.map((_, idx) => (

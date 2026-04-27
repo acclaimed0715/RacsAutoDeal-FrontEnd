@@ -56,7 +56,7 @@ const SupportSection: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-        
+
         let photoData = '';
         if (photo) {
             try {
@@ -104,8 +104,8 @@ const SupportSection: React.FC = () => {
                             { q: 'What documents are needed to sell my car?', a: "To sell your car, you'll need the Original OR/CR, valid IDs, and a duly signed Deed of Sale." },
                             { q: 'Are the vehicles in your inventory inspected?', a: 'Absolutely. Every vehicle undergoes a thorough multi-point inspection and detailed reconditioning.' }
                         ].map((item, index) => (
-                            <div 
-                                key={index} 
+                            <div
+                                key={index}
                                 className={`faq-item ${activeIndex === index ? 'active' : ''}`}
                                 onClick={() => setActiveIndex(activeIndex === index ? null : index)}
                             >
@@ -169,24 +169,24 @@ const SupportSection: React.FC = () => {
                                 <div className="form-group">
                                     <label>Attach Evidence (Photo, Max 5MB)</label>
                                     <div className="file-upload-wrapper" style={{ position: 'relative' }}>
-                                        <input 
-                                            type="file" 
-                                            accept="image/*" 
-                                            onChange={handlePhotoChange} 
-                                            style={{ 
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handlePhotoChange}
+                                            style={{
                                                 opacity: 0,
                                                 position: 'absolute',
-                                                top: 0, left: 0, bottom: 0, right: 0, 
-                                                width: '100%', 
+                                                top: 0, left: 0, bottom: 0, right: 0,
+                                                width: '100%',
                                                 cursor: 'pointer',
                                                 zIndex: 2
                                             }}
                                         />
                                         <div style={{
-                                            background: 'var(--input-bg)', 
-                                            padding: '1.5rem', 
-                                            borderRadius: '8px', 
-                                            border: '2px dashed var(--border)', 
+                                            background: 'var(--input-bg)',
+                                            padding: '1.5rem',
+                                            borderRadius: '8px',
+                                            border: '2px dashed var(--border)',
                                             color: 'var(--text-secondary)',
                                             textAlign: 'center',
                                             display: 'flex',
@@ -230,9 +230,9 @@ const SupportSection: React.FC = () => {
                             <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
                                 Thank you for letting us know. Our team will review your report and get back to you shortly.
                             </p>
-                            <button 
-                                type="button" 
-                                className="report-submit-btn" 
+                            <button
+                                type="button"
+                                className="report-submit-btn"
                                 onClick={() => setShowSuccess(false)}
                             >
                                 Done

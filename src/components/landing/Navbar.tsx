@@ -33,47 +33,47 @@ const Navbar: React.FC = () => {
     }, [location.pathname]);
 
     return (
-        <header className={`navbar smart-nav ${isScrolled ? 'scrolled' : ''}`}>
-            <div className="nav-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: '1400px', padding: '0 2rem' }}>
-                <div className="logo-container" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', textDecoration: 'none' }}>
-                    <NavLink to="/" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', textDecoration: 'none' }}>
-                        <img src="/assets/logo.png" alt="Racs Auto Deal Logo" className="logo-img" style={{ cursor: 'pointer' }} />
-                        <span className="navbar-brand-name" style={{
-                            color: 'white',
-                            fontSize: '1.3rem',
-                            fontWeight: '900',
-                            textTransform: 'uppercase',
-                            letterSpacing: '2px',
-                            opacity: (!isHome || isScrolled) ? 1 : 0,
-                            transform: (!isHome || isScrolled) ? 'translateX(0)' : 'translateX(-20px)',
-                            transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                            pointerEvents: 'none',
-                            fontFamily: "'Montserrat', sans-serif",
-                            textShadow: '0 0 15px rgba(230, 57, 70, 0.4)'
-                        }}>
+        <header className={`navbar smart-nav pill-style ${isScrolled ? 'scrolled' : ''}`}>
+            <div className="nav-container">
+                {/* Left: Brand Branding */}
+                <div className="brand-section">
+                    <NavLink to="/" className="logo-link">
+                        <img src="/assets/logo.png" alt="Racs Auto Deal Logo" className="logo-img" />
+                        <span className="navbar-brand-name">
                             {settings.businessName}
                         </span>
                     </NavLink>
                 </div>
                 
-                <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                    <i className={`fa-solid ${isMobileMenuOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
-                </button>
-                
-                <div className={`nav-links ${isMobileMenuOpen ? 'open' : ''}`} style={{ 
-                    gap: '2rem', 
-                    alignItems: 'center',
-                    opacity: (isHome && !isScrolled && !isMobileMenuOpen) ? 0 : 1,
-                    transform: (isHome && !isScrolled && !isMobileMenuOpen) ? 'translateY(-10px)' : 'translateY(0)',
-                    pointerEvents: (isHome && !isScrolled && !isMobileMenuOpen) ? 'none' : 'auto',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                }}>
-                    <NavLink to="/cars" style={{ color: 'white', textDecoration: 'none', fontWeight: '600', fontSize: '1.1rem', transition: 'color 0.3s' }} className={({ isActive }) => isActive ? 'active-nav-link' : ''}>
-                        Car Listing
-                    </NavLink>
-                    <NavLink to="/about" style={{ color: 'white', textDecoration: 'none', fontWeight: '600', fontSize: '1.1rem', transition: 'color 0.3s' }} className={({ isActive }) => isActive ? 'active-nav-link' : ''}>
-                        About Us
-                    </NavLink>
+                {/* Right: Floating Pill Menu */}
+                <div className="menu-pill-wrapper">
+                    <nav className={`menu-pill ${isMobileMenuOpen ? 'open' : ''}`}>
+                        <div className="pill-links">
+                            <a 
+                                href="#footer" 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    document.getElementById('footer')?.scrollIntoView({ behavior: 'smooth' });
+                                }} 
+                                className="pill-link"
+                            >
+                                Contact Us
+                            </a>
+                            <NavLink to="/about" className={({ isActive }) => isActive ? 'pill-link active' : 'pill-link'}>
+                                About Us
+                            </NavLink>
+                        </div>
+                        
+                        <div className="pill-action">
+                            <NavLink to="/cars" className="pill-cta-btn">
+                                Inventory
+                            </NavLink>
+                        </div>
+                    </nav>
+                    
+                    <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                        <i className={`fa-solid ${isMobileMenuOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
+                    </button>
                 </div>
             </div>
         </header>

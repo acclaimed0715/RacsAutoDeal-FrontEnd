@@ -121,62 +121,7 @@ const ServicesSection: React.FC = () => {
                 }}
             />
 
-            {/* Section Header */}
-            <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                style={{ textAlign: 'center', marginBottom: '4rem', position: 'relative', zIndex: 1 }}
-            >
-                <p
-                    style={{
-                        color: '#E63946',
-                        fontSize: '0.78rem',
-                        fontWeight: '700',
-                        letterSpacing: '4px',
-                        textTransform: 'uppercase',
-                        marginBottom: '0.75rem',
-                    }}
-                >
-                    What We Offer
-                </p>
-                <h2
-                    style={{
-                        color: '#F0F0F0',
-                        fontSize: 'clamp(1.8rem, 4vw, 2.8rem)',
-                        fontWeight: '800',
-                        margin: '0 0 1rem 0',
-                        lineHeight: 1.15,
-                        letterSpacing: '-0.5px',
-                    }}
-                >
-                    Complete Car Care Services
-                </h2>
-                <p
-                    style={{
-                        color: '#6B7280',
-                        fontSize: '1rem',
-                        maxWidth: '520px',
-                        margin: '0 auto',
-                        lineHeight: 1.7,
-                    }}
-                >
-                    Beyond buying and selling — we take care of your vehicle throughout its entire life.
-                </p>
-                <motion.div
-                    initial={{ width: 0 }}
-                    whileInView={{ width: '60px' }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.5, duration: 0.8 }}
-                    style={{
-                        height: '3px',
-                        background: 'linear-gradient(90deg, transparent, #E63946, transparent)',
-                        margin: '1.5rem auto 0',
-                        borderRadius: '2px',
-                    }}
-                />
-            </motion.div>
+            {/* Service Cards (Header removed to avoid redundancy) */}
 
             {/* Service Cards */}
             <motion.div

@@ -42,7 +42,6 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                         <div className="filter-group-title">
                             <i className="fa-solid fa-magnifying-glass"></i> SEARCH
                         </div>
-                        <i className="fa-solid fa-chevron section-toggle"></i>
                     </div>
                     <div className="filter-search-input">
                         <input
@@ -61,7 +60,6 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                         <div className="filter-group-title">
                             <i className="fa-solid fa-layer-group"></i> CATEGORY
                         </div>
-                        <i className="fa-solid fa-chevron-down section-toggle"></i>
                     </div>
                     <ul className="filter-list">
                         <li className={activeCategories.includes('new') ? 'active' : ''} onClick={() => toggleCategory('new')}><i className="fa-solid fa-arrow-trend-up"></i> New</li>
@@ -75,7 +73,6 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                         <div className="filter-group-title">
                             <i className="fa-solid fa-car"></i> VEHICLE TYPE
                         </div>
-                        <i className="fa-solid fa-chevron-down section-toggle"></i>
                     </div>
                     <ul className="filter-list text-only">
                         {(settings.vehicleTypes || ['SUV', 'Sedan']).map(type => (
@@ -92,7 +89,6 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                         <div className="filter-group-title">
                             <i className="fa-solid fa-tag"></i> PRICE RANGE
                         </div>
-                        <i className="fa-solid fa-chevron-down section-toggle"></i>
                     </div>
                     <div className="price-range-inputs">
                         <div className="price-input-wrapper">

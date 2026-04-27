@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
 const StatsAndServices: React.FC = () => {
     const stats = [
@@ -14,7 +15,14 @@ const StatsAndServices: React.FC = () => {
             <div style={{ backgroundColor: '#0B0B0D', padding: '5rem 2rem', borderBottom: '1px solid #2A2A2E' }}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '3rem', textAlign: 'center' }}>
                     {stats.map((stat, idx) => (
-                        <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                        <motion.div 
+                            key={idx} 
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: "-50px" }}
+                            transition={{ duration: 0.6, delay: idx * 0.1 }}
+                            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}
+                        >
                             <div style={{
                                 width: '72px', height: '72px', borderRadius: '50%',
                                 background: 'rgba(230, 57, 70, 0.12)',
@@ -32,14 +40,20 @@ const StatsAndServices: React.FC = () => {
                             <p style={{ color: '#B0B0B0', fontSize: '0.95rem', margin: 0, fontWeight: '500', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                 {stat.text}
                             </p>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
             </div>
 
-            {/* Services Intro */}
+            {/* Services Intro (Restored & Merged) */}
             <div style={{ backgroundColor: '#121212', padding: '6rem 2rem', textAlign: 'center', borderBottom: '1px solid #2A2A2E' }}>
-                <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <motion.div 
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8 }}
+                    style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                >
                     <div style={{
                         background: 'rgba(230, 57, 70, 0.12)',
                         border: '1px solid rgba(230, 57, 70, 0.25)',
@@ -55,19 +69,19 @@ const StatsAndServices: React.FC = () => {
                         marginBottom: '2rem',
                         textTransform: 'uppercase',
                     }}>
-                        <i className="fa-solid fa-shield-halved"></i> What We Offer
+                        <i className="fa-solid fa-gem"></i> PREMIUM SOLUTIONS
                     </div>
 
                     <h2 style={{ fontSize: '3rem', fontWeight: '800', margin: '0 0 1.5rem 0', color: '#FFFFFF', letterSpacing: '-1px' }}>
-                        Our Services
+                        Our Automotive Services
                     </h2>
 
                     <p style={{ color: '#B0B0B0', fontSize: '1.15rem', lineHeight: '1.85', margin: 0 }}>
-                        Professional automotive services covering the supply and delivery of premium vehicles,
-                        financing solutions, secure transactions, systems development, automations,
-                        and ongoing dedicated support for all your driving needs.
+                        We provide professional automotive services covering the supply of premium vehicles, 
+                        financing solutions, and secure transactions, alongside <strong>complete car care services</strong> including 
+                        maintenance, professional washing, and meticulous detailing to keep your vehicle in showroom condition.
                     </p>
-                </div>
+                </motion.div>
             </div>
         </section>
     );

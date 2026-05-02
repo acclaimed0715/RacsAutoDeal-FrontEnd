@@ -23,30 +23,16 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     activeCategories, toggleCategory,
     resetFilters
 }) => {
-    const { settings, isMobileFilterOpen, setIsMobileFilterOpen } = useInventory();
+    const { settings } = useInventory();
     const displayMinPrice = minPrice === '0' ? '' : minPrice;
 
     return (
-        <aside className={`filter-sidebar persistent-sidebar ${isMobileFilterOpen ? 'active' : ''}`} id="filterSidebar">
+        <aside className="filter-sidebar persistent-sidebar" id="filterSidebar">
             <div className="filter-header">
                 <div className="filter-title">
                     <i className="fa-solid fa-filter"></i>
                     <h2>Filters</h2>
                 </div>
-                <button 
-                    className="close-filter-btn-mobile" 
-                    onClick={() => setIsMobileFilterOpen(false)}
-                    style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: '#888',
-                        fontSize: '1.5rem',
-                        cursor: 'pointer',
-                        display: 'none' // Hidden by default, shown in mobile.css
-                    }}
-                >
-                    <i className="fa-solid fa-xmark"></i>
-                </button>
             </div>
 
             <div className="filter-content">

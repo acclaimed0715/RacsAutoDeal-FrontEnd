@@ -85,16 +85,60 @@ const ServicesSection: React.FC = () => {
     const [hoveredId, setHoveredId] = useState<string | null>(null);
 
     return (
-        <section className="services-section">
-            <div className="service-blob-1" />
-            <div className="service-blob-2" />
+        <section
+            style={{
+                backgroundColor: '#0D0D10',
+                padding: '6rem 2rem',
+                borderTop: '1px solid #1E1E24',
+                borderBottom: '1px solid #1E1E24',
+                position: 'relative',
+                overflow: 'hidden',
+            }}
+        >
+            {/* Background decorative blobs */}
+            <div
+                style={{
+                    position: 'absolute',
+                    top: '-120px',
+                    left: '-120px',
+                    width: '500px',
+                    height: '500px',
+                    background: 'radial-gradient(circle, rgba(230,57,70,0.06) 0%, transparent 70%)',
+                    pointerEvents: 'none',
+                    zIndex: 0,
+                }}
+            />
+            <div
+                style={{
+                    position: 'absolute',
+                    bottom: '-100px',
+                    right: '-100px',
+                    width: '450px',
+                    height: '450px',
+                    background: 'radial-gradient(circle, rgba(58,134,255,0.06) 0%, transparent 70%)',
+                    pointerEvents: 'none',
+                    zIndex: 0,
+                }}
+            />
 
+            {/* Service Cards (Header removed to avoid redundancy) */}
+
+            {/* Service Cards */}
             <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: '-60px' }}
-                className="services-container"
+                style={{
+                    display: 'flex',
+                    gap: '2rem',
+                    maxWidth: '1300px',
+                    margin: '0 auto',
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    zIndex: 1,
+                }}
             >
                 {services.map((svc) => (
                     <motion.div
@@ -104,56 +148,112 @@ const ServicesSection: React.FC = () => {
                         onHoverEnd={() => setHoveredId(null)}
                         whileHover={{ y: -8, scale: 1.01 }}
                         transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                        className={`service-card ${hoveredId === svc.id ? 'hovered' : ''}`}
                         style={{
+                            flex: '1 1 340px',
+                            maxWidth: '400px',
                             background: hoveredId === svc.id ? svc.gradient : 'rgba(255,255,255,0.03)',
-                            borderColor: hoveredId === svc.id ? svc.border : 'rgba(255,255,255,0.07)',
-                            boxShadow: hoveredId === svc.id ? `0 0 40px ${svc.accent}22` : '0 0 20px rgba(255,255,255,0.04)',
-                        } as any}
+                            border: `1px solid ${hoveredId === svc.id ? svc.border : 'rgba(255,255,255,0.07)'}`,
+                            borderRadius: '24px',
+                            padding: '2.5rem',
+                            cursor: 'default',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            transition: 'background 0.4s ease, border-color 0.4s ease',
+                            boxShadow: hoveredId === svc.id
+                                ? `0 0 40px ${svc.accent}22`
+                                : '0 0 20px rgba(255,255,255,0.04)',
+                        }}
                     >
+                        {/* Tag */}
                         <div
-                            className="service-tag"
                             style={{
+                                position: 'absolute',
+                                top: '1.5rem',
+                                right: '1.5rem',
                                 backgroundColor: svc.accent + '22',
                                 color: svc.accent,
-                                borderColor: svc.accent + '44',
+                                padding: '4px 12px',
+                                borderRadius: '50px',
+                                fontSize: '0.7rem',
+                                fontWeight: '700',
+                                letterSpacing: '1.5px',
+                                textTransform: 'uppercase',
+                                border: `1px solid ${svc.accent}44`,
                             }}
                         >
                             {svc.tag}
                         </div>
 
+                        {/* Icon */}
                         <motion.div
                             animate={hoveredId === svc.id ? { scale: 1.15, rotate: [0, -5, 5, 0] } : { scale: 1 }}
                             transition={{ duration: 0.5 }}
-                            className="service-icon-box"
                             style={{
+                                width: '68px',
+                                height: '68px',
+                                borderRadius: '18px',
                                 background: svc.accent + '1A',
-                                borderColor: svc.accent + '33',
+                                border: `1.5px solid ${svc.accent}33`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '2rem',
+                                marginBottom: '1.5rem',
                             }}
                         >
                             {svc.icon}
                         </motion.div>
 
-                        <p className="service-subtitle" style={{ color: svc.accent }}>
+                        {/* Subtitle */}
+                        <p
+                            style={{
+                                color: svc.accent,
+                                fontSize: '0.7rem',
+                                fontWeight: '700',
+                                letterSpacing: '3px',
+                                textTransform: 'uppercase',
+                                marginBottom: '0.5rem',
+                            }}
+                        >
                             {svc.subtitle}
                         </p>
 
-                        <h3 className="service-title">
+                        {/* Title */}
+                        <h3
+                            style={{
+                                color: '#F0F0F0',
+                                fontSize: '1.65rem',
+                                fontWeight: '800',
+                                margin: '0 0 1rem 0',
+                                letterSpacing: '-0.3px',
+                            }}
+                        >
                             {svc.title}
                         </h3>
 
-                        <p className="service-desc">
+                        {/* Description */}
+                        <p
+                            style={{
+                                color: '#8D95A0',
+                                fontSize: '0.95rem',
+                                lineHeight: '1.75',
+                                marginBottom: '2rem',
+                            }}
+                        >
                             {svc.description}
                         </p>
 
+                        {/* Divider */}
                         <div
-                            className="service-divider"
                             style={{
+                                height: '1px',
                                 background: `linear-gradient(90deg, ${svc.accent}33, transparent)`,
+                                marginBottom: '1.5rem',
                             }}
                         />
 
-                        <ul className="service-features-list">
+                        {/* Features */}
+                        <ul style={{ listStyle: 'none', padding: 0, margin: '0' }}>
                             {svc.features.map((feat, idx) => (
                                 <motion.li
                                     key={idx}
@@ -161,12 +261,22 @@ const ServicesSection: React.FC = () => {
                                     whileInView={{ opacity: 1, x: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: idx * 0.06 }}
-                                    className="service-feature-item"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.75rem',
+                                        color: '#C0C8D4',
+                                        fontSize: '0.9rem',
+                                        padding: '0.45rem 0',
+                                    }}
                                 >
                                     <span
-                                        className="feature-dot"
                                         style={{
+                                            width: '8px',
+                                            height: '8px',
+                                            borderRadius: '50%',
                                             backgroundColor: svc.accent,
+                                            flexShrink: 0,
                                             boxShadow: `0 0 6px ${svc.accent}88`,
                                         }}
                                     />
@@ -174,6 +284,8 @@ const ServicesSection: React.FC = () => {
                                 </motion.li>
                             ))}
                         </ul>
+
+
                     </motion.div>
                 ))}
             </motion.div>

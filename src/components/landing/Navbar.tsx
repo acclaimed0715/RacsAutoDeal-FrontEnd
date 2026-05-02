@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useInventory } from '../../context/InventoryContext';
 
 const Navbar: React.FC = () => {
-    const { settings, setIsMobileFilterOpen, isMobileFilterOpen } = useInventory();
+    const { settings } = useInventory();
     const [isScrolled, setIsScrolled] = useState(false);
     const location = useLocation();
     const isHome = location.pathname === '/';
@@ -66,24 +66,6 @@ const Navbar: React.FC = () => {
                             <NavLink to="/about" className={({ isActive }) => isActive ? 'pill-link active' : 'pill-link'}>
                                 About Us
                             </NavLink>
-                            {location.pathname === '/cars' && (
-                                <button 
-                                    className="pill-link filter-trigger-mobile"
-                                    onClick={() => {
-                                        setIsMobileFilterOpen(!isMobileFilterOpen);
-                                        setIsMobileMenuOpen(false);
-                                    }}
-                                    style={{
-                                        background: 'transparent',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        outline: 'none',
-                                        fontFamily: 'inherit'
-                                    }}
-                                >
-                                    Filters
-                                </button>
-                            )}
                         </div>
                         
                         <div className="pill-action">

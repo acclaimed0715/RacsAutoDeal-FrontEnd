@@ -65,7 +65,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, viewMode = 'list' }) => {
             badges.push(<span key="most-clicked" className="car-badge badge-most-clicked"><i className="fa-solid fa-hand-pointer"></i> Most Clicked</span>);
         
         if (car.id === 'tesla_plaid' || car.id === 'porsche_taycan' || car.fuelType.toLowerCase().includes('electric'))
-            badges.push(<span key="ev" className="car-badge badge-electric"><i className="fa-solid fa-bolt"></i> EV</span>);
+            badges.push(<span key="ev" className="car-badge badge-electric" style={{ background: '#00d2ff', color: '#000' }}><i className="fa-solid fa-bolt"></i> EV</span>);
 
         return badges.length > 0 ? <div className="badges-container">{badges}</div> : null;
     };
@@ -96,10 +96,12 @@ const CarCard: React.FC<CarCardProps> = ({ car, viewMode = 'list' }) => {
                             <h3 className="card-name">{car.name}</h3>
                             {car.color && (
                                 <div
-                                    className="color-indicator"
-                                    style={{ 
+                                    style={{
+                                        width: '10px', height: '10px', borderRadius: '50%',
                                         background: car.color.toLowerCase(),
-                                        boxShadow: `0 0 5px ${car.color.toLowerCase()}` 
+                                        border: '1px solid rgba(255,255,255,0.2)',
+                                        boxShadow: `0 0 5px ${car.color.toLowerCase()}`,
+                                        flexShrink: 0,
                                     }}
                                     title={`Color: ${car.color}`}
                                 />

@@ -45,7 +45,7 @@ const Login: React.FC = () => {
         <div className="login-page">
             <div style={{ background: 'var(--surface)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ background: 'var(--card-bg)', padding: '2.5rem 2.5rem 2rem', borderRadius: '24px', width: '420px', maxWidth: '92vw', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.07)', boxSizing: 'border-box' }}>
-                    <img src="/assets/logo.png" alt="Logo" style={{ width: '150px', marginBottom: '1.75rem' }} />
+                    <img src="/assets/logo.png" alt="Logo" style={{ width: '150px', display: 'block', margin: '0 auto 1.75rem' }} />
                     <h2 style={{ color: 'white', marginBottom: '0.4rem', fontSize: '1.5rem', fontWeight: 700 }}>Welcome Back</h2>
                     <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '0.9rem' }}>Sign in to your admin account</p>
                     <form onSubmit={handleLogin} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>

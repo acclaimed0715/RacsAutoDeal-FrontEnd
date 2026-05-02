@@ -159,63 +159,58 @@ const CarDetail: React.FC = () => {
         <div className="landing-page dark-mode">
             <Navbar />
             
-            <main className="car-detail-page" style={{ paddingTop: '140px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--surface)' }}>
-                <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+            <main className="car-detail-main">
+                <div className="detail-container">
                     
-                    <button onClick={() => navigate('/cars')} className="back-link" style={{ 
-                        background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontSize: '1rem',
-                        position: 'relative', zIndex: 10
-                    }}>
+                    <button onClick={() => navigate('/cars')} className="back-link-btn">
                         <i className="fa-solid fa-arrow-left"></i> Back to Listing
                     </button>
 
 
 
-                    <div className="main-title-section">
-                        <div className="main-header-flex">
+                    <div className="detail-title-section">
+                        <div className="detail-header-flex">
                             <h1>{car.name}</h1>
-                            <div className="main-price">{formatPrice(car.price)}</div>
+                            <div className="detail-price">{formatPrice(car.price)}</div>
                         </div>
-                        <div className="main-subtitle-row">
-                            <div className="main-subtitle">
-                                <i className="fa-solid fa-shield-check" style={{ color: '#22c55e', marginRight: '8px' }}></i> 
-                                Verified Listing • <span style={{ color: '#fff', fontWeight: 700 }}>Racs Auto Deal</span>
+                        <div className="detail-subtitle-row">
+                            <div className="detail-verified">
+                                <i className="fa-solid fa-shield-check"></i> 
+                                Verified Listing • <span className="text-white">Racs Auto Deal</span>
                             </div>
-                            <div className="main-meta">
+                            <div className="detail-meta-info">
                                 <div className="meta-item"><i className="fa-regular fa-clock"></i> Listed {formatListingPosted(car)}</div>
                                 <div className="meta-item">Excluding Registration & Fees</div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="detail-main-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.8fr) minmax(0, 1fr)', gap: '50px', alignItems: 'start' }}>
-                        <div className="detail-media-section">
-                            <div className="preview-image-wrapper" style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', background: '#1a1a1a', border: '1px solid var(--border)' }}>
+                    <div className="detail-grid">
+                        <div className="media-wrapper">
+                            <div className="carousel-wrapper">
                                 <div 
-                                    className="carousel-container" 
+                                    className="carousel-view" 
                                     onTouchStart={onTouchStart}
                                     onTouchMove={onTouchMove}
                                     onTouchEnd={onTouchEndAction}
-                                    style={{ position: 'relative', height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                 >
                                     {car.images.length > 1 && (
-                                        <button className="carousel-btn prev-btn" onClick={prevImg} style={{ ...navBtnStyle, left: '20px' }}>
+                                        <button className="carousel-nav-btn prev" onClick={prevImg}>
                                             <i className="fa-solid fa-chevron-left"></i>
                                         </button>
                                     )}
                                     <img 
                                         src={car.images[currentImgIdx]} 
                                         alt={car.name} 
-                                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', padding: '20px', userSelect: 'none' }} 
+                                        className="carousel-img"
                                     />
                                     {car.images.length > 1 && (
-                                        <button className="carousel-btn next-btn" onClick={nextImg} style={{ ...navBtnStyle, right: '20px' }}>
+                                        <button className="carousel-nav-btn next" onClick={nextImg}>
                                             <i className="fa-solid fa-chevron-right"></i>
                                         </button>
                                     )}
                                 </div>
-                                <div className="carousel-dots" style={{ position: 'absolute', bottom: '25px', width: '100%', display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                                <div className="carousel-dots-container">
                                     {car.images.map((_, idx) => (
                                         <div 
                                             key={idx} 
@@ -228,13 +223,13 @@ const CarDetail: React.FC = () => {
 
 
 
-                            <div className="detail-description-section" style={{ marginTop: '40px' }}>
+                            <div className="desc-section">
                                 <div className="section-title-premium">
                                     <div className="title-dash"></div>
                                     Vehicle Overview
                                 </div>
                                 <div className={`description-wrapper ${isDescriptionExpanded ? 'expanded' : ''}`}>
-                                    <p style={{ lineHeight: '1.8', color: 'var(--text-secondary)', fontSize: '1.05rem', margin: 0 }}>
+                                    <p className="description-text">
                                         {car.description || 'No description available for this vehicle.'}
                                     </p>
                                     {!isDescriptionExpanded && car.description && car.description.length > 450 && (
@@ -245,7 +240,6 @@ const CarDetail: React.FC = () => {
                                     <button 
                                         className="read-more-btn" 
                                         onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                                        style={{ marginTop: '15px' }}
                                     >
                                         {isDescriptionExpanded ? (
                                             <>Show less <i className="fa-solid fa-chevron-up"></i></>
@@ -257,15 +251,12 @@ const CarDetail: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="detail-info-section">
-                            <div className="inquiry-card" style={{ marginBottom: '50px', paddingBottom: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-                                <button className="message-dealer-btn" onClick={handleInquire} style={{ width: '100%', height: '65px', borderRadius: '15px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                        <div className="info-section">
+                            <div className="inquiry-box">
+                                <button className="message-dealer-btn" onClick={handleInquire}>
                                     <i className="fa-solid fa-envelope"></i> Inquire Now
                                 </button>
-                                <button className="report-listing-link" onClick={() => setIsReportOpen(true)} style={{ 
-                                    background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: '0.85rem', cursor: 'pointer',
-                                    display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, transition: 'color 0.3s ease'
-                                }}>
+                                <button className="report-listing-link" onClick={() => setIsReportOpen(true)}>
                                     <i className="fa-solid fa-flag"></i> Submit Report / Report Listing
                                 </button>
                             </div>
@@ -305,11 +296,11 @@ const CarDetail: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="section-title-premium" style={{ marginTop: '40px' }}>
+                            <div className="section-title-premium secondary">
                                 <div className="title-dash"></div>
                                 Technical Detail
                             </div>
-                            <ul className="car-specs-list" style={{ marginTop: '20px' }}>
+                            <ul className="car-specs-list">
                                 <li><strong>Engine</strong> <span>{car.engine || 'Standard'}</span></li>
                                 <li><strong>Horsepower</strong> <span>{car.hp || 'Standard'}</span></li>
                                 <li><strong>Torque</strong> <span>{car.torque || 'Standard'}</span></li>

@@ -43,6 +43,8 @@ interface InventoryContextType {
     requestPasswordReset: (email: string) => Promise<{ success: boolean; message: string; error?: string }>;
     resetPassword: (email: string, otp: string, newPassword: string) => Promise<{ success: boolean; message: string; error?: string }>;
     updateSettings: (settings: AppSettings) => Promise<void>;
+    isMobileFilterOpen: boolean;
+    setIsMobileFilterOpen: (open: boolean) => void;
     addNotification: (title: string, message: string, type: AdminNotification['type'], sender: string) => void;
     markAllNotificationsRead: () => Promise<void>;
     clearNotifications: () => void;
@@ -71,6 +73,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const [notifications, setNotifications] = useState<AdminNotification[]>([]);
     const [inquiries, setInquiries] = useState<Inquiry[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
     // Initial Data Fetch
     useEffect(() => {
@@ -82,37 +85,48 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             try {
                 // Fetch admin cars if logged in, otherwise fetch public cars
                 const carsUrl = parsedUser ? `/cars/admin` : `/cars`;
-                const [carsRes, settingsRes, reportsRes, staffRes, inquiriesRes] = await Promise.all([
-                    api.get(carsUrl),
-                    api.get(`/settings`),
-                    parsedUser && parsedUser.role === 'SUPER_ADMIN' ? api.get(`/reports`) : Promise.resolve({ data: [] }),
-                    parsedUser && parsedUser.role === 'SUPER_ADMIN' ? api.get(`/staff`) : Promise.resolve({ data: [] }),
-                    parsedUser ? api.get(`/inquiries`) : Promise.resolve({ data: [] })
+                
+                // Use safe individual fetches to prevent one failure from blocking the entire site
+                const safeFetch = async (url: string) => {
+                    try {
+                        const res = await api.get(url);
+                        return res.data;
+                    } catch (e) {
+                        console.warn(`⚠️ [DATA FETCH] Failed for ${url}:`, e);
+                        return null;
+                    }
+                };
+
+                const [carsDataRaw, settingsData, reportsDataRaw, staffDataRaw, inquiriesDataRaw] = await Promise.all([
+                    safeFetch(carsUrl),
+                    safeFetch(`/settings`),
+                    parsedUser && parsedUser.role === 'SUPER_ADMIN' ? safeFetch(`/reports`) : Promise.resolve([]),
+                    parsedUser && parsedUser.role === 'SUPER_ADMIN' ? safeFetch(`/staff`) : Promise.resolve([]),
+                    parsedUser ? safeFetch(`/inquiries`) : Promise.resolve([])
                 ]);
 
-                const carsDataRaw = carsRes.data;
-                const settingsData: AppSettings = settingsRes.data;
-                const reportsData: UserReport[] = reportsRes.data;
-                const staffData: StaffMember[] = staffRes.data;
-                const inquiriesData: Inquiry[] = inquiriesRes.data;
-
+                // 1. Process Cars
                 const carsMap: Record<string, Vehicle> = {};
                 const carsData = Array.isArray(carsDataRaw) ? carsDataRaw : [];
                 carsData.forEach(c => {
                     if (c && c.id) carsMap[c.id] = c;
                 });
-
                 setCars(carsMap);
-                setReports(reportsData);
-                setSettings(settingsData);
-                setStaff(staffData);
-                if (Array.isArray(inquiriesData)) setInquiries(inquiriesData);
+
+                // 2. Process Settings (Merge with defaults to avoid missing mandatory fields)
+                if (settingsData) {
+                    setSettings(prev => ({ ...prev, ...settingsData }));
+                }
+
+                // 3. Process Other Data
+                if (Array.isArray(reportsDataRaw)) setReports(reportsDataRaw);
+                if (Array.isArray(staffDataRaw)) setStaff(staffDataRaw);
+                if (Array.isArray(inquiriesDataRaw)) setInquiries(inquiriesDataRaw);
 
                 if (parsedUser) {
                     try {
                         const notifRes = await api.get(`/notifications`);
-                        const notifData: AdminNotification[] = notifRes.data;
-                        if (Array.isArray(notifData)) setNotifications(notifData);
+                        if (Array.isArray(notifRes.data)) setNotifications(notifRes.data);
                     } catch {
                         setNotifications([]);
                     }
@@ -477,7 +491,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             addReport, resolveReport, reopenReport, deleteReport,
             addInquiry, sendReply, archiveInquiry, deleteInquiry, fetchInquiries,
             requestPasswordReset, resetPassword,
-            updateSettings, addNotification, markAllNotificationsRead, clearNotifications
+            updateSettings, isMobileFilterOpen, setIsMobileFilterOpen, addNotification, markAllNotificationsRead, clearNotifications
         }}>
             {children}
         </InventoryContext.Provider>

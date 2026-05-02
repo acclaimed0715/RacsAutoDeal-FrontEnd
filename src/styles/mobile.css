@@ -1,7 +1,7 @@
 /* ============================================================
    MOBILE RESPONSIVENESS OVERRIDES: POLISHED AESTHETICS
    Targeting standard tablets (<768px) and mobile phones
-============================================================ */
+   ============================================================ */
 
 /* Hide mobile menu button on Desktop */
 .mobile-menu-btn {
@@ -31,490 +31,965 @@ html, body, #root {
 }
 
 @media (max-width: 768px) {
-    /* GLOBAL TYPOGRAPHY & SPACING */
-    html, body {
-        overflow-x: hidden !important;
-        width: 100% !important;
-        position: relative;
-    }
-    #root {
-        overflow-x: hidden !important;
-        width: 100% !important;
-    }
-    body {
-        font-size: 0.95rem;
-    }
-    
-    /* 1. NAVBAR (Sleek stack & Hamburger Support) */
-    .nav-container {
-        flex-direction: column !important;
-        /* Revert to row for mobile header, we will absolutely position links */
-        flex-direction: row !important;
-        flex-wrap: wrap !important;
-        justify-content: space-between !important;
-        padding: 1rem 1.25rem !important;
-        background: rgba(8, 8, 9, 0.95) !important;
-        backdrop-filter: blur(10px) !important;
-    }
-    .navbar-brand-name {
-        font-size: 1rem !important;
-        letter-spacing: 0px !important;
-    }
-    .mobile-menu-btn {
-        display: block !important;
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1.5rem;
-        cursor: pointer;
-    }
-    .nav-links {
+    .custom-cursor {
         display: none !important;
-        flex-direction: column !important;
-        width: 100% !important;
-        gap: 1rem !important;
-        padding-top: 1rem !important;
-        border-top: 1px solid rgba(255,255,255,0.05);
-        margin-top: 0.5rem;
     }
-    .nav-links.open {
-        display: flex !important;
+
+    /* GLOBAL RESET */
+    .section-padding {
+        padding: 4rem 1.25rem !important;
     }
-    .nav-links a {
+
+    .section-title, .section-main-title {
+        font-size: 2.2rem !important;
+        line-height: 1.2 !important;
+        text-align: center !important;
+    }
+
+    .section-desc {
         font-size: 1rem !important;
-        padding: 0.5rem 0 !important;
+        text-align: center !important;
     }
-    
+
+    .section-subtitle {
+        text-align: center !important;
+        letter-spacing: 3px !important;
+    }
+
+    .ambient-glow-wrapper {
+        display: none;
+    }
+
+    /* 1. NAVBAR PILL STYLE MOBILE */
+    .navbar.smart-nav.pill-style {
+        height: 70px !important;
+        background: rgba(10, 10, 10, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+        z-index: 3000 !important;
+    }
+
+    .nav-container {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        height: 100% !important;
+        padding: 0 1.5rem !important;
+    }
+
+    .brand-section {
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .logo-link {
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .logo-img {
+        width: 42px !important;
+        height: 42px !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 50% !important;
+        object-fit: contain;
+    }
+
+    .navbar-brand-name {
+        display: none !important;
+    }
+
+    .navbar.scrolled .navbar-brand-name {
+        display: block !important;
+        font-size: 0.9rem !important;
+        font-weight: 800 !important;
+        color: #fff !important;
+        margin-left: 10px !important;
+        letter-spacing: 0.5px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 150px !important;
+    }
+
+    .menu-pill-wrapper {
+        display: flex !important;
+        align-items: center !important;
+        margin-left: 0 !important;
+    }
+
+    .menu-pill {
+        position: fixed !important;
+        top: 70px;
+        left: 0;
+        right: 0;
+        width: 100% !important;
+        height: auto !important;
+        flex-direction: column !important;
+        background: rgba(10, 10, 10, 0.99) !important; /* Almost solid for readability */
+        backdrop-filter: blur(30px) !important;
+        border: none !important;
+        border-bottom: 1px solid rgba(230, 57, 70, 0.3) !important; /* Subtle red accent at bottom */
+        padding: 3rem 2rem !important;
+        border-radius: 0 0 30px 30px !important;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-20px);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 5000 !important; /* Highest priority */
+        gap: 2rem !important;
+        box-shadow: 0 20px 80px rgba(0, 0, 0, 0.9) !important;
+    }
+
+    .menu-pill.open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .pill-links {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 2rem !important;
+        width: 100% !important;
+    }
+
+    .pill-links a {
+        font-size: 1.25rem !important;
+        font-weight: 700 !important;
+        padding: 12px !important;
+        width: 100%;
+        text-align: center;
+        color: #fff !important;
+        letter-spacing: 2px !important;
+        text-transform: uppercase !important;
+    }
+
+    .pill-action {
+        width: 100% !important;
+        justify-content: center !important;
+        margin-top: 1rem;
+    }
+
+    .pill-cta-btn {
+        width: 100% !important;
+        max-width: 280px;
+        height: 55px !important;
+        font-size: 1rem !important;
+        border-radius: 100px !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary) !important;
+        box-shadow: 0 10px 20px rgba(230, 57, 70, 0.3) !important;
+    }
+
+    .mobile-menu-btn {
+        display: flex !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 1.3rem;
+        transition: all 0.3s ease;
+        margin: 0 !important;
+    }
+
     /* 2. HERO SECTION */
+    .hero-section {
+        padding-top: 80px !important;
+        min-height: auto !important;
+    }
+
     .hero-main-container {
-        display: flex !important;
-        flex-direction: column !important;
-        grid-template-columns: 1fr !important; /* Just in case it's a grid */
-        gap: 1.5rem !important;
-        width: 100% !important;
+        padding: 1.5rem 1rem !important;
+        gap: 2.5rem !important;
     }
-    .hero-content, .hero-left-content {
-        padding: 2.5rem 0 0 0 !important; /* Increased top padding to clear navbar */
-        text-align: center !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        width: 100% !important;
-    }
-    .hero-left-content > div {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        text-align: center !important;
-        width: 100% !important;
-    }
+
     .hero-badge {
-        margin: 1.5rem auto 1rem !important; /* Added explicit top margin */
+        margin: 0 auto 1.25rem !important;
     }
-    .hero-title, .hero-main-title {
+
+    .hero-main-title {
+        font-size: 1.85rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    .hero-stats-row {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 1.5rem !important;
+        margin: 2rem 0 !important;
+        width: 100%;
+    }
+
+    .stat-pill {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .hero-stack-container {
+        height: 240px !important;
+        margin-top: 0 !important;
+    }
+
+    .hero-content, .hero-left-content {
+        padding: 2.5rem 0 0 0 !important;
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        width: 100% !important;
+    }
+
+    .hero-badge {
+        margin: 0.5rem auto 1rem !important;
+        font-size: 0.75rem !important;
+        padding: 0.4rem 1rem !important;
+    }
+
+    .hero-main-title {
         font-size: 2rem !important;
         line-height: 1.2 !important;
-        margin-bottom: 1rem !important;
-        white-space: normal !important;
         text-align: center !important;
-        width: 100% !important;
+        margin-bottom: 1.25rem !important;
     }
+
     .hero-sub-description {
         text-align: center !important;
         margin: 0 auto 1.5rem !important;
         font-size: 0.9rem !important;
     }
+
     .hero-stack-container {
         height: 280px !important;
         margin-top: 1rem !important;
     }
-    .hero-right-visual {
-        width: 100% !important;
-        overflow: hidden !important; /* Prevents framer side-cards from breaking horizontal bounds */
+
+    .hero-right-visual, .hero-stack-container {
+        display: none !important;
+    }
+
+    .hero-main-container {
+        padding: 2rem 1.5rem !important;
+        gap: 1.25rem !important;
+        min-height: 80vh !important;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        justify-content: center !important;
+        text-align: center;
     }
-    .hero-slide.left, .hero-slide.right, .hero-slide.hidden {
-        display: none !important; /* Hide background slider cars for stability on mobile */
+
+    .hero-main-title {
+        font-size: 2rem !important;
+        margin-bottom: 0.5rem !important;
     }
+
+    .hero-sub-description {
+        font-size: 0.9rem !important;
+        margin-bottom: 1.25rem !important;
+        line-height: 1.5 !important;
+    }
+
     .hero-action-group {
         flex-direction: column !important;
         gap: 0.75rem !important;
         width: 100% !important;
-        max-width: 300px !important;
+        max-width: 280px !important;
+        margin: 0 auto !important;
     }
+
     .hero-primary-btn, .hero-secondary-btn {
         width: 100% !important;
         justify-content: center !important;
         font-size: 0.95rem !important;
-        padding: 0.8rem 1.5rem !important;
+        padding: 0.75rem 1.25rem !important;
     }
+
     .hero-stats-row {
         justify-content: center !important;
+        gap: 1.5rem !important;
+        margin-top: 1.5rem !important;
+    }
+
+    /* 3. BRAND HIGHLIGHTS */
+    .brand-highlights-section {
+        padding: 4rem 1rem !important;
+    }
+
+    .brand-flex-row {
         gap: 1rem !important;
-        margin-top: 2rem !important;
     }
-    .stat-pill {
-        padding: 0.5rem 1rem !important;
+
+    .brand-card-item {
+        width: calc(50% - 1rem) !important; /* 2 columns on small screens */
+        height: 100px !important;
+        padding: 10px !important;
     }
-    
-    /* 3. INVENTORY & CAR CARDS */
+
+    .brand-logo-img {
+        height: 35px !important;
+    }
+
+    /* 4. SERVICES SECTION */
+    .services-section {
+        padding: 4rem 1rem !important;
+    }
+
+    .services-container {
+        gap: 1.5rem !important;
+    }
+
+    .service-card {
+        flex: 1 1 100% !important; /* Force full width stack */
+        max-width: 100% !important;
+        padding: 2rem 1.5rem !important;
+    }
+
+    .service-title {
+        font-size: 1.4rem !important;
+    }
+
+    /* 5. GLOBAL TYPOGRAPHY & SPACING */
+    h1, .hero-main-title {
+        font-size: 2.2rem !important;
+    }
+
+    h2, .section-title {
+        font-size: 1.8rem !important;
+    }
+
+    p, .section-desc, .hero-sub-description {
+        font-size: 0.95rem !important;
+        line-height: 1.6 !important;
+    }
+
+    .section-padding {
+        padding: 4rem 1rem !important;
+    }
+
+    /* Fix potential button horizontal overflow */
+    .hero-primary-btn, .hero-secondary-btn, .pill-cta-btn {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Ensure no horizontal scroll on small devices */
+    html, body {
+        position: relative;
+        overflow-x: hidden !important;
+        width: 100%;
+    }
+
+    /* 6. VERY SMALL PHONES (< 400px) */
+    @media (max-width: 400px) {
+        .brand-card-item {
+            width: 100% !important; /* Full width stack for very small screens */
+        }
+
+        .hero-main-title {
+            font-size: 1.8rem !important;
+        }
+
+        .hero-stats-row {
+            flex-direction: column !important;
+            gap: 1rem !important;
+        }
+    }
+
+    /* 3. COMPARE HIGHLIGHT SECTION */
+    .compare-highlight-container {
+        grid-template-columns: 1fr !important;
+        gap: 3rem !important;
+    }
+
+    .process-guide {
+        text-align: center;
+    }
+
+    .timeline-wrapper {
+        padding-left: 0 !important;
+    }
+
+    .timeline-line {
+        display: none;
+    }
+
+    .step-item {
+        padding: 1.25rem !important;
+        margin-bottom: 1rem !important;
+        text-align: left;
+    }
+
+    .step-dot {
+        display: none;
+    }
+
+    .step-content-row {
+        gap: 1rem !important;
+    }
+
+    .tool-highlight-wrapper {
+        position: relative !important;
+        top: 0 !important;
+    }
+
+    .tool-card {
+        padding: 2rem !important;
+    }
+
+    .tool-visual-container {
+        min-height: 120px !important;
+    }
+
+    .visual-cursor {
+        display: none !important;
+    }
+
+    /* 4. CUSTOMER REVIEWS */
+    .reviews-grid {
+        grid-template-columns: 1fr !important;
+        gap: 4rem !important;
+    }
+
+    .review-card-item {
+        padding: 4rem 1.5rem 2rem !important;
+    }
+
+    /* 5. STATS & SERVICES */
+    .services-container {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+
+    .service-card {
+        padding: 2rem !important;
+        max-width: 100% !important;
+    }
+
+    .stats-grid-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 2rem !important;
+    }
+
+    .stat-number-text {
+        font-size: 1.8rem !important;
+    }
+
+    .stat-label-text {
+        font-size: 0.8rem !important;
+    }
+
+    .services-intro-content {
+        padding: 0 !important;
+    }
+
+    /* 6. BRAND HIGHLIGHTS */
+    .brand-flex-row {
+        gap: 1rem !important;
+    }
+
+    .brand-card-item {
+        width: 140px !important;
+        height: 100px !important;
+    }
+
+    .brand-logo-img {
+        height: 35px !important;
+    }
+
+    /* 7. INVENTORY & CAR CARDS */
     .inventory-content {
         flex-direction: column !important;
         gap: 1rem !important;
         width: 100% !important;
     }
+
     .filter-sidebar {
         width: 100% !important;
         position: static !important;
         margin-bottom: 1rem !important;
         padding: 1rem !important;
     }
-    .filter-content {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 1.25rem !important;
-    }
-    .inventory-hero-title {
-        font-size: 1.8rem !important;
-        line-height: 1.2 !important;
-        padding: 0 1rem !important;
-        text-align: center !important;
-    }
-    .inventory-hero-desc {
-        font-size: 0.95rem !important;
-        padding: 0 1.5rem !important;
-        text-align: center !important;
-        max-width: 100% !important;
-    }
-    .filter-group {
-        margin-bottom: 0 !important;
-    }
-    .price-range-inputs {
-        flex-direction: column !important;
-    }
+
     .inventory-main {
         width: 100% !important;
-        min-width: 0 !important; /* fix flex overflow */
     }
-    .car-grid {
-        grid-template-columns: 1fr !important;
-    }
-    .inventory-grid,
-    .featured-grid,
-    .car-cards-container {
+
+    .car-grid, .inventory-grid, .featured-grid {
         grid-template-columns: 1fr !important;
         gap: 1.25rem !important;
     }
-    .car-card, .car-card--grid {
+
+    .car-card {
         flex-direction: column !important;
         height: auto !important;
-        border-radius: 16px !important;
-        width: 100% !important; /* ensure it stays within bounds */
-        min-width: 0 !important;
-        box-sizing: border-box !important;
+        width: 100% !important;
     }
+
     .car-image-wrapper {
-        border-radius: 16px 16px 0 0 !important;
         height: 200px !important;
         width: 100% !important;
     }
-    .car-image {
-        height: 100% !important;
-        object-fit: cover !important;
-    }
-    .car-card-middle {
-        padding: 1.25rem !important;
-    }
-    .card-name {
-        font-size: 1.2rem !important;
-    }
-    .card-features-row {
-        gap: 0.5rem !important;
-    }
-    .card-feat-compact {
-        background: rgba(255,255,255,0.03) !important;
-        padding: 0.5rem !important;
-        border-radius: 8px !important;
-        flex: 1 1 calc(50% - 0.5rem) !important;
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-    }
+
     .car-card-right {
         width: 100% !important;
         flex-direction: row !important;
         justify-content: space-between !important;
-        align-items: center !important;
         border-left: none !important;
         border-top: 1px solid rgba(255,255,255,0.05) !important;
         padding: 1rem 1.25rem !important;
-        background: rgba(0,0,0,0.2);
     }
 
-    /* 4. CAR DETAILS PAGE */
-    .car-detail-page {
-        padding-top: 70px !important;
+    /* 8. FOOTER MOBILE */
+    .footer-container {
+        padding: 4rem 1.5rem 2rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 3rem !important;
+        text-align: center !important;
     }
-    .detail-main-grid {
+
+    .footer-section {
+        align-items: center !important;
+    }
+
+    .footer-links-grid {
         grid-template-columns: 1fr !important;
         gap: 1.5rem !important;
     }
-    .main-header-flex {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 0.5rem !important;
-        margin-bottom: 0.75rem !important;
-    }
-    .main-header-flex h1 {
-        font-size: 1.75rem !important;
-        line-height: 1.2 !important;
-    }
-    .main-price {
-        font-size: 1.5rem !important;
-    }
-    .main-subtitle-row {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 0.75rem !important;
-    }
-    .main-meta {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 0.5rem !important;
-    }
-    .carousel-container {
-        height: 250px !important;
-        border-radius: 16px !important;
-    }
-    .preview-image-wrapper {
-        border-radius: 16px !important;
-    }
-    .main-features-grid {
-        grid-template-columns: 1fr 1fr !important;
-        gap: 0.75rem !important;
-    }
-    .feature-card-premium {
-        padding: 1rem !important;
-    }
-    .car-specs-list li {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 0.25rem !important;
-        padding: 0.75rem 0 !important;
-    }
-    .message-dealer-btn {
-        font-size: 1.1rem !important;
-        height: 55px !important;
-    }
-    
-    /* 5. COMPARISON PAGE */
-    .compare-container {
-        padding: 1rem !important;
-        margin-top: 60px !important;
-    }
-    .compare-header {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 1rem !important;
-    }
-    .compare-title {
-        font-size: 1.75rem !important;
-    }
-    .comparison-table-wrapper {
-        overflow-x: auto !important;
-        padding-bottom: 1rem !important;
-    }
-    
-    /* 6. LANDING SECTIONS */
-    .brand-highlights,
-    .services-grid,
-    .stats-grid,
-    .reviews-grid {
-        grid-template-columns: 1fr !important;
-        gap: 1.25rem !important;
-    }
-    .section-title {
-        font-size: 1.8rem !important;
-        line-height: 1.2 !important;
+
+    .footer-socials {
+        justify-content: center !important;
     }
 
-    /* 7. COMPARE BAR (FLOATING PANEL) - HIGH SPECIFICITY OVERRIDES */
+    .footer-bottom {
+        flex-direction: column !important;
+        gap: 1rem !important;
+        text-align: center !important;
+    }
+
+    /* 9. COMPARISON BAR (FLOATING PANEL) */
     div.compare-bar-container {
         width: 95% !important;
-        height: auto !important;
         bottom: 20px !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
         padding: 1.25rem !important;
         flex-direction: column !important;
-        gap: 1rem !important;
         border-radius: 20px !important;
         background: rgba(10, 10, 10, 0.98) !important;
-        border: 1px solid rgba(230, 57, 70, 0.4) !important;
-        box-shadow: 0 -10px 40px rgba(0,0,0,0.8) !important;
-        display: flex !important;
         z-index: 10000 !important;
     }
-    div.compare-bar-content {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 1.25rem !important;
-        width: 100% !important;
-        align-items: center !important;
-    }
-    div.compare-bar-info {
-        margin-right: 0 !important;
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: baseline !important;
-        gap: 10px !important;
-        justify-content: center !important;
-        width: 100% !important;
-    }
-    span.compare-count {
-        font-size: 2.2rem !important;
-        line-height: 1 !important;
-        color: var(--primary) !important;
-    }
-    span.compare-text {
-        font-size: 0.85rem !important;
-        letter-spacing: 1.5px !important;
-        font-weight: 800 !important;
-        color: #fff !important;
-        text-transform: uppercase !important;
-    }
-    div.compare-items-list {
-        display: none !important; /* Hide pills on mobile to save vertical space */
-    }
-    div.compare-bar-actions {
-        margin-left: 0 !important;
-        width: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 12px !important;
-        align-items: center !important;
-    }
-    button.clear-btn {
-        font-size: 0.9rem !important;
-        color: #aaa !important;
-        text-decoration: underline !important;
-        background: transparent !important;
-        border: none !important;
-        order: 2 !important; /* Move 'Back' to the bottom */
-    }
+
     button.compare-now-btn {
         width: 100% !important;
-        padding: 16px !important;
-        font-size: 1.1rem !important;
-        font-weight: 900 !important;
-        border-radius: 12px !important;
-        background: linear-gradient(135deg, #C0392B 0%, #E74C3C 100%) !important;
-        color: #fff !important;
-        text-transform: uppercase !important;
-        letter-spacing: 1px !important;
+    }
+    /* 10. INVENTORY HERO & CAR DETAIL */
+    .inventory-hero-section {
+        padding: 6rem 1.25rem 3rem !important;
+    }
+
+    .inventory-hero-title {
+        font-size: 2.5rem !important;
+    }
+
+    .inventory-hero-desc {
+        font-size: 1rem !important;
+        padding: 0 !important;
+    }
+
+    .inventory-content {
+        flex-direction: column !important;
+        gap: 2rem !important;
+        padding: 1.5rem !important;
+    }
+
+    /* Transform Sidebar into Drawer */
+    .filter-sidebar.persistent-sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        right: -100% !important; /* Start off-screen */
+        width: 300px !important;
+        height: 100vh !important;
+        background: #0f0f10 !important;
+        z-index: 6000 !important;
+        transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        padding-top: 20px !important;
+        box-shadow: -10px 0 50px rgba(0, 0, 0, 0.8) !important;
+        display: flex !important; /* Ensure it's displayable */
+    }
+
+    .filter-sidebar.persistent-sidebar.active {
+        right: 0 !important;
+    }
+
+    .filter-header {
+        padding: 1.5rem !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
         display: flex !important;
+        justify-content: space-between !important;
         align-items: center !important;
-        justify-content: center !important;
+    }
+
+    .close-filter-btn-mobile {
+        display: block !important;
+    }
+
+    .filter-content {
+        padding: 1.5rem !important;
+        overflow-y: auto !important;
+    }
+
+    .filter-footer {
+        padding: 1.5rem !important;
+        margin-top: auto !important;
+    }
+
+    .inventory-main {
+        width: 100% !important;
+    }
+
+    /* RESTORED DETAIL STYLES */
+    .car-detail-main {
+        padding-top: 100px !important;
+        padding-bottom: 60px !important;
+    }
+
+    .detail-title-section {
+        margin-bottom: 25px !important;
+    }
+
+    .detail-header-flex {
+        flex-direction: column !important;
+        align-items: flex-start !important;
         gap: 10px !important;
-        border: none !important;
-        order: 1 !important; /* Main action on top */
+    }
+
+    .detail-header-flex h1 {
+        font-size: 1.8rem !important;
+    }
+
+    .detail-price {
+        font-size: 1.5rem !important;
+    }
+
+    .detail-subtitle-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .detail-meta-info {
+        flex-direction: column !important;
+        gap: 5px !important;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr !important;
+        gap: 30px !important;
+    }
+
+    .carousel-view {
+        height: 350px !important;
+    }
+
+    .carousel-nav-btn {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 1.4rem !important;
+    }
+
+    .comparison-viewport {
+        margin: 0 -1.25rem !important;
+        width: calc(100% + 2.5rem) !important;
+        padding: 0 1.25rem 20px !important;
+    }
+
+    .about-container {
+        padding: 3rem 1.25rem !important;
+        gap: 2.5rem !important;
+    }
+
+    .about-row {
+        grid-template-columns: 1fr !important;
+        gap: 2rem !important;
+    }
+
+    .about-container {
+        padding: 3rem 1.25rem !important;
+    }
+
+    .about-row {
+        flex-direction: column !important;
+        gap: 2rem !important;
+        text-align: center;
+    }
+
+    .about-image-box {
+        height: 220px !important;
+        order: -1; /* Move image to top on mobile */
+    }
+
+    .about-subtitle-main {
+        font-size: 1.8rem !important;
+    }
+
+    .about-para {
+        font-size: 0.9rem !important;
+        line-height: 1.6 !important;
+    }
+
+    /* About Feature Cards - One Row Scroll */
+    .about-card-grid {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        padding: 1rem 0 !important;
+        gap: 1rem !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        margin-top: 2.5rem !important;
+    }
+
+    .about-card-grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .about-feature-card {
+        flex: 0 0 240px !important;
+        padding: 1.5rem !important;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.07) !important;
+        border-radius: 20px !important;
+    }
+
+    .about-feature-card i {
+        font-size: 1.8rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .about-feature-card h3 {
+        font-size: 1.1rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .about-feature-card p {
+        font-size: 0.8rem !important;
+        line-height: 1.5 !important;
+        color: #888 !important;
+    }
+
+    .legal-container {
+        padding: 3rem 1.25rem !important;
+    }
+
+    .legal-hero h1 {
+        font-size: 2.5rem !important;
+    }
+
+    .legal-section-title {
+        font-size: 1.8rem !important;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .legal-box {
+        padding: 1.5rem !important;
+    }
+
+    .footer-grid {
+        padding: 3rem 1.5rem 1.5rem !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important; /* 2 columns for links/contact */
+        text-align: left !important;
+        gap: 2rem 1rem !important;
+    }
+
+    .footer-col:first-child {
+        grid-column: span 2 !important; /* Logo/Socials take full width */
+        text-align: center !important;
+        margin-bottom: 1rem;
+    }
+
+    .footer-col:last-child {
+        grid-column: span 2 !important; /* Business hours take full width */
+        margin-top: 1rem;
+    }
+
+    .footer-logo {
+        margin: 0 auto 1.25rem !important;
+    }
+
+    .footer-brand-desc {
+        max-width: 100% !important;
+        margin: 0 auto 1.5rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    .footer-socials {
+        justify-content: center !important;
+    }
+
+    .footer-col-title {
+        font-size: 1rem !important;
+        margin-bottom: 1.25rem !important;
+        text-align: left !important;
+    }
+
+    .footer-col:first-child .footer-col-title {
+        text-align: center !important;
+    }
+
+    .footer-links-list li a {
+        font-size: 0.85rem !important;
+        justify-content: flex-start !important;
+    }
+
+    .footer-contact-list li {
+        align-items: flex-start !important;
+        gap: 10px !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .contact-text {
+        font-size: 0.85rem !important;
+        line-height: 1.4 !important;
+        text-align: left !important;
+    }
+
+    .footer-hours-list li {
+        justify-content: space-between !important;
+        padding-bottom: 0.75rem !important;
+    }
+
+    .day-name, .hour-val {
+        font-size: 0.85rem !important;
+    }
+
+    .footer-bottom-flex {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 1rem !important;
+        padding: 1.5rem !important;
+    }
+
+    .copyright-text {
+        font-size: 0.75rem !important;
     }
 }
 
 @media (max-width: 480px) {
-    .nav-links flex {
-        flex-wrap: wrap !important;
+    .inventory-hero-title {
+        font-size: 2rem !important;
     }
+
+    .carousel-view {
+        height: 280px !important;
+    }
+
     .hero-title, .hero-main-title {
         font-size: 1.8rem !important;
     }
-    .hero-stats-row {
-        flex-wrap: wrap !important;
-    }
-    .filter-content {
-        grid-template-columns: 1fr !important; /* Single column for very small phones, but compact */
-    }
-    .main-features-grid {
-        grid-template-columns: 1fr !important;
-    }
-    .global-inquiry-stack {
-        bottom: 10px !important;
-        right: 10px !important;
-        width: calc(100% - 20px) !important;
-    }
-    .carousel-container {
-        height: 200px !important;
+
+    .stats-grid-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1.5rem !important;
     }
 
-    /* 8. COMPARISON MOBILE OVERHAUL */
-    .compare-outer-container {
-        padding: 0 0 100px !important;
+    .stat-icon-circle {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 1.1rem !important;
     }
-    .compare-title {
-        font-size: 2rem !important;
-        margin-top: 20px !important;
+
+    .stat-number-text {
+        font-size: 1.5rem !important;
     }
-    .compare-subtitle {
-        font-size: 0.9rem !important;
-        padding: 0 20px !important;
+
+    .stat-label-text {
+        font-size: 0.7rem !important;
+        letter-spacing: 0px !important;
     }
-    .comparison-viewport {
-        border-radius: 0 !important;
-        border-left: none !important;
-        border-right: none !important;
+
+    /* 7. SERVICES SECTION COMPACT (One Row Scroll) */
+    .services-container {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        justify-content: flex-start !important;
+        padding: 1rem !important;
+        gap: 1rem !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Hide scrollbar Firefox */
     }
-    .comparison-table {
-        min-width: 600px !important; /* Allow two cars side-by-side on mobile swipe */
+
+    .services-container::-webkit-scrollbar {
+        display: none; /* Hide scrollbar Chrome/Safari */
     }
-    .comparison-header-row {
-        top: 0 !important; /* Fixed header follows main navbar scroll point */
+
+    .service-card {
+        flex: 0 0 260px !important; /* Fixed width for horizontal scroll */
+        padding: 1.5rem !important;
+        min-height: auto !important;
     }
-    .sticky-label-cell {
-        width: 100px !important;
-        padding: 12px 15px !important;
-        font-size: 0.75rem !important;
+
+    .service-features-list, .service-divider {
+        display: none !important; /* Hide long list on mobile to keep it short */
     }
-    .shadow-indicators::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 100px;
-        bottom: 0;
-        width: 15px;
-        background: linear-gradient(to right, rgba(0,0,0,0.5), transparent);
-        z-index: 50;
-        pointer-events: none;
+
+    .service-desc {
+        font-size: 0.85rem !important;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 0 !important;
     }
-    .spec-icon { font-size: 0.9rem !important; }
-    .spec-name { font-size: 0.7rem !important; }
-    .car-header-cell {
-        min-width: 200px !important;
-        padding: 20px 10px !important;
+
+    .service-icon-box {
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 1.5rem !important;
+        margin-bottom: 1rem !important;
     }
-    .car-header-image {
-        height: 100px !important;
-        margin-bottom: 10px !important;
+
+    /* 8. CUSTOMER REVIEWS COMPACT (One Row Scroll) */
+    .reviews-grid {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        padding: 2rem 1rem !important;
+        gap: 1.5rem !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
     }
-    .car-header-name { font-size: 0.95rem !important; }
-    .car-header-price { font-size: 1.1rem !important; }
-    .spec-value-cell {
-        min-width: 200px !important;
-        padding: 12px 10px !important;
+
+    .reviews-grid::-webkit-scrollbar {
+        display: none;
     }
-    .spec-value { font-size: 0.85rem !important; }
-    .spec-value.best { font-size: 1rem !important; }
-    .clear-all-mobile-btn {
-        display: inline-block !important;
-        background: rgba(255,255,255,0.05) !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        color: #ff4444 !important;
-        padding: 6px 15px !important;
-        border-radius: 20px !important;
-        font-size: 0.75rem !important;
-        font-weight: 800 !important;
-        margin-top: 15px !important;
+
+    .review-card-item {
+        flex: 0 0 280px !important;
+        padding: 3.5rem 1.25rem 1.5rem !important;
+        margin-top: 40px !important;
+    }
+
+    .review-avatar-img {
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+    .review-text-content {
+        font-size: 0.85rem !important;
+        -webkit-line-clamp: 4;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 }
-

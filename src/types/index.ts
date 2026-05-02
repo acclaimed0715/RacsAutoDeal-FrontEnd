@@ -86,7 +86,7 @@ export interface Inquiry {
     carName: string;
     userEmail: string;
     message: string;
-    status: 'PENDING' | 'REPLIED';
+    status: 'PENDING' | 'REPLIED' | 'ARCHIVED';
     replyMessage?: string;
     repliedAt?: string;
     createdAt: string;

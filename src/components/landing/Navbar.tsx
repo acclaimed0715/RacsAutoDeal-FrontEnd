@@ -6,7 +6,6 @@ const Navbar: React.FC = () => {
     const { settings } = useInventory();
     const [isScrolled, setIsScrolled] = useState(false);
     const location = useLocation();
-    const isHome = location.pathname === '/';
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 

@@ -4,7 +4,7 @@ import { type Inquiry } from '../../types';
 import ConfirmModal from './ConfirmModal';
 
 const InquiriesView: React.FC = () => {
-    const { inquiries, sendReply, archiveInquiry, deleteInquiry } = useInventory();
+    const { inquiries, sendReply, archiveInquiry } = useInventory();
     const [activeTab, setActiveTab] = useState<'PENDING' | 'REPLIED' | 'ARCHIVED'>('PENDING');
     const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
     const [replyText, setReplyText] = useState('');

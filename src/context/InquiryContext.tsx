@@ -4,7 +4,7 @@ import { type Vehicle } from '../types';
 export interface ActiveInquiry {
     carId: string;
     carName: string;
-    carPrice: number;
+    carPrice: string;
     carImage?: string;
     isMinimized: boolean;
     draftMessage: string;

@@ -22,16 +22,10 @@ const Footer: React.FC = () => {
             color: '#1877F2',
         },
         {
-            href: '#',
+            href: 'https://www.facebook.com/profile.php?id=61560596447465',
             icon: 'fa-brands fa-facebook-messenger',
             label: 'Messenger',
             color: '#00B2FF',
-        },
-        {
-            href: '#',
-            icon: 'fa-brands fa-twitter',
-            label: 'Twitter / X',
-            color: '#1DA1F2',
         },
     ];
 
@@ -90,7 +84,8 @@ const Footer: React.FC = () => {
                     <img
                         src="/assets/logo.png"
                         alt={`${settings.businessName} Logo`}
-                        style={{ maxWidth: '160px', marginBottom: '1.25rem' }}
+                        style={{ maxWidth: '160px', marginBottom: '1.25rem', cursor: 'pointer' }}
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                     />
                     <p
                         style={{

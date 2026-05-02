@@ -37,7 +37,11 @@ const Navbar: React.FC = () => {
             <div className="nav-container">
                 {/* Left: Brand Branding */}
                 <div className="brand-section">
-                    <NavLink to="/" className="logo-link">
+                    <NavLink 
+                        to="/" 
+                        className="logo-link"
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    >
                         <img src="/assets/logo.png" alt="Racs Auto Deal Logo" className="logo-img" />
                         <span className="navbar-brand-name">
                             {settings.businessName}

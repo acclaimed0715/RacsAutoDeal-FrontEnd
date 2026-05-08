@@ -46,18 +46,15 @@ html, body, #root {
     }
     
     /* 1. NAVBAR (Sleek stack & Hamburger Support) */
-    .nav-container {
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        padding: 0.5rem 1.25rem !important;
-        background: rgba(8, 8, 9, 0.95) !important;
-        backdrop-filter: blur(10px) !important;
-        height: 70px !important;
-    }
     .navbar.pill-style {
         height: 70px !important;
+        background: rgba(8, 8, 9, 0.95) !important;
+        backdrop-filter: blur(10px) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+    .navbar.scrolled {
+        height: 70px !important;
+        background: rgba(10, 10, 10, 0.98) !important;
     }
     .navbar-brand-name {
         font-size: 0.9rem !important;
@@ -97,8 +94,9 @@ html, body, #root {
         justify-content: flex-start !important;
         align-items: center !important;
         padding: 0 1.25rem !important;
-        height: 70px !important;
+        height: 100% !important;
         width: 100% !important;
+        background: transparent !important;
     }
     .menu-pill {
         position: fixed !important;

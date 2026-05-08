@@ -5503,8 +5503,8 @@ img {
 
 /* === Footer === */
 .footer-main {
-    backgroundColor: #080809;
-    borderTop: 1px solid rgba(255,255,255,0.07);
+    background-color: #080809;
+    border-top: 1px solid rgba(255,255,255,0.07);
     position: relative;
     overflow: hidden;
 }

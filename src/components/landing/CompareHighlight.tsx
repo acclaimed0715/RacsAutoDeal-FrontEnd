@@ -57,7 +57,7 @@ const CompareHighlight: React.FC = () => {
                 zIndex: 0
             }} />
 
-            <div style={{
+            <div className="compare-grid" style={{
                 maxWidth: '1400px',
                 margin: '0 auto',
                 display: 'grid',
@@ -96,9 +96,9 @@ const CompareHighlight: React.FC = () => {
                         <span style={{ color: 'var(--primary)' }}>Showroom Perfection</span>
                     </h2>
 
-                    <div style={{ position: 'relative', paddingLeft: '2rem' }}>
+                    <div className="timeline-container" style={{ position: 'relative', paddingLeft: '2rem' }}>
                         {/* Timeline Line */}
-                        <div style={{
+                        <div className="timeline-line" style={{
                             position: 'absolute',
                             left: '6px',
                             top: '10px',
@@ -111,6 +111,7 @@ const CompareHighlight: React.FC = () => {
                         {steps.map((step, idx) => (
                             <motion.div 
                                 key={idx}
+                                className="step-item"
                                 onMouseEnter={() => setActiveStep(idx)}
                                 initial={{ opacity: 0, x: -20 }}
                                 whileInView={{ opacity: 1, x: 0 }}
@@ -183,9 +184,10 @@ const CompareHighlight: React.FC = () => {
                 </motion.div>
 
                 {/* Right: Featured Tool Highlight (Dynamic) */}
-                <div style={{ position: 'sticky', top: '150px' }}>
+                <div className="visual-wrapper" style={{ position: 'sticky', top: '150px' }}>
                     <motion.div
                         key={activeStep}
+                        className="visual-container"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4 }}
